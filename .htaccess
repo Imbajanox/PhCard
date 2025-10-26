@@ -1,0 +1,31 @@
+# PhCard .htaccess
+
+# Disable error display in production (enable only in development)
+php_flag display_errors Off
+php_flag display_startup_errors Off
+php_value error_log /var/log/php_errors.log
+
+# Session settings
+php_value session.cookie_httponly 1
+php_value session.use_strict_mode 1
+
+# Default page
+DirectoryIndex index.html
+
+# Protect sensitive files (Apache 2.4+ syntax)
+<FilesMatch "^(config\.php|database\.sql)$">
+    Require all denied
+</FilesMatch>
+
+# Enable compression
+<IfModule mod_deflate.c>
+    AddOutputFilterByType DEFLATE text/html text/css text/javascript application/javascript application/json
+</IfModule>
+
+# Browser caching
+<IfModule mod_expires.c>
+    ExpiresActive On
+    ExpiresByType text/css "access plus 1 month"
+    ExpiresByType application/javascript "access plus 1 month"
+    ExpiresByType text/html "access plus 0 seconds"
+</IfModule>

@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PhCard - Browser Card Game</title>
+    <link rel="stylesheet" href="public/css/style.css">
+</head>
+<body>
+    <div id="app">
+        <!-- Login/Register Screen -->
+        <div id="auth-screen" class="screen active">
+            <div class="auth-container">
+                <h1>PhCard</h1>
+                <p class="tagline">Rundenbasiertes Kartenspiel</p>
+                
+                <div id="login-form" class="form-box active">
+                    <h2>Login</h2>
+                    <input type="text" id="login-username" placeholder="Benutzername" required>
+                    <input type="password" id="login-password" placeholder="Passwort" required>
+                    <button onclick="login()">Anmelden</button>
+                    <p>Noch kein Konto? <a href="#" onclick="showRegister(); return false;">Registrieren</a></p>
+                </div>
+                
+                <div id="register-form" class="form-box">
+                    <h2>Registrieren</h2>
+                    <input type="text" id="register-username" placeholder="Benutzername" required>
+                    <input type="email" id="register-email" placeholder="E-Mail" required>
+                    <input type="password" id="register-password" placeholder="Passwort" required>
+                    <button onclick="register()">Registrieren</button>
+                    <p>Bereits ein Konto? <a href="#" onclick="showLogin(); return false;">Anmelden</a></p>
+                </div>
+                
+                <div id="auth-message" class="message"></div>
+            </div>
+        </div>
+        
+        <!-- Main Menu Screen -->
+        <div id="menu-screen" class="screen">
+            <div class="menu-container">
+                <h1>PhCard</h1>
+                
+                <div class="user-info">
+                    <div id="user-profile">
+                        <h3><span id="username-display"></span></h3>
+                        <p>Level: <span id="level-display">1</span></p>
+                        <div class="xp-bar">
+                            <div id="xp-progress" class="xp-fill"></div>
+                        </div>
+                        <p class="xp-text"><span id="xp-current">0</span> / <span id="xp-max">100</span> XP</p>
+                        <p>Siege: <span id="wins-display">0</span> | Niederlagen: <span id="losses-display">0</span></p>
+                    </div>
+                </div>
+                
+                <div class="menu-buttons">
+                    <button class="menu-btn" onclick="showScreen('game-setup-screen')">Neues Spiel</button>
+                    <button class="menu-btn" onclick="showCardCollection()">Kartensammlung</button>
+                    <button class="menu-btn" onclick="logout()">Abmelden</button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Game Setup Screen -->
+        <div id="game-setup-screen" class="screen">
+            <div class="setup-container">
+                <h2>Neues Spiel starten</h2>
+                <p>Wähle den KI-Schwierigkeitsgrad:</p>
+                
+                <div class="ai-levels">
+                    <button class="ai-btn" onclick="startGame(1)">Level 1 - Anfänger</button>
+                    <button class="ai-btn" onclick="startGame(2)">Level 2 - Einfach</button>
+                    <button class="ai-btn" onclick="startGame(3)">Level 3 - Normal</button>
+                    <button class="ai-btn" onclick="startGame(4)">Level 4 - Schwer</button>
+                    <button class="ai-btn" onclick="startGame(5)">Level 5 - Experte</button>
+                </div>
+                
+                <button class="back-btn" onclick="showScreen('menu-screen')">Zurück</button>
+            </div>
+        </div>
+        
+        <!-- Card Collection Screen -->
+        <div id="collection-screen" class="screen">
+            <div class="collection-container">
+                <h2>Meine Kartensammlung</h2>
+                <div id="card-collection" class="card-grid"></div>
+                <button class="back-btn" onclick="showScreen('menu-screen')">Zurück</button>
+            </div>
+        </div>
+        
+        <!-- Game Screen -->
+        <div id="game-screen" class="screen">
+            <div class="game-container">
+                <!-- Game Info -->
+                <div class="game-info">
+                    <div class="player-status">
+                        <h3>Spieler</h3>
+                        <div class="hp-bar">
+                            <div id="player-hp-fill" class="hp-fill player-hp"></div>
+                        </div>
+                        <p id="player-hp-text">HP: 2000 / 2000</p>
+                    </div>
+                    
+                    <div class="game-status">
+                        <p>Runde: <span id="turn-count">1</span></p>
+                        <p>KI Level: <span id="ai-level-display">1</span></p>
+                    </div>
+                    
+                    <div class="ai-status">
+                        <h3>KI-Gegner</h3>
+                        <div class="hp-bar">
+                            <div id="ai-hp-fill" class="hp-fill ai-hp"></div>
+                        </div>
+                        <p id="ai-hp-text">HP: 2000 / 2000</p>
+                    </div>
+                </div>
+                
+                <!-- Battle Field -->
+                <div class="battlefield">
+                    <div class="field ai-field">
+                        <h4>KI Feld</h4>
+                        <div id="ai-field" class="card-slots"></div>
+                    </div>
+                    
+                    <div class="field player-field">
+                        <h4>Dein Feld</h4>
+                        <div id="player-field" class="card-slots"></div>
+                    </div>
+                </div>
+                
+                <!-- Player Hand -->
+                <div class="hand-container">
+                    <h4>Deine Hand</h4>
+                    <div id="player-hand" class="hand"></div>
+                </div>
+                
+                <!-- Action Buttons -->
+                <div class="action-buttons">
+                    <button id="end-turn-btn" onclick="endTurn()">Runde beenden</button>
+                </div>
+                
+                <!-- Battle Log -->
+                <div class="battle-log">
+                    <h4>Kampflog</h4>
+                    <div id="log-content"></div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Game Over Modal -->
+        <div id="game-over-modal" class="modal">
+            <div class="modal-content">
+                <h2 id="game-result"></h2>
+                <div id="game-stats"></div>
+                <div id="unlocked-cards"></div>
+                <button onclick="closeGameOver()">Zurück zum Menü</button>
+            </div>
+        </div>
+    </div>
+    
+    <script src="public/js/app.js"></script>
+</body>
+</html>

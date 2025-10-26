@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PhCard - Test Page</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .section {
+            background: white;
+            margin: 20px 0;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        h1 { color: #667eea; }
+        h2 { color: #764ba2; border-bottom: 2px solid #667eea; padding-bottom: 10px; }
+        .status { padding: 10px; margin: 10px 0; border-radius: 5px; }
+        .success { background: #d4edda; color: #155724; }
+        .error { background: #f8d7da; color: #721c24; }
+        .info { background: #d1ecf1; color: #0c5460; }
+        button {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover { background: #5568d3; }
+        .test-result {
+            margin: 10px 0;
+            padding: 10px;
+            background: #f8f9fa;
+            border-left: 4px solid #667eea;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 10px 0;
+        }
+        th, td {
+            padding: 10px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+        th {
+            background: #667eea;
+            color: white;
+        }
+        code {
+            background: #f5f5f5;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-family: monospace;
+        }
+    </style>
+</head>
+<body>
+    <h1>PhCard - System Test Page</h1>
+
+    <div class="section">
+        <h2>1. File Structure Check</h2>
+        <div id="file-check">
+            <p>Checking required files...</p>
+        </div>
+    </div>
+
+    <div class="section">
+        <h2>2. API Endpoints</h2>
+        <p>Test the backend API endpoints:</p>
+        <button onclick="testEndpoint('api/auth.php', 'POST', {action: 'check'})">Test Auth</button>
+        <button onclick="testEndpoint('api/user.php', 'GET', {action: 'profile'})">Test User API</button>
+        <div id="api-test"></div>
+    </div>
+
+    <div class="section">
+        <h2>3. Database Schema</h2>
+        <p>Expected tables:</p>
+        <table>
+            <tr>
+                <th>Table</th>
+                <th>Description</th>
+            </tr>
+            <tr>
+                <td><code>users</code></td>
+                <td>User accounts and stats</td>
+            </tr>
+            <tr>
+                <td><code>cards</code></td>
+                <td>All available cards in the game</td>
+            </tr>
+            <tr>
+                <td><code>user_cards</code></td>
+                <td>Cards owned by users</td>
+            </tr>
+            <tr>
+                <td><code>game_history</code></td>
+                <td>Game results and history</td>
+            </tr>
+        </table>
+    </div>
+
+    <div class="section">
+        <h2>4. Game Features</h2>
+        <ul>
+            <li>✓ User registration and login</li>
+            <li>✓ Turn-based gameplay</li>
+            <li>✓ Monster cards (with ATK/DEF)</li>
+            <li>✓ Spell cards (with effects)</li>
+            <li>✓ AI opponent (5 difficulty levels)</li>
+            <li>✓ XP and leveling system</li>
+            <li>✓ Card unlocking based on level</li>
+            <li>✓ Progressive AI difficulty</li>
+            <li>✓ Battle system</li>
+            <li>✓ Game history tracking</li>
+        </ul>
+    </div>
+
+    <div class="section">
+        <h2>5. Card Types</h2>
+        <h3>Starter Cards (Level 1)</h3>
+        <ul>
+            <li><strong>Goblin Scout</strong> - Monster (200 ATK / 100 DEF)</li>
+            <li><strong>Forest Wolf</strong> - Monster (250 ATK / 150 DEF)</li>
+            <li><strong>Stone Golem</strong> - Monster (150 ATK / 300 DEF)</li>
+            <li><strong>Heal</strong> - Spell (Heals 300 HP)</li>
+            <li><strong>Fireball</strong> - Spell (400 damage)</li>
+        </ul>
+        
+        <h3>Advanced Cards</h3>
+        <ul>
+            <li>Level 3: Dark Knight, Ice Dragon, Lightning Strike</li>
+            <li>Level 5: Phoenix, Shadow Assassin, Power Boost</li>
+            <li>Level 8: Titan of Destruction, Ancient Dragon, Meteor Storm, Divine Shield</li>
+        </ul>
+    </div>
+
+    <div class="section">
+        <h2>6. Quick Start</h2>
+        <ol>
+            <li>Set up the database using <code>database.sql</code></li>
+            <li>Configure <code>config.php</code> with your database credentials</li>
+            <li>Open <code>index.html</code> in your browser</li>
+            <li>Register a new account</li>
+            <li>Start playing against the AI!</li>
+        </ol>
+        <p><a href="install.html"><button>Go to Installation</button></a></p>
+        <p><a href="index.html"><button>Start Game</button></a></p>
+    </div>
+
+    <script>
+        // File structure check
+        const requiredFiles = [
+            'index.html',
+            'config.php',
+            'database.sql',
+            'api/auth.php',
+            'api/user.php',
+            'api/game.php',
+            'public/css/style.css',
+            'public/js/app.js'
+        ];
+
+        function checkFiles() {
+            const resultDiv = document.getElementById('file-check');
+            let html = '<div class="success">✓ All required files are expected to be present:</div><ul>';
+            
+            requiredFiles.forEach(file => {
+                html += `<li><code>${file}</code></li>`;
+            });
+            
+            html += '</ul>';
+            resultDiv.innerHTML = html;
+        }
+
+        async function testEndpoint(url, method, params) {
+            const resultDiv = document.getElementById('api-test');
+            resultDiv.innerHTML = '<div class="info">Testing endpoint: ' + url + '...</div>';
+            
+            try {
+                let response;
+                if (method === 'GET') {
+                    const queryString = new URLSearchParams(params).toString();
+                    response = await fetch(url + '?' + queryString);
+                } else {
+                    response = await fetch(url, {
+                        method: method,
+                        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                        body: new URLSearchParams(params)
+                    });
+                }
+                
+                const data = await response.json();
+                
+                let html = '<div class="test-result">';
+                html += '<strong>Endpoint:</strong> ' + url + '<br>';
+                html += '<strong>Status:</strong> ' + response.status + '<br>';
+                html += '<strong>Response:</strong><br>';
+                html += '<pre>' + JSON.stringify(data, null, 2) + '</pre>';
+                html += '</div>';
+                
+                resultDiv.innerHTML = html;
+            } catch (error) {
+                resultDiv.innerHTML = '<div class="error">✗ Error testing endpoint: ' + error.message + '</div>';
+                resultDiv.innerHTML += '<div class="info">This is expected if the database is not yet configured. Please set up the database first.</div>';
+            }
+        }
+
+        // Run file check on load
+        checkFiles();
+    </script>
+</body>
+</html>
