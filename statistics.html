@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PhCard - Statistiken</title>
+    <link rel="stylesheet" href="public/css/style.css">
+    <style>
+        .statistics-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        .statistics-header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .statistics-header h1 {
+            color: #fff;
+            margin-bottom: 10px;
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 40px;
+        }
+        
+        .stat-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 25px;
+            border-radius: 10px;
+            text-align: center;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+        }
+        
+        .stat-card h3 {
+            color: #fff;
+            margin-bottom: 10px;
+            font-size: 1rem;
+            opacity: 0.9;
+        }
+        
+        .stat-value {
+            color: #fff;
+            font-size: 2.5rem;
+            font-weight: bold;
+            margin: 0;
+        }
+        
+        .ai-level-stats {
+            background: rgba(255,255,255,0.1);
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 30px;
+        }
+        
+        .ai-level-stats h3 {
+            color: #fff;
+            margin-bottom: 15px;
+        }
+        
+        .ai-level-item {
+            background: rgba(255,255,255,0.05);
+            padding: 15px;
+            margin-bottom: 10px;
+            border-radius: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .ai-level-name {
+            color: #fff;
+            font-weight: bold;
+        }
+        
+        .ai-level-stats-values {
+            color: #ccc;
+        }
+        
+        .recent-games {
+            background: rgba(255,255,255,0.1);
+            padding: 20px;
+            border-radius: 10px;
+        }
+        
+        .recent-games h3 {
+            color: #fff;
+            margin-bottom: 15px;
+        }
+        
+        .game-item {
+            background: rgba(255,255,255,0.05);
+            padding: 12px;
+            margin-bottom: 8px;
+            border-radius: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .game-result {
+            font-weight: bold;
+            padding: 5px 15px;
+            border-radius: 5px;
+        }
+        
+        .game-result.win {
+            background: #4caf50;
+            color: #fff;
+        }
+        
+        .game-result.loss {
+            background: #f44336;
+            color: #fff;
+        }
+        
+        .game-details {
+            color: #ccc;
+            font-size: 0.9rem;
+        }
+        
+        .back-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 12px 30px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1rem;
+            margin-top: 20px;
+            transition: transform 0.2s;
+        }
+        
+        .back-btn:hover {
+            transform: scale(1.05);
+        }
+    </style>
+</head>
+<body>
+    <div id="app">
+        <div class="statistics-container">
+            <div class="statistics-header">
+                <h1>Meine Statistiken</h1>
+                <button class="back-btn" onclick="window.location.href='index.html'">Zurück zum Menü</button>
+            </div>
+            
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <h3>Gesamtspiele</h3>
+                    <p class="stat-value" id="total-games">-</p>
+                </div>
+                <div class="stat-card">
+                    <h3>Siege</h3>
+                    <p class="stat-value" id="total-wins">-</p>
+                </div>
+                <div class="stat-card">
+                    <h3>Niederlagen</h3>
+                    <p class="stat-value" id="total-losses">-</p>
+                </div>
+                <div class="stat-card">
+                    <h3>Siegrate</h3>
+                    <p class="stat-value" id="winrate">-</p>
+                </div>
+                <div class="stat-card">
+                    <h3>Ø Runden</h3>
+                    <p class="stat-value" id="avg-turns">-</p>
+                </div>
+                <div class="stat-card">
+                    <h3>Ø XP pro Spiel</h3>
+                    <p class="stat-value" id="avg-xp">-</p>
+                </div>
+            </div>
+            
+            <div class="ai-level-stats">
+                <h3>Siegrate nach KI-Level</h3>
+                <div id="ai-level-stats-container">
+                    <!-- Dynamically populated -->
+                </div>
+            </div>
+            
+            <div class="recent-games">
+                <h3>Letzte Spiele</h3>
+                <div id="recent-games-container">
+                    <!-- Dynamically populated -->
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // Load statistics on page load
+        document.addEventListener('DOMContentLoaded', () => {
+            loadStatistics();
+        });
+        
+        async function loadStatistics() {
+            try {
+                const response = await fetch('api/user.php?action=statistics');
+                const data = await response.json();
+                
+                if (!data.success) {
+                    alert('Fehler beim Laden der Statistiken: ' + (data.error || 'Unbekannter Fehler'));
+                    return;
+                }
+                
+                // Update overall stats
+                const overall = data.overall;
+                document.getElementById('total-games').textContent = overall.total_games || 0;
+                document.getElementById('total-wins').textContent = overall.total_wins || 0;
+                document.getElementById('total-losses').textContent = overall.total_losses || 0;
+                document.getElementById('winrate').textContent = (overall.winrate || 0) + '%';
+                document.getElementById('avg-turns').textContent = overall.avg_turns || '-';
+                document.getElementById('avg-xp').textContent = overall.avg_xp || '-';
+                
+                // Update AI level stats
+                const aiLevelContainer = document.getElementById('ai-level-stats-container');
+                aiLevelContainer.innerHTML = '';
+                
+                if (data.by_ai_level && data.by_ai_level.length > 0) {
+                    data.by_ai_level.forEach(level => {
+                        const item = document.createElement('div');
+                        item.className = 'ai-level-item';
+                        item.innerHTML = `
+                            <span class="ai-level-name">KI Level ${level.ai_level}</span>
+                            <span class="ai-level-stats-values">
+                                ${level.wins}/${level.games} Siege (${level.winrate}%)
+                            </span>
+                        `;
+                        aiLevelContainer.appendChild(item);
+                    });
+                } else {
+                    aiLevelContainer.innerHTML = '<p style="color: #ccc;">Noch keine Spiele gespielt</p>';
+                }
+                
+                // Update recent games
+                const recentGamesContainer = document.getElementById('recent-games-container');
+                recentGamesContainer.innerHTML = '';
+                
+                if (data.recent_games && data.recent_games.length > 0) {
+                    data.recent_games.forEach(game => {
+                        const item = document.createElement('div');
+                        item.className = 'game-item';
+                        
+                        const date = new Date(game.played_at);
+                        const dateStr = date.toLocaleDateString('de-DE') + ' ' + date.toLocaleTimeString('de-DE');
+                        
+                        item.innerHTML = `
+                            <span class="game-result ${game.result}">${game.result === 'win' ? 'SIEG' : 'NIEDERLAGE'}</span>
+                            <span class="game-details">
+                                KI Level ${game.ai_level} | ${game.turns_played || '-'} Runden | +${game.xp_gained} XP
+                            </span>
+                            <span class="game-details">${dateStr}</span>
+                        `;
+                        recentGamesContainer.appendChild(item);
+                    });
+                } else {
+                    recentGamesContainer.innerHTML = '<p style="color: #ccc;">Noch keine Spiele gespielt</p>';
+                }
+            } catch (error) {
+                console.error('Fehler beim Laden der Statistiken:', error);
+                alert('Fehler beim Laden der Statistiken');
+            }
+        }
+    </script>
+</body>
+</html>

@@ -6,6 +6,12 @@ requireLogin();
 
 $action = $_REQUEST['action'] ?? '';
 
+// Admin-only actions
+$adminActions = ['card_stats', 'create_ab_test', 'ab_test_results'];
+if (in_array($action, $adminActions)) {
+    requireAdmin();
+}
+
 switch ($action) {
     case 'record_event':
         recordEvent();
