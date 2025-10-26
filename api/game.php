@@ -643,18 +643,49 @@ function performAITurn($gameState) {
     
     // Get AI cards based on level
     $conn = getDBConnection();
-    $stmt = $conn->prepare("SELECT * FROM cards WHERE required_level <= ? ORDER BY RAND() LIMIT 5");
+    $stmt = $conn->prepare("SELECT * FROM cards WHERE required_level <= ? ORDER BY RAND() LIMIT 8");
     $stmt->execute([min($aiLevel * 2, 10)]);
     $aiCards = $stmt->fetchAll(PDO::FETCH_ASSOC);
     
-    // AI plays cards based on available mana
+    // AI plays cards based on available mana and strategy
     $aiMana = $gameState['ai_mana'];
     
+    // Analyze game state
+    $playerFieldSize = count($gameState['player_field']);
+    $aiFieldSize = count($gameState['ai_field']);
+    $aiHPPercent = $gameState['ai_hp'] / STARTING_HP;
+    $playerHPPercent = $gameState['player_hp'] / STARTING_HP;
+    
+    // Calculate total player field power
+    $playerFieldPower = 0;
+    foreach ($gameState['player_field'] as $monster) {
+        $playerFieldPower += intval($monster['attack'] ?? 0);
+    }
+    
+    // Prioritize and score cards
+    $scoredCards = [];
     foreach ($aiCards as $card) {
+        $manaCost = intval($card['mana_cost'] ?? 1);
+        if ($aiMana < $manaCost) {
+            continue; // Can't afford this card
+        }
+        
+        $score = scoreCard($card, $gameState, $aiHPPercent, $playerHPPercent, $playerFieldSize, $aiFieldSize, $playerFieldPower, $aiLevel);
+        $scoredCards[] = ['card' => $card, 'score' => $score];
+    }
+    
+    // Sort cards by score (highest first)
+    usort($scoredCards, function($a, $b) {
+        return $b['score'] - $a['score'];
+    });
+    
+    // Play cards in priority order
+    foreach ($scoredCards as $scoredCard) {
+        $card = $scoredCard['card'];
         $manaCost = intval($card['mana_cost'] ?? 1);
         
         if ($aiMana < $manaCost) {
-            continue; // Can't afford this card
+            continue; // Can't afford this card anymore
         }
         
         if ($card['type'] === 'monster') {
@@ -673,6 +704,7 @@ function performAITurn($gameState) {
             $gameState['ai_field'][] = $card;
             $actions[] = "AI played {$card['name']} (ATK: {$card['attack']}, DEF: {$card['defense']})";
             $aiMana -= $manaCost;
+            $aiFieldSize++;
             
             // Apply overload
             if (isset($card['overload']) && $card['overload'] > 0) {
@@ -680,10 +712,22 @@ function performAITurn($gameState) {
             }
         } else if ($card['type'] === 'spell') {
             $target = 'opponent';
-            // Bessere Heilungs-Logik: heile nur, wenn HP unter 50%
-            if (strpos($card['effect'], 'heal') !== false && $gameState['ai_hp'] < STARTING_HP * 0.5) {
-                $target = 'self';
+            
+            // Smart spell targeting
+            if (strpos($card['effect'], 'heal') !== false) {
+                // Only heal if HP is low
+                if ($gameState['ai_hp'] < STARTING_HP * 0.6) {
+                    $target = 'self';
+                } else {
+                    continue; // Skip heal spell if not needed
+                }
+            } else if (strpos($card['effect'], 'boost') !== false) {
+                // Only use boost if we have monsters on field
+                if ($aiFieldSize === 0) {
+                    continue; // Skip boost if no monsters
+                }
             }
+            
             $result = applySpellEffect($gameState, $card, 'ai', $target); 
             $message = $result['message'];
             $gameState = $result['gameState'];
@@ -703,6 +747,118 @@ function performAITurn($gameState) {
     $gameState['ai_mana'] = $aiMana;
     
     return ['actions' => $actions, 'gameState' => $gameState];
+}
+
+// New function to score cards based on game state
+function scoreCard($card, $gameState, $aiHPPercent, $playerHPPercent, $playerFieldSize, $aiFieldSize, $playerFieldPower, $aiLevel) {
+    $score = 0;
+    $manaCost = intval($card['mana_cost'] ?? 1);
+    
+    if ($card['type'] === 'monster') {
+        $attack = intval($card['attack'] ?? 0);
+        $defense = intval($card['defense'] ?? 0);
+        
+        // Base value: stats relative to mana cost
+        $statsValue = ($attack + $defense) / max(1, $manaCost);
+        $score += $statsValue * 10;
+        
+        // Bonus for keywords
+        if (!empty($card['keywords'])) {
+            $keywords = explode(',', $card['keywords']);
+            foreach ($keywords as $keyword) {
+                $keyword = trim($keyword);
+                
+                // Taunt is very valuable when player has strong board
+                if ($keyword === 'taunt' && $playerFieldPower > 0) {
+                    $score += 15 * $aiLevel;
+                }
+                
+                // Divine Shield is always good
+                if ($keyword === 'divine_shield') {
+                    $score += 10 * $aiLevel;
+                }
+                
+                // Lifesteal is valuable when HP is low
+                if ($keyword === 'lifesteal' && $aiHPPercent < 0.7) {
+                    $score += 12 * $aiLevel;
+                }
+                
+                // Charge/Rush for immediate impact
+                if (in_array($keyword, ['charge', 'rush'])) {
+                    $score += 8 * $aiLevel;
+                }
+                
+                // Windfury for damage
+                if ($keyword === 'windfury') {
+                    $score += 10 * $aiLevel;
+                }
+            }
+        }
+        
+        // Prioritize monsters when we need board presence
+        if ($aiFieldSize < $playerFieldSize) {
+            $score += 20;
+        }
+        
+        // Higher level AI values efficient trades
+        if ($aiLevel >= 3) {
+            $score += $attack * 2; // Value attack more for aggression
+        }
+        
+    } else if ($card['type'] === 'spell') {
+        $effect = $card['effect'];
+        
+        if (strpos($effect, 'damage') !== false) {
+            preg_match('/damage:(\d+)/', $effect, $matches);
+            $damage = isset($matches[1]) ? intval($matches[1]) : 0;
+            
+            // Value damage based on opponent HP
+            $score += $damage * 5;
+            
+            // More valuable when opponent is low HP (finish them!)
+            if ($playerHPPercent < 0.3) {
+                $score += 50 * $aiLevel;
+            }
+            
+            // Less valuable early game
+            if ($gameState['turn_count'] < 3) {
+                $score -= 10;
+            }
+        } else if (strpos($effect, 'heal') !== false) {
+            preg_match('/heal:(\d+)/', $effect, $matches);
+            $heal = isset($matches[1]) ? intval($matches[1]) : 0;
+            
+            // Only valuable when HP is low
+            if ($aiHPPercent < 0.6) {
+                $score += $heal * (1 - $aiHPPercent) * 10;
+            } else {
+                $score -= 20; // Negative value if not needed
+            }
+        } else if (strpos($effect, 'boost') !== false) {
+            // Only valuable if we have monsters
+            if ($aiFieldSize > 0) {
+                $score += 15 * $aiFieldSize * $aiLevel;
+            } else {
+                $score -= 30; // Very negative if no monsters
+            }
+        } else if (strpos($effect, 'stun') !== false) {
+            // Valuable against strong player board
+            if ($playerFieldSize > 0) {
+                $score += 20 * $playerFieldSize * $aiLevel;
+            }
+        }
+        
+        // Higher level AI uses spells more strategically
+        if ($aiLevel >= 4) {
+            $score += 5; // Slight preference for smart spell usage
+        }
+    }
+    
+    // Mana efficiency bonus
+    $manaEfficiency = 10 - $manaCost;
+    $score += $manaEfficiency;
+    
+    return $score;
 }
 
 function endGame() {
