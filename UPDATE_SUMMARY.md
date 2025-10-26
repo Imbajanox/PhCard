@@ -104,10 +104,33 @@ Added 30 new cards distributed across different classes and rarities:
 
 ## Testing Recommendations
 
-1. **Database Migration**:
+1. **Database Migration** (with error checking):
    ```bash
+   # Check if database exists
+   mysql -u root -p -e "SHOW DATABASES LIKE 'phcard';"
+   
+   # Run migrations with error checking
    mysql -u root -p phcard < database_extensions.sql
+   if [ $? -eq 0 ]; then
+       echo "Extensions migration successful"
+   else
+       echo "Extensions migration failed - check errors above"
+       exit 1
+   fi
+   
    mysql -u root -p phcard < database_admin_and_cards.sql
+   if [ $? -eq 0 ]; then
+       echo "Admin and cards migration successful"
+   else
+       echo "Admin and cards migration failed - check errors above"
+       exit 1
+   fi
+   
+   # Verify admin column was added
+   mysql -u root -p phcard -e "DESCRIBE users;" | grep is_admin
+   
+   # Verify new cards were added
+   mysql -u root -p phcard -e "SELECT COUNT(*) FROM cards;"
    ```
 
 2. **Create Admin User**:

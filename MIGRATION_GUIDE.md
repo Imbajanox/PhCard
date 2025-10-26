@@ -57,8 +57,29 @@ To use the new features, you need to update the database:
 # 1. First the extended tables (if not done yet)
 mysql -u root -p phcard < database_extensions.sql
 
+# Check if extensions were applied successfully
+if [ $? -eq 0 ]; then
+    echo "✓ Extensions migration successful"
+else
+    echo "✗ Extensions migration failed - check errors"
+    exit 1
+fi
+
 # 2. Then the new admin and card updates
 mysql -u root -p phcard < database_admin_and_cards.sql
+
+# Check if admin updates were applied successfully
+if [ $? -eq 0 ]; then
+    echo "✓ Admin and cards migration successful"
+else
+    echo "✗ Admin migration failed - check errors"
+    exit 1
+fi
+
+# 3. Verify the changes
+echo "Verifying database changes..."
+mysql -u root -p phcard -e "DESCRIBE users;" | grep is_admin && echo "✓ Admin column added"
+mysql -u root -p phcard -e "SELECT COUNT(*) as card_count FROM cards;" && echo "✓ Cards counted"
 ```
 
 ### Create Admin User
