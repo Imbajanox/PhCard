@@ -426,8 +426,7 @@ async function playCard(cardIndex) {
         try {
             const choices = JSON.parse(card.choice_effects);
             if (choices.choices && choices.choices.length > 1) {
-                const choiceMsg = choices.choices.map((c, i) => `${i}: ${c.name}`).join('
-');
+                const choiceMsg = choices.choices.map((c, i) => `${i}: ${c.name}`).join('');
                 const selectedChoice = prompt(`Wähle eine Option:
 ${choiceMsg}`);
                 choice = parseInt(selectedChoice) || 0;
