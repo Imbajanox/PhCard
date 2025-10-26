@@ -182,6 +182,10 @@ function createCardElement(card, showQuantity = false) {
     const cardEl = document.createElement('div');
     cardEl.className = `card ${card.type}`;
     
+    // Add mana cost badge
+    const manaCost = card.mana_cost || 1;
+    const manaBadge = `<div class="card-mana-cost">${manaCost}</div>`;
+    
     let statsHTML = '';
     if (card.type === 'monster') {
         statsHTML = `<div class="card-stats">ATK: ${card.attack} / DEF: ${card.defense}</div>`;
@@ -190,11 +194,34 @@ function createCardElement(card, showQuantity = false) {
         statsHTML = `<div class="card-stats">Effect: ${effectParts[0]} ${effectParts[1]}</div>`;
     }
     
+    // Display keywords
+    let keywordsHTML = '';
+    if (card.keywords) {
+        const keywords = card.keywords.split(',').map(k => k.trim());
+        keywordsHTML = `<div class="card-keywords">${keywords.map(k => `<span class="keyword">${k}</span>`).join(' ')}</div>`;
+    }
+    
+    // Display status effects
+    let statusHTML = '';
+    if (card.status_effects && card.status_effects.length > 0) {
+        statusHTML = `<div class="card-status">${card.status_effects.map(s => `<span class="status-${s}">${s}</span>`).join(' ')}</div>`;
+    }
+    
+    // Overload indicator
+    let overloadHTML = '';
+    if (card.overload && card.overload > 0) {
+        overloadHTML = `<div class="card-overload">Overload: ${card.overload}</div>`;
+    }
+    
     cardEl.innerHTML = `
+        ${manaBadge}
         <div class="card-rarity ${card.rarity}">${card.rarity}</div>
         <div class="card-name">${card.name}</div>
         <div class="card-type">${card.type}</div>
         ${statsHTML}
+        ${keywordsHTML}
+        ${statusHTML}
+        ${overloadHTML}
         <div class="card-description">${card.description || ''}</div>
         ${showQuantity ? `<div style="text-align: center; margin-top: 10px; font-weight: bold;">x${card.quantity}</div>` : ''}
     `;
@@ -235,6 +262,9 @@ function initGameDisplay() {
     // Update HP
     updateHP();
     
+    // Update Mana
+    updateMana();
+    
     // Display hand
     displayHand();
     
@@ -249,6 +279,88 @@ function initGameDisplay() {
     document.getElementById('log-content').innerHTML = '';
     
     addLog('Spiel gestartet! Viel Erfolg!');
+    
+    // Show mulligan option if available
+    if (gameState.mulligan_available) {
+        showMulliganOption();
+    }
+}
+
+function updateMana() {
+    if (!gameState) return;
+    
+    // Player mana
+    const manaDisplay = document.getElementById('player-mana-display');
+    if (manaDisplay) {
+        manaDisplay.textContent = `Mana: ${gameState.player_mana || 0} / ${gameState.player_max_mana || 1}`;
+    }
+}
+
+function showMulliganOption() {
+    const message = 'Möchten Sie einige Karten tauschen? (Mulligan)\nWählen Sie bis zu 3 Karten aus Ihrer Hand.';
+    if (confirm(message)) {
+        // Show mulligan interface
+        const handEl = document.getElementById('player-hand');
+        const cards = handEl.querySelectorAll('.card');
+        let selectedCards = [];
+        
+        // Make cards selectable
+        cards.forEach((cardEl, index) => {
+            cardEl.style.border = '2px solid #333';
+            cardEl.onclick = () => {
+                if (selectedCards.includes(index)) {
+                    selectedCards = selectedCards.filter(i => i !== index);
+                    cardEl.style.border = '2px solid #333';
+                } else if (selectedCards.length < 3) {
+                    selectedCards.push(index);
+                    cardEl.style.border = '3px solid #ff0';
+                }
+            };
+        });
+        
+        // Add confirm button
+        const confirmBtn = document.createElement('button');
+        confirmBtn.textContent = 'Mulligan bestätigen';
+        confirmBtn.style.margin = '10px';
+        confirmBtn.onclick = () => performMulligan(selectedCards);
+        handEl.appendChild(confirmBtn);
+        
+        // Add skip button
+        const skipBtn = document.createElement('button');
+        skipBtn.textContent = 'Überspringen';
+        skipBtn.style.margin = '10px';
+        skipBtn.onclick = () => {
+            handEl.querySelectorAll('button').forEach(btn => btn.remove());
+            displayHand(); // Reset hand display
+        };
+        handEl.appendChild(skipBtn);
+    }
+}
+
+async function performMulligan(cardIndices) {
+    try {
+        const response = await fetch('api/game.php', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+            body: new URLSearchParams({ 
+                action: 'mulligan', 
+                card_indices: JSON.stringify(cardIndices) 
+            })
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            gameState.player_hand = data.game_state.player_hand;
+            gameState.mulligan_available = data.game_state.mulligan_available;
+            addLog(data.message);
+            displayHand();
+        } else {
+            alert('Fehler beim Mulligan: ' + data.error);
+        }
+    } catch (error) {
+        console.error('Failed to perform mulligan:', error);
+    }
 }
 
 function updateHP() {
@@ -295,35 +407,53 @@ async function playCard(cardIndex) {
         return;
     }
 
-    // 1. Zuerst die Karte aus der Hand holen, um den Typ zu bestimmen.
     const card = gameState.player_hand[cardIndex];
     if (!card) {
         alert('Ungültige Karte!');
         return;
     }
+    
+    // Check if player has enough mana
+    const manaCost = card.mana_cost || 1;
+    if ((gameState.player_mana || 0) < manaCost) {
+        alert(`Nicht genug Mana! Benötigt: ${manaCost}, Verfügbar: ${gameState.player_mana || 0}`);
+        return;
+    }
+    
+    // Handle Choose One cards
+    let choice = 0;
+    if (card.choice_effects) {
+        try {
+            const choices = JSON.parse(card.choice_effects);
+            if (choices.choices && choices.choices.length > 1) {
+                const choiceMsg = choices.choices.map((c, i) => `${i}: ${c.name}`).join('
+');
+                const selectedChoice = prompt(`Wähle eine Option:
+${choiceMsg}`);
+                choice = parseInt(selectedChoice) || 0;
+            }
+        } catch (e) {
+            console.error('Failed to parse choice effects', e);
+        }
+    }
 
-    // 2. Bestimme das Ziel basierend auf dem Kartentyp/Effekt.
-    let targetToSend = 'opponent'; // Standardziel ist der Gegner (für Monster und Schadenszauber)
+    let targetToSend = 'opponent';
 
-    // Logik: Wenn es ein Zauber mit dem Effekt 'heal' ist, setze das Ziel auf 'self'.
-    // ACHTUNG: Dies setzt voraus, dass der Kartentyp 'spell' ist UND der Effekt 'heal' enthält.
     if (card.type === 'spell') {
-        // Ein Heilzauber sollte den Spieler heilen (target=self)
         if (card.effect && card.effect.startsWith('heal:')) {
             targetToSend = 'self';
         }
-        // Hier könntest du weitere Logik für 'boost' oder 'shield' hinzufügen, falls diese 'self' sind.
     }
 
     try {
         const response = await fetch('api/game.php', {
             method: 'POST',
             headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-            body: new URLSearchParams({ 
-                action: 'play_card', 
+            body: new URLSearchParams({ 
+                action: 'play_card', 
                 card_index: cardIndex,
-                // 3. Verwende das dynamisch bestimmte Ziel
-                target: targetToSend 
+                target: targetToSend,
+                choice: choice
             })
         });
         
@@ -332,11 +462,13 @@ async function playCard(cardIndex) {
         if (data.success) {
             gameState.player_hp = data.game_state.player_hp;
             gameState.ai_hp = data.game_state.ai_hp;
+            gameState.player_mana = data.game_state.player_mana;
             gameState.player_hand = data.game_state.player_hand;
             gameState.player_field = data.game_state.player_field;
             gameState.ai_field = data.game_state.ai_field;
             
             updateHP();
+            updateMana();
             displayHand();
             displayField('player');
             displayField('ai');
@@ -349,6 +481,7 @@ async function playCard(cardIndex) {
         console.error('Failed to play card:', error);
     }
 }
+
 
 async function endTurn() {
     if (gameState.turn !== 'player') {
@@ -370,12 +503,15 @@ async function endTurn() {
         if (data.success) {
             gameState.player_hp = data.game_state.player_hp;
             gameState.ai_hp = data.game_state.ai_hp;
+            gameState.player_mana = data.game_state.player_mana;
+            gameState.player_max_mana = data.game_state.player_max_mana;
             gameState.player_hand = data.game_state.player_hand;
             gameState.player_field = data.game_state.player_field;
             gameState.ai_field = data.game_state.ai_field;
             gameState.turn_count = data.game_state.turn_count;
             
             updateHP();
+            updateMana();
             displayHand();
             displayField('player');
             displayField('ai');

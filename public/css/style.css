@@ -563,3 +563,136 @@ body {
     justify-content: center;
     margin-top: 10px;
 }
+
+/* New Card Mechanics Styling */
+.card-mana-cost {
+    position: absolute;
+    top: 5px;
+    left: 5px;
+    background: #00bfff;
+    color: white;
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    font-size: 16px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+    z-index: 10;
+}
+
+.card-keywords {
+    margin: 5px 0;
+    font-size: 11px;
+    text-align: center;
+}
+
+.keyword {
+    display: inline-block;
+    background: linear-gradient(135deg, #ffd700 0%, #ffed4e 100%);
+    color: #333;
+    padding: 2px 6px;
+    border-radius: 3px;
+    margin: 2px;
+    font-weight: bold;
+    text-transform: uppercase;
+    font-size: 9px;
+}
+
+.card-status {
+    margin: 5px 0;
+    font-size: 11px;
+    text-align: center;
+}
+
+.card-status span {
+    display: inline-block;
+    padding: 2px 6px;
+    border-radius: 3px;
+    margin: 2px;
+    font-weight: bold;
+    font-size: 9px;
+}
+
+.status-taunt {
+    background: #ff6b6b;
+    color: white;
+}
+
+.status-divine_shield {
+    background: #ffd700;
+    color: #333;
+}
+
+.status-stealth {
+    background: #9b59b6;
+    color: white;
+}
+
+.status-windfury {
+    background: #3498db;
+    color: white;
+}
+
+.status-lifesteal {
+    background: #e74c3c;
+    color: white;
+}
+
+.status-poison {
+    background: #27ae60;
+    color: white;
+}
+
+.status-charge {
+    background: #e67e22;
+    color: white;
+}
+
+.status-rush {
+    background: #f39c12;
+    color: white;
+}
+
+.status-stunned {
+    background: #95a5a6;
+    color: white;
+}
+
+.status-poisoned {
+    background: #16a085;
+    color: white;
+}
+
+.card-overload {
+    margin: 5px 0;
+    font-size: 11px;
+    text-align: center;
+    color: #e74c3c;
+    font-weight: bold;
+}
+
+/* Mulligan interface styling */
+.mulligan-interface {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: white;
+    padding: 30px;
+    border-radius: 15px;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+    z-index: 1000;
+}
+
+.mulligan-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.7);
+    z-index: 999;
+}
