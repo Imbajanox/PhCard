@@ -506,20 +506,30 @@ async function playCard(cardIndex) {
         const data = await response.json();
         
         if (data.success) {
-            gameState.player_hp = data.game_state.player_hp;
-            gameState.ai_hp = data.game_state.ai_hp;
-            gameState.player_mana = data.game_state.player_mana;
-            gameState.player_hand = data.game_state.player_hand;
-            gameState.player_field = data.game_state.player_field;
-            gameState.ai_field = data.game_state.ai_field;
+            // Visual feedback: highlight card being played before removing it
+            const handEl = document.getElementById('player-hand');
+            const cardElements = handEl.querySelectorAll('.card');
+            if (cardElements[cardIndex]) {
+                highlightCard(cardElements[cardIndex]);
+            }
             
-            updateHP();
-            updateMana();
-            displayHand();
-            displayField('player');
-            displayField('ai');
-            
-            addLog(data.message);
+            // Update game state after brief delay for visual feedback
+            setTimeout(() => {
+                gameState.player_hp = data.game_state.player_hp;
+                gameState.ai_hp = data.game_state.ai_hp;
+                gameState.player_mana = data.game_state.player_mana;
+                gameState.player_hand = data.game_state.player_hand;
+                gameState.player_field = data.game_state.player_field;
+                gameState.ai_field = data.game_state.ai_field;
+                
+                updateHP();
+                updateMana();
+                displayHand();
+                displayField('player');
+                displayField('ai');
+                
+                addLog(data.message);
+            }, 300);
         } else {
             alert(data.error);
         }
@@ -563,17 +573,24 @@ async function endTurn() {
             displayField('ai');
             document.getElementById('turn-count').textContent = gameState.turn_count;
             
-            // Add battle log
-            data.battle_log.forEach(log => addLog(log));
+            // Add battle log with delay for readability
+            let delay = 0;
+            data.battle_log.forEach((log, index) => {
+                setTimeout(() => addLog(log), delay);
+                delay += 200; // 200ms between each log entry
+            });
             
-            // Add AI actions
-            data.ai_actions.forEach(action => addLog(action, 'ai'));
+            // Add AI actions with delay
+            data.ai_actions.forEach((action, index) => {
+                setTimeout(() => addLog(action, 'ai'), delay);
+                delay += 300; // 300ms between AI actions for better visibility
+            });
             
             // Check for game over
             if (data.winner) {
                 setTimeout(() => {
                     endGame(data.winner === 'player' ? 'win' : 'loss');
-                }, 1000);
+                }, delay + 500); // Wait for all logs to appear
             }
         }
         
