@@ -122,12 +122,19 @@ define('DB_NAME', 'phcard');</pre>
             };
             
             try {
+                // Helper function to escape HTML
+                function escapeHtml(text) {
+                    const div = document.createElement('div');
+                    div.textContent = text;
+                    return div.innerHTML;
+                }
+                
                 // Note: This is a simplified test. In production, you'd need a PHP script to test the connection
                 result.innerHTML = '<div class="success">✓ Konfiguration gespeichert! Bitte stelle sicher, dass die Datenbank existiert und die config.php korrekt konfiguriert ist.</div>';
-                result.innerHTML += '<div class="info">Datenbank-Zugangsdaten:<br>Host: ' + dbConfig.host + '<br>Datenbank: ' + dbConfig.name + '<br>Benutzer: ' + dbConfig.user + '</div>';
+                result.innerHTML += '<div class="info">Datenbank-Zugangsdaten:<br>Host: ' + escapeHtml(dbConfig.host) + '<br>Datenbank: ' + escapeHtml(dbConfig.name) + '<br>Benutzer: ' + escapeHtml(dbConfig.user) + '</div>';
                 result.innerHTML += '<div class="info">Importiere nun die database.sql Datei in deine MySQL-Datenbank.</div>';
             } catch (error) {
-                result.innerHTML = '<div class="error">✗ Fehler: ' + error.message + '</div>';
+                result.innerHTML = '<div class="error">✗ Fehler: ' + escapeHtml(error.message) + '</div>';
             }
         }
     </script>
