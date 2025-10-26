@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PhCard - Analytics & Simulation Dashboard</title>
+    <link rel="stylesheet" href="public/css/style.css">
+    <link rel="stylesheet" href="public/css/dashboard.css">
+</head>
+<body>
+    <div id="app">
+        <!-- Dashboard Screen -->
+        <div id="dashboard-screen" class="screen active">
+            <div class="dashboard-container">
+                <div class="dashboard-header">
+                    <h1>Analytics & Simulation Dashboard</h1>
+                    <button class="back-btn" onclick="window.location.href='index.html'">Zurück zum Menü</button>
+                </div>
+
+                <!-- Dashboard Navigation -->
+                <nav class="dashboard-nav">
+                    <button class="nav-btn active" onclick="showDashboardSection('overview')">Übersicht</button>
+                    <button class="nav-btn" onclick="showDashboardSection('card-stats')">Kartenstatistiken</button>
+                    <button class="nav-btn" onclick="showDashboardSection('deck-performance')">Deck Performance</button>
+                    <button class="nav-btn" onclick="showDashboardSection('simulation')">Simulation</button>
+                </nav>
+
+                <!-- Overview Section -->
+                <div id="overview-section" class="dashboard-section active">
+                    <h2>Spieler-Übersicht</h2>
+                    
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <h3>Gesamtspiele</h3>
+                            <p class="stat-value" id="total-games">-</p>
+                        </div>
+                        <div class="stat-card">
+                            <h3>Siege</h3>
+                            <p class="stat-value" id="total-wins">-</p>
+                        </div>
+                        <div class="stat-card">
+                            <h3>Niederlagen</h3>
+                            <p class="stat-value" id="total-losses">-</p>
+                        </div>
+                        <div class="stat-card">
+                            <h3>Siegrate</h3>
+                            <p class="stat-value" id="overall-winrate">-</p>
+                        </div>
+                        <div class="stat-card">
+                            <h3>Ø Runden</h3>
+                            <p class="stat-value" id="avg-turns">-</p>
+                        </div>
+                        <div class="stat-card">
+                            <h3>Ø XP pro Spiel</h3>
+                            <p class="stat-value" id="avg-xp">-</p>
+                        </div>
+                    </div>
+
+                    <h3>Siegrate nach KI-Level</h3>
+                    <div class="ai-level-stats" id="ai-level-stats">
+                        <!-- Dynamically populated -->
+                    </div>
+
+                    <h3>Meist gespielte Karten</h3>
+                    <div class="top-cards-table">
+                        <table id="most-played-table">
+                            <thead>
+                                <tr>
+                                    <th>Karte</th>
+                                    <th>Gespielt</th>
+                                    <th>Siege</th>
+                                    <th>Siegrate</th>
+                                </tr>
+                            </thead>
+                            <tbody id="most-played-tbody">
+                                <!-- Dynamically populated -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Card Statistics Section -->
+                <div id="card-stats-section" class="dashboard-section">
+                    <h2>Kartenstatistiken</h2>
+                    
+                    <div class="filter-bar">
+                        <input type="text" id="card-search" placeholder="Karte suchen..." onkeyup="filterCards()">
+                        <select id="card-type-filter" onchange="filterCards()">
+                            <option value="">Alle Typen</option>
+                            <option value="monster">Monster</option>
+                            <option value="spell">Zauber</option>
+                        </select>
+                        <select id="card-rarity-filter" onchange="filterCards()">
+                            <option value="">Alle Seltenheiten</option>
+                            <option value="common">Gewöhnlich</option>
+                            <option value="rare">Selten</option>
+                            <option value="epic">Episch</option>
+                            <option value="legendary">Legendär</option>
+                        </select>
+                    </div>
+
+                    <div class="cards-table">
+                        <table id="cards-stats-table">
+                            <thead>
+                                <tr>
+                                    <th onclick="sortCardsTable('name')">Name ▼</th>
+                                    <th onclick="sortCardsTable('type')">Typ ▼</th>
+                                    <th onclick="sortCardsTable('rarity')">Seltenheit ▼</th>
+                                    <th onclick="sortCardsTable('times_played')">Gespielt ▼</th>
+                                    <th onclick="sortCardsTable('winrate')">Siegrate ▼</th>
+                                    <th onclick="sortCardsTable('total_damage_dealt')">Schaden ▼</th>
+                                    <th onclick="sortCardsTable('total_healing_done')">Heilung ▼</th>
+                                    <th onclick="sortCardsTable('avg_turn_played')">Ø Runde ▼</th>
+                                </tr>
+                            </thead>
+                            <tbody id="cards-stats-tbody">
+                                <!-- Dynamically populated -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Deck Performance Section -->
+                <div id="deck-performance-section" class="dashboard-section">
+                    <h2>Deck Performance</h2>
+                    
+                    <div class="decks-grid" id="decks-grid">
+                        <!-- Dynamically populated -->
+                    </div>
+                </div>
+
+                <!-- Simulation Section -->
+                <div id="simulation-section" class="dashboard-section">
+                    <h2>Deck Simulation</h2>
+                    
+                    <div class="simulation-container">
+                        <div class="simulation-setup">
+                            <h3>Simulation einrichten</h3>
+                            
+                            <div class="deck-selector">
+                                <div class="deck-config">
+                                    <h4>Deck A</h4>
+                                    <textarea id="deck-a-config" placeholder='[{"id": 1, "quantity": 3}, {"id": 2, "quantity": 2}]' rows="5"></textarea>
+                                    <p class="help-text">JSON-Format: Array von Objekten mit id und quantity</p>
+                                </div>
+                                
+                                <div class="deck-config">
+                                    <h4>Deck B</h4>
+                                    <textarea id="deck-b-config" placeholder='[{"id": 1, "quantity": 3}, {"id": 2, "quantity": 2}]' rows="5"></textarea>
+                                    <p class="help-text">JSON-Format: Array von Objekten mit id und quantity</p>
+                                </div>
+                            </div>
+                            
+                            <div class="simulation-controls">
+                                <label>
+                                    Anzahl Simulationen:
+                                    <input type="number" id="sim-iterations" value="100" min="1" max="1000">
+                                </label>
+                                <button class="action-btn" onclick="runSimulation()">Simulation starten</button>
+                            </div>
+                        </div>
+
+                        <div class="simulation-results" id="simulation-results">
+                            <!-- Results will be displayed here -->
+                        </div>
+                    </div>
+
+                    <div class="quick-sim-templates">
+                        <h3>Schnellvorlagen</h3>
+                        <button class="template-btn" onclick="loadTemplate('aggro-vs-control')">Aggro vs Control</button>
+                        <button class="template-btn" onclick="loadTemplate('balanced')">Ausgewogene Decks</button>
+                        <button class="template-btn" onclick="loadTemplate('spell-heavy')">Zauber-lastig vs Monster-lastig</button>
+                    </div>
+                </div>
+
+                <div id="loading-overlay" class="loading-overlay" style="display: none;">
+                    <div class="loading-spinner"></div>
+                    <p>Lade Daten...</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script src="public/js/dashboard.js"></script>
+</body>
+</html>
