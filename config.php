@@ -6,7 +6,10 @@ define('DB_PASS', '');
 define('DB_NAME', 'phcard');
 
 // Game configuration
-define('XP_PER_WIN', 100);
+define('XP_PER_WIN', 150);
+define('XP_PER_LOSS', 25);
+define('XP_QUEST_DAILY', 50);
+define('XP_QUEST_WEEKLY', 200);
 define('XP_BONUS_MULTIPLIER', 1.5); // Multiplier for higher AI levels
 define('STARTING_HP', 2000);
 define('CARDS_IN_HAND', 5);
@@ -18,19 +21,38 @@ define('MIN_DECK_SIZE', 30);
 define('MAX_CARD_DUPLICATES', 2);
 define('MULLIGAN_CARDS', 3); // Number of cards player can exchange at start
 
-// Level requirements (XP needed to reach each level)
-$LEVEL_REQUIREMENTS = [
-    1 => 0,
-    2 => 100,
-    3 => 300,
-    4 => 600,
-    5 => 1000,
-    6 => 1500,
-    7 => 2100,
-    8 => 2800,
-    9 => 3600,
-    10 => 4500
-];
+/**
+ * Generate level requirements for progression system.
+ * 
+ * @param int $maxLevel Maximum level to generate (default 60)
+ * @param int $base Base XP for first level (default 100)
+ * @param float $exp Exponential growth factor (default 1.15)
+ * @param int $growth Linear growth per level (default 50)
+ * @return array Associative array mapping level => cumulative XP required
+ * 
+ * Example tuning:
+ * - Faster progression: lower $exp (e.g., 1.10) or higher $base
+ * - Slower progression: higher $exp (e.g., 1.20) or lower $base
+ * - More linear: lower $exp and higher $growth
+ */
+function generateLevelRequirements($maxLevel = 60, $base = 100, $exp = 1.15, $growth = 50) {
+    $requirements = [1 => 0]; // Level 1 requires 0 XP
+    $cumulativeXP = 0;
+    
+    for ($level = 2; $level <= $maxLevel; $level++) {
+        // Calculate XP needed for this level using exponential + linear growth
+        $xpForLevel = floor($base * pow($exp, $level - 2) + ($growth * ($level - 2)));
+        $cumulativeXP += $xpForLevel;
+        $requirements[$level] = $cumulativeXP;
+    }
+    
+    return $requirements;
+}
+
+// Generate level requirements (XP needed to reach each level)
+// Tunable constants: adjust these to change progression curve
+// Default: 60 levels, ~30+ hours of gameplay at avg 150 XP per 10-min game
+$LEVEL_REQUIREMENTS = generateLevelRequirements(60, 100, 1.15, 50);
 
 // Session configuration
 session_start();

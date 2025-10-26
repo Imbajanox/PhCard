@@ -900,19 +900,21 @@ function endGame() {
     $conn = getDBConnection();
     
     try {
-        // Calculate XP
-        $xpGained = 0;
+        // Calculate XP based on result using new constants
+        $baseXP = 0;
         if ($result === 'win') {
-            $xpGained = XP_PER_WIN;
-            if ($gameState['ai_level'] > 1) {
-                $xpGained = floor($xpGained * (1 + ($gameState['ai_level'] - 1) * 0.2));
-            }
+            $baseXP = XP_PER_WIN; // Now 150
+        } else if ($result === 'loss') {
+            $baseXP = XP_PER_LOSS; // Now 25
         } else if ($result === 'draw') {
-            // Award half XP for a draw
-            $xpGained = floor(XP_PER_WIN / 2);
-            if ($gameState['ai_level'] > 1) {
-                $xpGained = floor($xpGained * (1 + ($gameState['ai_level'] - 1) * 0.2));
-            }
+            // Award half of win XP for a draw
+            $baseXP = floor(XP_PER_WIN / 2);
+        }
+        
+        // Apply AI level multiplier for increased difficulty
+        $xpGained = $baseXP;
+        if ($gameState['ai_level'] > 1) {
+            $xpGained = floor($baseXP * (1 + ($gameState['ai_level'] - 1) * 0.2));
         }
         
         // Update user stats
@@ -923,7 +925,7 @@ function endGame() {
         $newXp = $user['xp'] + $xpGained;
         $newLevel = $user['level'];
         
-        // Check for level up
+        // Check for level up using generated requirements
         foreach ($LEVEL_REQUIREMENTS as $level => $requiredXp) {
             if ($newXp >= $requiredXp && $level > $newLevel) {
                 $newLevel = $level;
