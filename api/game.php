@@ -1074,6 +1074,10 @@ function updateQuestProgressHelper($conn, $userId, $objectiveType, $value, $meta
                     }
                 }
                 if (!$matches) continue;
+            } else {
+                // Quest has no metadata requirements
+                // Only update if we're not providing specific metadata (to avoid double-counting)
+                if (!empty($metadata)) continue;
             }
             
             // Update or create progress
