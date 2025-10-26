@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quests - PhCard</title>
+    <link rel="stylesheet" href="../css/features.css">
+</head>
+<body>
+    <div class="container">
+        <div class="page-header">
+            <h1>🎯 Quests</h1>
+            <p>Complete quests to earn rewards and XP</p>
+        </div>
+
+        <nav class="nav-links">
+            <a href="../../index.html">Home</a>
+            <a href="../../dashboard.html">Dashboard</a>
+            <a href="quests.html" class="active">Quests</a>
+            <a href="achievements.html">Achievements</a>
+            <a href="cardsets.html">Card Sets</a>
+        </nav>
+
+        <div class="quest-filters">
+            <button class="active" data-filter="all">All Quests</button>
+            <button data-filter="daily">Daily</button>
+            <button data-filter="weekly">Weekly</button>
+            <button data-filter="story">Story</button>
+            <button data-filter="active">Active</button>
+            <button data-filter="completed">Completed</button>
+        </div>
+
+        <div id="quest-container">
+            <div class="loading">Loading quests</div>
+        </div>
+    </div>
+
+    <script src="../js/features/quests.js"></script>
+</body>
+</html>

@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Achievements - PhCard</title>
+    <link rel="stylesheet" href="../css/features.css">
+</head>
+<body>
+    <div class="container">
+        <div class="page-header">
+            <h1>🏆 Achievements</h1>
+            <p>Track your progress and unlock achievements</p>
+        </div>
+
+        <nav class="nav-links">
+            <a href="../../index.html">Home</a>
+            <a href="../../dashboard.html">Dashboard</a>
+            <a href="quests.html">Quests</a>
+            <a href="achievements.html" class="active">Achievements</a>
+            <a href="cardsets.html">Card Sets</a>
+        </nav>
+
+        <div class="achievement-stats text-center mb-20">
+            <h3>Your Progress: <span id="achievement-progress">0/0</span></h3>
+        </div>
+
+        <div id="achievement-container">
+            <div class="loading">Loading achievements</div>
+        </div>
+    </div>
+
+    <script src="../js/features/achievements.js"></script>
+</body>
+</html>
