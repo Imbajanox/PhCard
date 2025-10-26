@@ -42,7 +42,14 @@ class PluginSystem {
         }
         
         if ($directory !== null) {
-            self::$pluginDirectory = $directory;
+            // Validate directory path to prevent path traversal
+            $realPath = realpath($directory);
+            if ($realPath === false || strpos($realPath, realpath(__DIR__)) !== 0) {
+                error_log("PluginSystem: Invalid or unsafe plugin directory: $directory");
+                self::$pluginDirectory = '../plugins'; // Fallback to default
+            } else {
+                self::$pluginDirectory = $directory;
+            }
         }
         
         // Ensure CardEffectRegistry and GameEventSystem are initialized
@@ -66,7 +73,10 @@ class PluginSystem {
         
         if (!is_dir($pluginPath)) {
             // Create plugin directory if it doesn't exist
-            @mkdir($pluginPath, 0755, true);
+            if (!mkdir($pluginPath, 0755, true)) {
+                error_log("PluginSystem: Failed to create plugin directory: $pluginPath");
+                return;
+            }
             self::createExamplePlugin($pluginPath);
             return;
         }
@@ -94,7 +104,22 @@ class PluginSystem {
                 return false;
             }
             
-            // Load the plugin
+            // Basic security: Validate plugin file path
+            $realPath = realpath($file);
+            if ($realPath === false) {
+                error_log("PluginSystem: Plugin file not found: $file");
+                return false;
+            }
+            
+            // Ensure plugin is within plugin directory
+            $pluginDir = realpath(__DIR__ . '/' . self::$pluginDirectory);
+            if (strpos($realPath, $pluginDir) !== 0) {
+                error_log("PluginSystem: Plugin outside plugin directory rejected: $file");
+                return false;
+            }
+            
+            // Security note: Plugins are trusted code and must be carefully reviewed
+            // In production, only allow admin-approved plugins
             require_once $file;
             
             self::$loadedPlugins[$pluginName] = [

@@ -232,6 +232,22 @@ This framework is fully compatible with existing PhCard features:
 - ✓ Integrates with simulation framework
 - ✓ No breaking changes to existing APIs
 
+## Security Considerations
+
+**Plugin System Security:**
+- Plugins execute arbitrary PHP code - only use trusted plugins
+- Plugin directory is validated to prevent path traversal
+- Plugins are verified to be within the designated directory
+- **Production recommendation**: Only allow admin-approved plugins
+- Review all plugin code before deployment
+- Consider implementing a plugin approval workflow
+
+**Best Practices:**
+- Keep plugins in a dedicated directory outside web root when possible
+- Regularly audit installed plugins
+- Test plugins in a development environment first
+- Remove unused plugins
+
 ## Support
 
 For questions or issues:

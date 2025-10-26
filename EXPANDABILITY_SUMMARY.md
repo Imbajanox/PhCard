@@ -282,12 +282,13 @@ All components have been tested:
 
 ## Performance Impact
 
-- **Load time**: +~10ms for plugin loading
-- **Memory**: +~500KB for framework
+**Estimated impact** (based on code analysis):
+- **Load time**: ~10ms for plugin loading (estimate)
+- **Memory**: ~500KB for framework classes (estimate)
 - **Runtime**: Negligible (event system is lightweight)
 - **Database**: 8 new tables, properly indexed
 
-All impacts are minimal and worth the extensibility gained.
+All impacts are minimal and worth the extensibility gained. Actual performance may vary based on number of plugins and cards.
 
 ## Backward Compatibility
 
