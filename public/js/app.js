@@ -294,15 +294,36 @@ async function playCard(cardIndex) {
         alert('Nicht deine Runde!');
         return;
     }
-    
+
+    // 1. Zuerst die Karte aus der Hand holen, um den Typ zu bestimmen.
+    const card = gameState.player_hand[cardIndex];
+    if (!card) {
+        alert('Ungültige Karte!');
+        return;
+    }
+
+    // 2. Bestimme das Ziel basierend auf dem Kartentyp/Effekt.
+    let targetToSend = 'opponent'; // Standardziel ist der Gegner (für Monster und Schadenszauber)
+
+    // Logik: Wenn es ein Zauber mit dem Effekt 'heal' ist, setze das Ziel auf 'self'.
+    // ACHTUNG: Dies setzt voraus, dass der Kartentyp 'spell' ist UND der Effekt 'heal' enthält.
+    if (card.type === 'spell') {
+        // Ein Heilzauber sollte den Spieler heilen (target=self)
+        if (card.effect && card.effect.startsWith('heal:')) {
+            targetToSend = 'self';
+        }
+        // Hier könntest du weitere Logik für 'boost' oder 'shield' hinzufügen, falls diese 'self' sind.
+    }
+
     try {
         const response = await fetch('api/game.php', {
             method: 'POST',
             headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-            body: new URLSearchParams({ 
-                action: 'play_card', 
+            body: new URLSearchParams({ 
+                action: 'play_card', 
                 card_index: cardIndex,
-                target: 'opponent'
+                // 3. Verwende das dynamisch bestimmte Ziel
+                target: targetToSend 
             })
         });
         

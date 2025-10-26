@@ -30,8 +30,7 @@ function startGame() {
     try {
         // Get user's cards
         $stmt = $conn->prepare("
-            SELECT c.* 
-            FROM user_cards uc 
+            SELECT c.* FROM user_cards uc 
             JOIN cards c ON uc.card_id = c.id 
             WHERE uc.user_id = ? AND uc.quantity > 0
         ");
@@ -113,7 +112,10 @@ function playCard() {
         $gameState['player_field'][] = $card;
         $message = "Played {$card['name']} (ATK: {$card['attack']}, DEF: {$card['defense']})";
     } else if ($card['type'] === 'spell') {
-        $message = applySpellEffect($gameState, $card, 'player', $target);
+        // KORREKTUR: applySpellEffect gibt das geänderte $gameState zurück.
+        $result = applySpellEffect($gameState, $card, 'player', $target); 
+        $gameState = $result['gameState'];
+        $message = $result['message'];
     }
     
     $_SESSION['game_state'] = $gameState;
@@ -131,12 +133,13 @@ function playCard() {
     ]);
 }
 
-function applySpellEffect(&$gameState, $card, $caster, $target) {
+// KORREKTUR: Nimmt $gameState per Wert und gibt es zusammen mit der Nachricht zurück.
+function applySpellEffect($gameState, $card, $caster, $target) {
     $effect = $card['effect'];
     $message = "Cast {$card['name']}: ";
     
     if (!$effect) {
-        return $message . "No effect";
+        return ['message' => $message . "No effect", 'gameState' => $gameState];
     }
     
     list($type, $value) = explode(':', $effect);
@@ -155,6 +158,7 @@ function applySpellEffect(&$gameState, $card, $caster, $target) {
             }
             break;
         case 'heal':
+            // KORREKTUR: Funktioniert jetzt, da $gameState zurückgegeben wird
             if ($target === 'self' || $caster === $target) {
                 if ($caster === 'player') {
                     $gameState['player_hp'] = min($gameState['player_hp'] + $value, STARTING_HP);
@@ -166,14 +170,17 @@ function applySpellEffect(&$gameState, $card, $caster, $target) {
             }
             break;
         case 'boost':
+            // An dieser Stelle müssten die boost-Effekte auf Monster im Feld angewendet werden. 
+            // Derzeit wird nur die Nachricht ausgegeben.
             $message .= "Boosted attack by {$value}";
             break;
         case 'shield':
+            // An dieser Stelle müssten die shield-Effekte angewendet werden.
             $message .= "Gained {$value} shield";
             break;
     }
     
-    return $message;
+    return ['message' => $message, 'gameState' => $gameState];
 }
 
 function endTurn() {
@@ -210,10 +217,12 @@ function endTurn() {
     
     // Switch to AI turn
     $gameState['turn'] = 'ai';
-    $_SESSION['game_state'] = $gameState;
     
     // AI plays
-    $aiActions = performAITurn($gameState);
+    // KORREKTUR: PerformAITurn gibt $gameState zurück und muss übernommen werden.
+    $aiResult = performAITurn($gameState);
+    $aiActions = $aiResult['actions'];
+    $gameState = $aiResult['gameState'];
     
     // Battle phase - AI monsters attack
     foreach ($gameState['ai_field'] as $aiMonster) {
@@ -271,7 +280,8 @@ function endTurn() {
     ]);
 }
 
-function performAITurn(&$gameState) {
+// KORREKTUR: Nimmt $gameState per Wert und gibt es zusammen mit den Aktionen zurück.
+function performAITurn($gameState) {
     $actions = [];
     $aiLevel = $gameState['ai_level'];
     
@@ -291,15 +301,20 @@ function performAITurn(&$gameState) {
             $actions[] = "AI played {$card['name']} (ATK: {$card['attack']}, DEF: {$card['defense']})";
         } else if ($card['type'] === 'spell') {
             $target = 'opponent';
+            // Bessere Heilungs-Logik: heile nur, wenn HP unter 50%
             if (strpos($card['effect'], 'heal') !== false && $gameState['ai_hp'] < STARTING_HP * 0.5) {
                 $target = 'self';
             }
-            $message = applySpellEffect($gameState, $card, 'ai', $target);
+            // KORREKTUR: applySpellEffect gibt das geänderte $gameState zurück
+            $result = applySpellEffect($gameState, $card, 'ai', $target); 
+            $message = $result['message'];
+            $gameState = $result['gameState']; // Übernahme des geänderten State-Arrays
             $actions[] = $message;
         }
     }
     
-    return $actions;
+    // KORREKTUR: Geändertes $gameState zurückgeben
+    return ['actions' => $actions, 'gameState' => $gameState];
 }
 
 function endGame() {
