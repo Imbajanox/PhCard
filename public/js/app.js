@@ -388,15 +388,41 @@ async function performMulligan(cardIndices) {
 function updateHP() {
     const maxHP = 2000;
     
+    // Store previous values to determine if damage or healing occurred
+    const prevPlayerHP = parseInt(document.getElementById('player-hp-text').textContent.split(':')[1].split('/')[0].trim()) || gameState.player_hp;
+    const prevAIHP = parseInt(document.getElementById('ai-hp-text').textContent.split(':')[1].split('/')[0].trim()) || gameState.ai_hp;
+    
     // Player HP
     const playerHPPercent = (gameState.player_hp / maxHP) * 100;
     document.getElementById('player-hp-fill').style.width = playerHPPercent + '%';
     document.getElementById('player-hp-text').textContent = `HP: ${gameState.player_hp} / ${maxHP}`;
     
+    // Visual feedback for player HP change
+    if (prevPlayerHP > gameState.player_hp) {
+        const damage = prevPlayerHP - gameState.player_hp;
+        flashHPBar('player', false);
+        showDamageNumber(document.getElementById('player-hp-text'), damage);
+    } else if (prevPlayerHP < gameState.player_hp) {
+        const heal = gameState.player_hp - prevPlayerHP;
+        flashHPBar('player', true);
+        showHealNumber(document.getElementById('player-hp-text'), heal);
+    }
+    
     // AI HP
     const aiHPPercent = (gameState.ai_hp / maxHP) * 100;
     document.getElementById('ai-hp-fill').style.width = aiHPPercent + '%';
     document.getElementById('ai-hp-text').textContent = `HP: ${gameState.ai_hp} / ${maxHP}`;
+    
+    // Visual feedback for AI HP change
+    if (prevAIHP > gameState.ai_hp) {
+        const damage = prevAIHP - gameState.ai_hp;
+        flashHPBar('ai', false);
+        showDamageNumber(document.getElementById('ai-hp-text'), damage);
+    } else if (prevAIHP < gameState.ai_hp) {
+        const heal = gameState.ai_hp - prevAIHP;
+        flashHPBar('ai', true);
+        showHealNumber(document.getElementById('ai-hp-text'), heal);
+    }
 }
 
 function displayHand() {
@@ -465,6 +491,11 @@ async function playCard(cardIndex) {
         }
     }
 
+    // Disable input during animation
+    const handEl = document.getElementById('player-hand');
+    const originalPointerEvents = handEl.style.pointerEvents;
+    handEl.style.pointerEvents = 'none';
+
     try {
         const response = await fetch('api/game.php', {
             method: 'POST',
@@ -480,24 +511,40 @@ async function playCard(cardIndex) {
         const data = await response.json();
         
         if (data.success) {
-            gameState.player_hp = data.game_state.player_hp;
-            gameState.ai_hp = data.game_state.ai_hp;
-            gameState.player_mana = data.game_state.player_mana;
-            gameState.player_hand = data.game_state.player_hand;
-            gameState.player_field = data.game_state.player_field;
-            gameState.ai_field = data.game_state.ai_field;
+            // Visual feedback: highlight card being played before removing it
+            const cardElements = handEl.querySelectorAll('.card');
+            if (cardElements[cardIndex]) {
+                highlightCard(cardElements[cardIndex]);
+            }
             
-            updateHP();
-            updateMana();
-            displayHand();
-            displayField('player');
-            displayField('ai');
-            
-            addLog(data.message);
+            // Update game state after brief delay for visual feedback
+            setTimeout(() => {
+                gameState.player_hp = data.game_state.player_hp;
+                gameState.ai_hp = data.game_state.ai_hp;
+                gameState.player_mana = data.game_state.player_mana;
+                gameState.player_hand = data.game_state.player_hand;
+                gameState.player_field = data.game_state.player_field;
+                gameState.ai_field = data.game_state.ai_field;
+                
+                updateHP();
+                updateMana();
+                displayHand();
+                displayField('player');
+                displayField('ai');
+                
+                addLog(data.message);
+                
+                // Re-enable input after animation
+                handEl.style.pointerEvents = originalPointerEvents;
+            }, 300);
         } else {
+            // Re-enable input on error
+            handEl.style.pointerEvents = originalPointerEvents;
             alert(data.error);
         }
     } catch (error) {
+        // Re-enable input on error
+        handEl.style.pointerEvents = originalPointerEvents;
         console.error('Failed to play card:', error);
     }
 }
@@ -537,17 +584,24 @@ async function endTurn() {
             displayField('ai');
             document.getElementById('turn-count').textContent = gameState.turn_count;
             
-            // Add battle log
-            data.battle_log.forEach(log => addLog(log));
+            // Add battle log with delay for readability
+            let delay = 0;
+            data.battle_log.forEach((log, index) => {
+                setTimeout(() => addLog(log), delay);
+                delay += 200; // 200ms between each log entry
+            });
             
-            // Add AI actions
-            data.ai_actions.forEach(action => addLog(action, 'ai'));
+            // Add AI actions with delay
+            data.ai_actions.forEach((action, index) => {
+                setTimeout(() => addLog(action, 'ai'), delay);
+                delay += 300; // 300ms between AI actions for better visibility
+            });
             
             // Check for game over
             if (data.winner) {
                 setTimeout(() => {
                     endGame(data.winner === 'player' ? 'win' : 'loss');
-                }, 1000);
+                }, delay + 500); // Wait for all logs to appear
             }
         }
         
@@ -563,6 +617,15 @@ function addLog(message, type = 'normal') {
     const entry = document.createElement('div');
     entry.className = 'log-entry';
     
+    // Add visual classification based on message content
+    if (message.includes('damage') || message.includes('attacks') || message.includes('destroyed')) {
+        entry.classList.add('damage');
+    } else if (message.includes('heal') || message.includes('Healed')) {
+        entry.classList.add('heal');
+    } else if (message.includes('Boost') || message.includes('shield') || message.includes('Stun') || message.includes('Poison')) {
+        entry.classList.add('effect');
+    }
+    
     if (type === 'ai') {
         entry.style.color = '#dc3545';
     }
@@ -570,6 +633,63 @@ function addLog(message, type = 'normal') {
     entry.textContent = message;
     logEl.appendChild(entry);
     logEl.scrollTop = logEl.scrollHeight;
+}
+
+// Visual feedback functions
+function showDamageNumber(targetEl, amount) {
+    const numberEl = document.createElement('div');
+    numberEl.className = 'damage-number';
+    numberEl.textContent = `-${amount}`;
+    
+    const rect = targetEl.getBoundingClientRect();
+    numberEl.style.left = (rect.left + rect.width / 2) + 'px';
+    numberEl.style.top = (rect.top + rect.height / 2) + 'px';
+    
+    document.body.appendChild(numberEl);
+    
+    setTimeout(() => {
+        numberEl.remove();
+    }, 1000);
+}
+
+function showHealNumber(targetEl, amount) {
+    const numberEl = document.createElement('div');
+    numberEl.className = 'heal-number';
+    numberEl.textContent = `+${amount}`;
+    
+    const rect = targetEl.getBoundingClientRect();
+    numberEl.style.left = (rect.left + rect.width / 2) + 'px';
+    numberEl.style.top = (rect.top + rect.height / 2) + 'px';
+    
+    document.body.appendChild(numberEl);
+    
+    setTimeout(() => {
+        numberEl.remove();
+    }, 1000);
+}
+
+function highlightCard(cardEl) {
+    cardEl.classList.add('card-highlight');
+    setTimeout(() => {
+        cardEl.classList.remove('card-highlight');
+    }, 600);
+}
+
+function animateAttack(cardEl) {
+    cardEl.classList.add('card-attacking');
+    setTimeout(() => {
+        cardEl.classList.remove('card-attacking');
+    }, 500);
+}
+
+function flashHPBar(playerId, isHeal = false) {
+    const hpFillEl = document.getElementById(playerId + '-hp-fill');
+    if (hpFillEl) {
+        hpFillEl.classList.add(isHeal ? 'hp-heal-flash' : 'hp-damage-flash');
+        setTimeout(() => {
+            hpFillEl.classList.remove(isHeal ? 'hp-heal-flash' : 'hp-damage-flash');
+        }, 500);
+    }
 }
 
 async function endGame(result) {
