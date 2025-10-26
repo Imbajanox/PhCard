@@ -119,11 +119,12 @@ function startGame() {
     }
 }
 
-function drawCards($availableCards, $count) {
+function drawCards(&$availableCards, $count) {
     $drawn = [];
     for ($i = 0; $i < $count && count($availableCards) > 0; $i++) {
         $index = array_rand($availableCards);
         $drawn[] = $availableCards[$index];
+        array_splice($availableCards, $index, 1);
     }
     return $drawn;
 }
@@ -622,14 +623,19 @@ function processStatusEffects(&$gameState, $player) {
     
     // Process poisoned monsters
     $fieldKey = $player . '_field';
-    foreach ($gameState[$fieldKey] as $i => &$monster) {
-        if (isset($monster['poison_damage'])) {
-            $monster['defense'] -= $monster['poison_damage'];
-            $log[] = "{$monster['name']} takes {$monster['poison_damage']} poison damage";
-            if ($monster['defense'] <= 0) {
-                array_splice($gameState[$fieldKey], $i, 1);
-                $log[] = "{$monster['name']} was destroyed by poison!";
+    if (isset($gameState[$fieldKey]) && is_array($gameState[$fieldKey])) {
+        // Iterate backwards to safely remove elements
+        for ($i = count($gameState[$fieldKey]) - 1; $i >= 0; $i--) {
+            $monster = &$gameState[$fieldKey][$i];
+            if (isset($monster['poison_damage'])) {
+                $monster['defense'] -= $monster['poison_damage'];
+                $log[] = "{$monster['name']} takes {$monster['poison_damage']} poison damage";
+                if ($monster['defense'] <= 0) {
+                    array_splice($gameState[$fieldKey], $i, 1);
+                    $log[] = "{$monster['name']} was destroyed by poison!";
+                }
             }
+            unset($monster);
         }
     }
     
@@ -689,8 +695,16 @@ function performAITurn($gameState) {
         }
         
         if ($card['type'] === 'monster') {
+            // Normalize numeric stats
+            $card['attack'] = intval($card['attack'] ?? 0);
+            $card['defense'] = intval($card['defense'] ?? 0);
+            
+            // Ensure status_effects is an array
+            if (!isset($card['status_effects']) || !is_array($card['status_effects'])) {
+                $card['status_effects'] = [];
+            }
+            
             // Apply keywords to monster
-            $card['status_effects'] = [];
             if (!empty($card['keywords'])) {
                 $keywords = explode(',', $card['keywords']);
                 foreach ($keywords as $keyword) {
@@ -699,6 +713,8 @@ function performAITurn($gameState) {
                         $card['status_effects'][] = $keyword;
                     }
                 }
+                // Deduplicate status effects
+                $card['status_effects'] = array_values(array_unique($card['status_effects']));
             }
             
             $gameState['ai_field'][] = $card;
