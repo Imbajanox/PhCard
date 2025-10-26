@@ -1,0 +1,30 @@
+# IDE and editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# PHP
+vendor/
+composer.lock
+
+# Logs
+*.log
+error_log
+
+# Temporary files
+/tmp/
+*.tmp
+
+# Environment files
+.env
+.env.local
+
+# Database dumps
+*.sql.gz
+backup/
+
+# Cache
+cache/
