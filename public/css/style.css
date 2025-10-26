@@ -370,10 +370,12 @@ body {
     background: white;
     border: 3px solid #667eea;
     border-radius: 10px;
-    padding: 12px;
+    padding: 12px; /* Base padding */
+    padding-top: 45px; /* Increased top padding to make space for mana and rarity */
     cursor: pointer;
     transition: transform 0.2s, box-shadow 0.2s;
     position: relative;
+    text-align: center; /* Center align all text inside the card */
 }
 
 .card:hover {
@@ -389,11 +391,13 @@ body {
     border-color: #007bff;
 }
 
+/* Card Name - Margin Adjustment */
 .card-name {
     font-weight: bold;
     font-size: 14px;
     margin-bottom: 8px;
     color: #333;
+    margin-top: 0; /* Resetting any default margin-top, it will be positioned by parent padding */
 }
 
 .card-type {
@@ -406,6 +410,10 @@ body {
 .card-stats {
     font-size: 13px;
     margin-top: 8px;
+    /* Ensure spell effects wrap */
+    white-space: pre-wrap;
+    /* Color coding spell effects */
+    color: #cc0000;
 }
 
 .card-description {
@@ -415,15 +423,17 @@ body {
     font-style: italic;
 }
 
+/* Rarity Badge - Position Adjustment */
 .card-rarity {
     position: absolute;
-    top: 5px;
-    right: 5px;
+    top: 5px; /* Keep it high, same as mana cost */
+    right: 5px; /* Keep it right */
     font-size: 10px;
     padding: 2px 6px;
     border-radius: 3px;
     background: #ffc107;
     color: white;
+    z-index: 20; /* Give it a higher z-index to ensure it's on top */
 }
 
 .card-rarity.common {
@@ -564,11 +574,11 @@ body {
     margin-top: 10px;
 }
 
-/* New Card Mechanics Styling */
+/* Mana Cost Badge - Position Adjustment */
 .card-mana-cost {
     position: absolute;
-    top: 5px;
-    left: 5px;
+    top: 5px; /* Keep it high */
+    left: 5px; /* Keep it left */
     background: #00bfff;
     color: white;
     width: 30px;
@@ -580,7 +590,7 @@ body {
     font-weight: bold;
     font-size: 16px;
     box-shadow: 0 2px 5px rgba(0,0,0,0.3);
-    z-index: 10;
+    z-index: 20; /* Give it a higher z-index to ensure it's on top */
 }
 
 .card-keywords {
@@ -670,6 +680,7 @@ body {
     margin: 5px 0;
     font-size: 11px;
     text-align: center;
+    /* Display Overload in red for emphasis */
     color: #e74c3c;
     font-weight: bold;
 }
@@ -695,4 +706,44 @@ body {
     height: 100%;
     background: rgba(0, 0, 0, 0.7);
     z-index: 999;
+}
+
+
+/* Fix for spell text shown in image */
+.card.spell .card-stats {
+    /* For "Effect: damage 600" style */
+    color: initial;
+    font-size: 12px;
+}
+
+.card.spell .card-stats:first-line {
+    font-weight: bold;
+}
+
+/* Combine Keywords and Status Effects */
+.card-keywords, .card-status {
+    /* Removed these selectors as they are now combined into .card-effects */
+    display: none;
+}
+
+.card-effects {
+    margin: 5px 0;
+    font-size: 11px;
+    text-align: center;
+}
+
+.card-effects span {
+    display: inline-block;
+    padding: 2px 6px;
+    border-radius: 3px;
+    margin: 2px;
+    font-weight: bold;
+    text-transform: uppercase;
+    font-size: 9px;
+}
+
+/* Status Effect Styling to match the image's yellow badges */
+.status-taunt, .status-lifesteal {
+    background: #ffc107; /* Yellow badge color from image */
+    color: #333; /* Dark text for contrast */
 }

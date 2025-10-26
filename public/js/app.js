@@ -181,51 +181,67 @@ function displayCardCollection(cards) {
 function createCardElement(card, showQuantity = false) {
     const cardEl = document.createElement('div');
     cardEl.className = `card ${card.type}`;
-    
+
     // Add mana cost badge
     const manaCost = card.mana_cost || 1;
     const manaBadge = `<div class="card-mana-cost">${manaCost}</div>`;
-    
+
     let statsHTML = '';
+    let descriptionHTML = `<div class="card-description">${card.description || ''}</div>`; // Move description here
+
     if (card.type === 'monster') {
         statsHTML = `<div class="card-stats">ATK: ${card.attack} / DEF: ${card.defense}</div>`;
-    } else if (card.effect) {
-        const effectParts = card.effect.split(':');
-        statsHTML = `<div class="card-stats">Effect: ${effectParts[0]} ${effectParts[1]}</div>`;
+    } else if (card.type === 'spell') {
+        // Updated logic for spell cards to match image, showing effect in stats area
+        if (card.effect) {
+             // Split only on the first colon for effect: value
+            const parts = card.effect.split(/:(.*)/s); // Splits into [key, value]
+            if (parts.length >= 2) {
+                statsHTML = `<div class="card-stats">Effect: <strong>${parts[0].trim()}</strong>: ${parts[1].trim()}</div>`;
+            } else {
+                 statsHTML = `<div class="card-stats">Effect: ${card.effect}</div>`;
+            }
+        }
     }
-    
-    // Display keywords
-    let keywordsHTML = '';
+
+    // Display keywords and status effects together
+    let effectsHTML = '';
+    const allEffects = [];
+
+    // Add keywords
     if (card.keywords) {
-        const keywords = card.keywords.split(',').map(k => k.trim());
-        keywordsHTML = `<div class="card-keywords">${keywords.map(k => `<span class="keyword">${k}</span>`).join(' ')}</div>`;
+        card.keywords.split(',').map(k => k.trim()).forEach(k => allEffects.push({ type: 'keyword', value: k }));
     }
-    
-    // Display status effects
-    let statusHTML = '';
+
+    // Add status effects
     if (card.status_effects && card.status_effects.length > 0) {
-        statusHTML = `<div class="card-status">${card.status_effects.map(s => `<span class="status-${s}">${s}</span>`).join(' ')}</div>`;
+        card.status_effects.map(s => s.trim()).forEach(s => allEffects.push({ type: 'status', value: s }));
     }
-    
-    // Overload indicator
+
+    if (allEffects.length > 0) {
+        effectsHTML = `<div class="card-effects">${allEffects.map(item =>
+            `<span class="${item.type} ${item.type}-${item.value.toLowerCase()}">${item.value}</span>`
+        ).join(' ')}</div>`;
+    }
+
+    // Overload indicator (moved above description)
     let overloadHTML = '';
     if (card.overload && card.overload > 0) {
         overloadHTML = `<div class="card-overload">Overload: ${card.overload}</div>`;
     }
-    
+
     cardEl.innerHTML = `
         ${manaBadge}
         <div class="card-rarity ${card.rarity}">${card.rarity}</div>
         <div class="card-name">${card.name}</div>
-        <div class="card-type">${card.type}</div>
+        <div class="card-type">${card.type.toUpperCase()}</div>
         ${statsHTML}
-        ${keywordsHTML}
-        ${statusHTML}
         ${overloadHTML}
-        <div class="card-description">${card.description || ''}</div>
+        ${effectsHTML}
+        ${descriptionHTML}
         ${showQuantity ? `<div style="text-align: center; margin-top: 10px; font-weight: bold;">x${card.quantity}</div>` : ''}
     `;
-    
+
     return cardEl;
 }
 

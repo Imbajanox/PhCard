@@ -14,15 +14,16 @@ document.addEventListener('DOMContentLoaded', function() {
 // Check authentication
 async function checkAuth() {
     try {
-        const response = await fetch('/api/auth.php?action=check');
+        const response = await fetch('/PhCard/api/auth.php?action=check');
         const data = await response.json();
-        
+        console.log('Auth check response:', data);
+        console.log('Auth check response (stringified):', JSON.stringify(data));
         if (!data.success || !data.authenticated) {
-            window.location.href = 'index.html';
+            //window.location.href = 'index.html';
         }
     } catch (error) {
         console.error('Auth check failed:', error);
-        window.location.href = 'index.html';
+        //window.location.href = 'index.html';
     }
 }
 
@@ -69,7 +70,7 @@ async function loadOverviewData() {
     showLoading(true);
     
     try {
-        const response = await fetch('/api/analytics.php?action=winrate_analysis');
+        const response = await fetch('/PhCard/api/analytics.php?action=winrate_analysis');
         const data = await response.json();
         
         if (data.success) {
@@ -154,7 +155,7 @@ async function loadCardStats() {
     showLoading(true);
     
     try {
-        const response = await fetch('/api/analytics.php?action=card_stats');
+        const response = await fetch('/PhCard/api/analytics.php?action=card_stats');
         const data = await response.json();
         
         if (data.success) {
@@ -248,7 +249,7 @@ async function loadDeckPerformance() {
     showLoading(true);
     
     try {
-        const response = await fetch('/api/analytics.php?action=deck_performance');
+        const response = await fetch('/PhCard/api/analytics.php?action=deck_performance');
         const data = await response.json();
         
         if (data.success) {
@@ -315,7 +316,7 @@ async function runSimulation() {
         formData.append('deck_b', JSON.stringify(deckB));
         formData.append('iterations', iterations);
         
-        const response = await fetch('/api/simulation.php?action=run_simulation', {
+        const response = await fetch('/PhCard/api/simulation.php?action=run_simulation', {
             method: 'POST',
             body: formData
         });
