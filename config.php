@@ -10,6 +10,13 @@ define('XP_PER_WIN', 100);
 define('XP_BONUS_MULTIPLIER', 1.5); // Multiplier for higher AI levels
 define('STARTING_HP', 2000);
 define('CARDS_IN_HAND', 5);
+define('STARTING_MANA', 1);
+define('MAX_MANA', 10);
+define('MANA_PER_TURN', 1);
+define('MAX_DECK_SIZE', 30);
+define('MIN_DECK_SIZE', 30);
+define('MAX_CARD_DUPLICATES', 2);
+define('MULLIGAN_CARDS', 3); // Number of cards player can exchange at start
 
 // Level requirements (XP needed to reach each level)
 $LEVEL_REQUIREMENTS = [
