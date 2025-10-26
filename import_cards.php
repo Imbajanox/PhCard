@@ -89,8 +89,11 @@ try {
             ORDER BY id DESC 
             LIMIT ?
         ");
-        $stmt->execute([$results['inserted']]);
-        $cards = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        $insertedCount = $results['inserted'];
+		$stmt->bindValue(1, $insertedCount, PDO::PARAM_INT);
+		$stmt->execute();
+
+		$cards = $stmt->fetchAll(PDO::FETCH_ASSOC);
         
         // Link cards to set
         $linked = 0;
