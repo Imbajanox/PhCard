@@ -78,8 +78,20 @@ fi
 
 # 3. Verify the changes
 echo "Verifying database changes..."
-mysql -u root -p phcard -e "DESCRIBE users;" | grep is_admin && echo "✓ Admin column added"
-mysql -u root -p phcard -e "SELECT COUNT(*) as card_count FROM cards;" && echo "✓ Cards counted"
+if mysql -u root -p phcard -e "DESCRIBE users;" | grep -q is_admin; then
+    echo "✓ Admin column verified"
+else
+    echo "✗ Admin column not found"
+    exit 1
+fi
+
+echo "Checking card count..."
+mysql -u root -p phcard -e "SELECT COUNT(*) as total_cards FROM cards;"
+if [ $? -eq 0 ]; then
+    echo "✓ Card count retrieved successfully"
+else
+    echo "✗ Failed to retrieve card count"
+fi
 ```
 
 ### Create Admin User

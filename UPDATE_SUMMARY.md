@@ -106,31 +106,41 @@ Added 30 new cards distributed across different classes and rarities:
 
 1. **Database Migration** (with error checking):
    ```bash
-   # Check if database exists
-   mysql -u root -p -e "SHOW DATABASES LIKE 'phcard';"
+   # Check if database exists before proceeding
+   if mysql -u root -p -e "SHOW DATABASES LIKE 'phcard';" | grep -q phcard; then
+       echo "✓ Database 'phcard' found, proceeding with migration..."
+   else
+       echo "✗ Database 'phcard' not found. Please create it first."
+       exit 1
+   fi
    
    # Run migrations with error checking
    mysql -u root -p phcard < database_extensions.sql
    if [ $? -eq 0 ]; then
-       echo "Extensions migration successful"
+       echo "✓ Extensions migration successful"
    else
-       echo "Extensions migration failed - check errors above"
+       echo "✗ Extensions migration failed - check errors above"
        exit 1
    fi
    
    mysql -u root -p phcard < database_admin_and_cards.sql
    if [ $? -eq 0 ]; then
-       echo "Admin and cards migration successful"
+       echo "✓ Admin and cards migration successful"
    else
-       echo "Admin and cards migration failed - check errors above"
+       echo "✗ Admin and cards migration failed - check errors above"
        exit 1
    fi
    
    # Verify admin column was added
-   mysql -u root -p phcard -e "DESCRIBE users;" | grep is_admin
+   if mysql -u root -p phcard -e "DESCRIBE users;" | grep -q is_admin; then
+       echo "✓ Admin column verified"
+   else
+       echo "✗ Admin column not found"
+   fi
    
    # Verify new cards were added
-   mysql -u root -p phcard -e "SELECT COUNT(*) FROM cards;"
+   echo "Checking card count..."
+   mysql -u root -p phcard -e "SELECT COUNT(*) as total_cards FROM cards;"
    ```
 
 2. **Create Admin User**:
