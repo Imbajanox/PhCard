@@ -1007,6 +1007,12 @@ function endGame() {
             ]);
         }
         
+        // Update quest progress for game completion
+        updateQuestProgressForGame($result, $gameState['ai_level'], $conn);
+        
+        // Check for achievement unlocks
+        checkAchievementsForUser($conn);
+        
         unset($_SESSION['game_state']);
         
         echo json_encode([
@@ -1020,6 +1026,158 @@ function endGame() {
         ]);
     } catch(PDOException $e) {
         echo json_encode(['success' => false, 'error' => 'Failed to save game result']);
+    }
+}
+
+/**
+ * Update quest progress after a game is completed
+ */
+function updateQuestProgressForGame($result, $aiLevel, $conn) {
+    $userId = $_SESSION['user_id'];
+    
+    // Update quests for wins
+    if ($result === 'win') {
+        updateQuestProgressHelper($conn, $userId, 'win_games', 1);
+        
+        // Update quests for wins at specific AI levels
+        if ($aiLevel >= 3) {
+            updateQuestProgressHelper($conn, $userId, 'win_games', 1, ['ai_level' => $aiLevel]);
+        }
+    }
+}
+
+/**
+ * Helper function to update quest progress
+ */
+function updateQuestProgressHelper($conn, $userId, $objectiveType, $value, $metadata = []) {
+    try {
+        // Find matching quests
+        $sql = "SELECT q.id, q.objective_target, q.objective_metadata
+                FROM quests q
+                WHERE q.is_active = true 
+                AND q.objective_type = ?
+                AND (q.end_date IS NULL OR q.end_date > NOW())";
+        
+        $stmt = $conn->prepare($sql);
+        $stmt->execute([$objectiveType]);
+        $quests = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        
+        foreach ($quests as $quest) {
+            // Check if metadata matches (if quest has specific requirements)
+            if ($quest['objective_metadata']) {
+                $questMeta = json_decode($quest['objective_metadata'], true);
+                $matches = true;
+                foreach ($questMeta as $key => $val) {
+                    if (!isset($metadata[$key]) || $metadata[$key] != $val) {
+                        $matches = false;
+                        break;
+                    }
+                }
+                if (!$matches) continue;
+            } else {
+                // Quest has no metadata requirements (e.g., general "win 3 games" quest)
+                // Only update if we're not providing specific metadata to avoid double-counting
+                // Example: prevents general win quests from being updated when tracking specific AI level wins
+                if (!empty($metadata)) continue;
+            }
+            
+            // Update or create progress
+            $stmt = $conn->prepare("
+                INSERT INTO user_quest_progress (user_id, quest_id, progress, completed)
+                VALUES (?, ?, ?, ?)
+                ON DUPLICATE KEY UPDATE 
+                    progress = LEAST(progress + ?, ?),
+                    completed = (progress + ? >= ?)
+            ");
+            $completed = ($value >= $quest['objective_target']);
+            $stmt->execute([
+                $userId, $quest['id'], $value, $completed,
+                $value, $quest['objective_target'],
+                $value, $quest['objective_target']
+            ]);
+        }
+    } catch (Exception $e) {
+        error_log("Error updating quest progress: " . $e->getMessage());
+    }
+}
+
+/**
+ * Check and unlock achievements for the current user
+ */
+function checkAchievementsForUser($conn) {
+    $userId = $_SESSION['user_id'];
+    
+    try {
+        // Get user stats
+        $stmt = $conn->prepare("SELECT total_wins, level FROM users WHERE id = ?");
+        $stmt->execute([$userId]);
+        $stats = $stmt->fetch(PDO::FETCH_ASSOC);
+        
+        if (!$stats) {
+            return;
+        }
+        
+        // Check total wins achievements
+        $stmt = $conn->prepare("
+            SELECT id, requirement_value, xp_reward
+            FROM achievements 
+            WHERE achievement_type = 'total_wins' 
+            AND requirement_value <= ?
+            AND id NOT IN (SELECT achievement_id FROM user_achievements WHERE user_id = ? AND unlocked = true)
+        ");
+        $stmt->execute([$stats['total_wins'], $userId]);
+        while ($achievement = $stmt->fetch(PDO::FETCH_ASSOC)) {
+            unlockAchievementForUser($userId, $achievement['id'], $conn);
+        }
+        
+        // Check level achievements
+        $stmt = $conn->prepare("
+            SELECT id, requirement_value, xp_reward
+            FROM achievements 
+            WHERE achievement_type = 'level_reached' 
+            AND requirement_value <= ?
+            AND id NOT IN (SELECT achievement_id FROM user_achievements WHERE user_id = ? AND unlocked = true)
+        ");
+        $stmt->execute([$stats['level'], $userId]);
+        while ($achievement = $stmt->fetch(PDO::FETCH_ASSOC)) {
+            unlockAchievementForUser($userId, $achievement['id'], $conn);
+        }
+    } catch (Exception $e) {
+        error_log("Error checking achievements: " . $e->getMessage());
+    }
+}
+
+/**
+ * Unlock an achievement for a user
+ */
+function unlockAchievementForUser($userId, $achievementId, $conn) {
+    try {
+        // Insert or update achievement
+        $stmt = $conn->prepare("
+            INSERT INTO user_achievements (user_id, achievement_id, unlocked, unlocked_at, notified)
+            VALUES (?, ?, true, NOW(), false)
+            ON DUPLICATE KEY UPDATE unlocked = true, unlocked_at = NOW()
+        ");
+        $stmt->execute([$userId, $achievementId]);
+        
+        // Award XP
+        $stmt = $conn->prepare("SELECT xp_reward FROM achievements WHERE id = ?");
+        $stmt->execute([$achievementId]);
+        $xpReward = $stmt->fetchColumn();
+        
+        if ($xpReward > 0) {
+            $stmt = $conn->prepare("UPDATE users SET xp = xp + ? WHERE id = ?");
+            $stmt->execute([$xpReward, $userId]);
+        }
+        
+        // Trigger event
+        GameEventSystem::trigger('achievement_unlocked', [
+            'user_id' => $userId,
+            'achievement_id' => $achievementId,
+            'xp_reward' => $xpReward
+        ]);
+    } catch (Exception $e) {
+        error_log("Error unlocking achievement: " . $e->getMessage());
     }
 }
 ?>
