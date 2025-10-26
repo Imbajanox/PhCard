@@ -32,3 +32,6 @@ cache/
 # Production .htaccess (use .htaccess.development or .htaccess.production)
 # Comment this line if you want to commit .htaccess
 # .htaccess
+
+# Demo files
+dashboard_demo*.html
