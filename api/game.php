@@ -1,8 +1,14 @@
 <?php
 require_once '../config.php';
+require_once 'GameEventSystem.php';
+require_once 'CardEffectRegistry.php';
 
 header('Content-Type: application/json');
 requireLogin();
+
+// Initialize event system and effect registry
+GameEventSystem::initDefaultHooks();
+CardEffectRegistry::init();
 
 $action = $_POST['action'] ?? '';
 
@@ -976,6 +982,25 @@ function endGame() {
                 $stmt->execute([$_SESSION['user_id'], $card['id']]);
                 $unlockedCards[] = $card;
             }
+        }
+        
+        // Trigger game end event
+        GameEventSystem::trigger('game_end', [
+            'user_id' => $_SESSION['user_id'],
+            'result' => $result,
+            'xp_gained' => $xpGained,
+            'game_history_id' => $gameHistoryId,
+            'ai_level' => $gameState['ai_level']
+        ]);
+        
+        // Trigger level up event if applicable
+        if ($leveledUp) {
+            GameEventSystem::trigger('level_up', [
+                'user_id' => $_SESSION['user_id'],
+                'old_level' => $user['level'],
+                'new_level' => $newLevel,
+                'unlocked_cards' => $unlockedCards
+            ]);
         }
         
         unset($_SESSION['game_state']);
