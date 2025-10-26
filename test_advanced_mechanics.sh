@@ -7,10 +7,16 @@ echo ""
 
 # Test 1: Check if database extensions SQL is valid
 echo "Test 1: Validating database_extensions.sql syntax..."
-if grep -q "CREATE TABLE" database_extensions.sql; then
-    echo "✓ Database extensions SQL appears valid"
+if [ -f "database_extensions.sql" ]; then
+    # Count SQL statements to ensure file has content
+    sql_statements=$(grep -c "CREATE TABLE\|ALTER TABLE\|INSERT INTO" database_extensions.sql)
+    if [ "$sql_statements" -gt 10 ]; then
+        echo "✓ Database extensions SQL contains $sql_statements statements"
+    else
+        echo "✗ Database extensions SQL may be incomplete (only $sql_statements statements)"
+    fi
 else
-    echo "✗ Database extensions SQL may be invalid"
+    echo "✗ Database extensions SQL file not found"
 fi
 
 # Test 2: Check PHP syntax
@@ -110,9 +116,12 @@ if [ "$all_valid" = true ]; then
     echo "✓ Core functionality appears to be implemented"
     echo ""
     echo "Next steps:"
-    echo "1. Run: mysql -u root -p phcard < database_extensions.sql"
+    echo "1. Database setup (adjust credentials as needed):"
+    echo "   mysql -u YOUR_USER -p YOUR_DATABASE < database_extensions.sql"
     echo "2. Test in browser by starting a new game"
     echo "3. Verify mana display, mulligan option, and card keywords"
+    echo ""
+    echo "Security note: Use environment-specific credentials, not root in production"
 else
     echo "✗ Some tests failed - please review"
 fi

@@ -480,11 +480,11 @@ mysql -u root -p phcard < database_extensions.sql
 
 This implementation successfully addresses all requirements from the problem statement:
 
-✅ **Neue Kartenmechaniken**: Zustände, Buffs/Debuffs, Overload, Wahlkarten  
-✅ **Deckbau-Elemente**: Slots, Archetypen, Duplikat-Limits  
-✅ **Ressourcensystem**: Mana skalierend, Ramp, Constraints  
-✅ **Mulligan**: 1-3 Karten tauschen  
-✅ **Combo-Synergien**: Wiederkehrende Keywords  
-✅ **Balance-Tools**: Telemetrie, Simulationen, A/B-Tests
+✅ **New Card Mechanics**: States, Buffs/Debuffs, Overload, Choice Cards  
+✅ **Deck Building Elements**: Slots, Archetypes, Duplicate Limits  
+✅ **Resource System**: Scaling Mana, Ramp, Constraints  
+✅ **Mulligan**: Exchange 1-3 Cards  
+✅ **Combo Synergies**: Recurring Keywords  
+✅ **Balance Tools**: Telemetry, Simulations, A/B Tests
 
 The codebase is production-ready, well-documented, and fully tested. All features are implemented with industry best practices for security, performance, and maintainability.
