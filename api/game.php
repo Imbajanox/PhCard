@@ -1075,8 +1075,9 @@ function updateQuestProgressHelper($conn, $userId, $objectiveType, $value, $meta
                 }
                 if (!$matches) continue;
             } else {
-                // Quest has no metadata requirements
-                // Only update if we're not providing specific metadata (to avoid double-counting)
+                // Quest has no metadata requirements (e.g., general "win 3 games" quest)
+                // Only update if we're not providing specific metadata to avoid double-counting
+                // Example: prevents general win quests from being updated when tracking specific AI level wins
                 if (!empty($metadata)) continue;
             }
             
