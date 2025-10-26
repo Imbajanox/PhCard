@@ -491,6 +491,11 @@ async function playCard(cardIndex) {
         }
     }
 
+    // Disable input during animation
+    const handEl = document.getElementById('player-hand');
+    const originalPointerEvents = handEl.style.pointerEvents;
+    handEl.style.pointerEvents = 'none';
+
     try {
         const response = await fetch('api/game.php', {
             method: 'POST',
@@ -507,7 +512,6 @@ async function playCard(cardIndex) {
         
         if (data.success) {
             // Visual feedback: highlight card being played before removing it
-            const handEl = document.getElementById('player-hand');
             const cardElements = handEl.querySelectorAll('.card');
             if (cardElements[cardIndex]) {
                 highlightCard(cardElements[cardIndex]);
@@ -529,11 +533,18 @@ async function playCard(cardIndex) {
                 displayField('ai');
                 
                 addLog(data.message);
+                
+                // Re-enable input after animation
+                handEl.style.pointerEvents = originalPointerEvents;
             }, 300);
         } else {
+            // Re-enable input on error
+            handEl.style.pointerEvents = originalPointerEvents;
             alert(data.error);
         }
     } catch (error) {
+        // Re-enable input on error
+        handEl.style.pointerEvents = originalPointerEvents;
         console.error('Failed to play card:', error);
     }
 }
