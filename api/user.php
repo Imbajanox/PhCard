@@ -33,11 +33,23 @@ function getUserProfile() {
             $currentLevel = $user['level'];
             $nextLevel = $currentLevel + 1;
             $xpForCurrent = $LEVEL_REQUIREMENTS[$currentLevel] ?? 0;
-            $xpForNext = $LEVEL_REQUIREMENTS[$nextLevel] ?? $user['xp'];
             
-            $user['xp_for_next_level'] = $xpForNext;
-            $user['xp_progress'] = $user['xp'] - $xpForCurrent;
-            $user['xp_needed'] = $xpForNext - $xpForCurrent;
+            // Edge case: if user level exceeds generated max, fallback to current XP
+            // This prevents negative progress bars and ensures graceful degradation
+            if (!isset($LEVEL_REQUIREMENTS[$nextLevel])) {
+                // User is at or beyond max level
+                $xpForNext = $user['xp'];
+                $user['xp_for_next_level'] = $xpForNext;
+                $user['xp_progress'] = 0; // Show full/empty bar
+                $user['xp_needed'] = max(1, $xpForNext - $xpForCurrent); // Ensure positive value for frontend calculations
+            } else {
+                // Normal case: next level exists in requirements
+                $xpForNext = $LEVEL_REQUIREMENTS[$nextLevel];
+                $user['xp_for_next_level'] = $xpForNext;
+                $user['xp_progress'] = $user['xp'] - $xpForCurrent;
+                $user['xp_needed'] = $xpForNext - $xpForCurrent;
+            }
+            
             $user['is_admin'] = (bool)$user['is_admin'];
             
             echo json_encode(['success' => true, 'user' => $user]);
