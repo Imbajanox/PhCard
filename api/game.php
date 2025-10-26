@@ -473,19 +473,25 @@ function endTurn() {
         }
     }
     
-    // Switch to AI turn
-    $gameState['turn'] = 'ai';
+    // Check if AI is already defeated after player's attack phase
+    // If so, skip AI turn entirely to prevent healing/playing when already dead
+    $aiActions = [];
+    if ($gameState['ai_hp'] > 0) {
+        // Switch to AI turn
+        $gameState['turn'] = 'ai';
+        
+        // AI plays
+        $aiResult = performAITurn($gameState);
+        $aiActions = $aiResult['actions'];
+        $gameState = $aiResult['gameState'];
+        
+        // Process AI status effects
+        $battleLog = array_merge($battleLog, processStatusEffects($gameState, 'ai'));
+    }
     
-    // AI plays
-    $aiResult = performAITurn($gameState);
-    $aiActions = $aiResult['actions'];
-    $gameState = $aiResult['gameState'];
-    
-    // Process AI status effects
-    $battleLog = array_merge($battleLog, processStatusEffects($gameState, 'ai'));
-    
-    // Battle phase - AI monsters attack
-    foreach ($gameState['ai_field'] as $aiMonster) {
+    // Battle phase - AI monsters attack (only if AI is still alive)
+    if ($gameState['ai_hp'] > 0) {
+        foreach ($gameState['ai_field'] as $aiMonster) {
         // Check if monster can attack
         $canAttack = true;
         if (isset($aiMonster['status_effects']) && in_array('stunned', $aiMonster['status_effects'])) {
@@ -529,6 +535,7 @@ function endTurn() {
             $gameState['player_hp'] -= $aiMonster['attack'];
             $battleLog[] = "AI {$aiMonster['name']} attacks directly for {$aiMonster['attack']} damage";
         }
+    }
     }
     
     // Switch back to player
@@ -580,7 +587,10 @@ function endTurn() {
     
     // Check for game over
     $winner = null;
-    if ($gameState['player_hp'] <= 0) {
+    if ($gameState['player_hp'] <= 0 && $gameState['ai_hp'] <= 0) {
+        // Both players defeated - it's a draw
+        $winner = 'draw';
+    } else if ($gameState['player_hp'] <= 0) {
         $winner = 'ai';
     } else if ($gameState['ai_hp'] <= 0) {
         $winner = 'player';
@@ -897,6 +907,12 @@ function endGame() {
             if ($gameState['ai_level'] > 1) {
                 $xpGained = floor($xpGained * (1 + ($gameState['ai_level'] - 1) * 0.2));
             }
+        } else if ($result === 'draw') {
+            // Award half XP for a draw
+            $xpGained = floor(XP_PER_WIN / 2);
+            if ($gameState['ai_level'] > 1) {
+                $xpGained = floor($xpGained * (1 + ($gameState['ai_level'] - 1) * 0.2));
+            }
         }
         
         // Update user stats
@@ -919,6 +935,9 @@ function endGame() {
         // Update user
         if ($result === 'win') {
             $stmt = $conn->prepare("UPDATE users SET xp = ?, level = ?, total_wins = total_wins + 1 WHERE id = ?");
+        } else if ($result === 'draw') {
+            // Draw doesn't count as win or loss, just update XP and level
+            $stmt = $conn->prepare("UPDATE users SET xp = ?, level = ? WHERE id = ?");
         } else {
             $stmt = $conn->prepare("UPDATE users SET xp = ?, level = ?, total_losses = total_losses + 1 WHERE id = ?");
         }

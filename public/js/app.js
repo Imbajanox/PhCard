@@ -392,10 +392,11 @@ function updateHP() {
     const prevPlayerHP = parseInt(document.getElementById('player-hp-text').textContent.split(':')[1].split('/')[0].trim()) || gameState.player_hp;
     const prevAIHP = parseInt(document.getElementById('ai-hp-text').textContent.split(':')[1].split('/')[0].trim()) || gameState.ai_hp;
     
-    // Player HP
-    const playerHPPercent = (gameState.player_hp / maxHP) * 100;
+    // Player HP - ensure minimum display of 0
+    const displayPlayerHP = Math.max(0, gameState.player_hp);
+    const playerHPPercent = (displayPlayerHP / maxHP) * 100;
     document.getElementById('player-hp-fill').style.width = playerHPPercent + '%';
-    document.getElementById('player-hp-text').textContent = `HP: ${gameState.player_hp} / ${maxHP}`;
+    document.getElementById('player-hp-text').textContent = `HP: ${displayPlayerHP} / ${maxHP}`;
     
     // Visual feedback for player HP change
     if (prevPlayerHP > gameState.player_hp) {
@@ -408,10 +409,11 @@ function updateHP() {
         showHealNumber(document.getElementById('player-hp-text'), heal);
     }
     
-    // AI HP
-    const aiHPPercent = (gameState.ai_hp / maxHP) * 100;
+    // AI HP - ensure minimum display of 0
+    const displayAIHP = Math.max(0, gameState.ai_hp);
+    const aiHPPercent = (displayAIHP / maxHP) * 100;
     document.getElementById('ai-hp-fill').style.width = aiHPPercent + '%';
-    document.getElementById('ai-hp-text').textContent = `HP: ${gameState.ai_hp} / ${maxHP}`;
+    document.getElementById('ai-hp-text').textContent = `HP: ${displayAIHP} / ${maxHP}`;
     
     // Visual feedback for AI HP change
     if (prevAIHP > gameState.ai_hp) {
@@ -600,7 +602,11 @@ async function endTurn() {
             // Check for game over
             if (data.winner) {
                 setTimeout(() => {
-                    endGame(data.winner === 'player' ? 'win' : 'loss');
+                    if (data.winner === 'draw') {
+                        endGame('draw');
+                    } else {
+                        endGame(data.winner === 'player' ? 'win' : 'loss');
+                    }
                 }, delay + 500); // Wait for all logs to appear
             }
         }
@@ -716,8 +722,13 @@ function showGameOverModal(result, data) {
     const statsEl = document.getElementById('game-stats');
     const unlockedEl = document.getElementById('unlocked-cards');
     
-    resultEl.textContent = result === 'win' ? '🎉 Sieg! 🎉' : '💔 Niederlage 💔';
-    resultEl.style.color = result === 'win' ? '#28a745' : '#dc3545';
+    if (result === 'draw') {
+        resultEl.textContent = '🤝 Unentschieden! 🤝';
+        resultEl.style.color = '#ffc107';
+    } else {
+        resultEl.textContent = result === 'win' ? '🎉 Sieg! 🎉' : '💔 Niederlage 💔';
+        resultEl.style.color = result === 'win' ? '#28a745' : '#dc3545';
+    }
     
     let statsHTML = `<p>XP gewonnen: +${data.xp_gained}</p>`;
     
