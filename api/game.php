@@ -903,9 +903,9 @@ function endGame() {
         // Calculate XP based on result using new constants
         $baseXP = 0;
         if ($result === 'win') {
-            $baseXP = XP_PER_WIN; // Now 150
+            $baseXP = XP_PER_WIN;
         } else if ($result === 'loss') {
-            $baseXP = XP_PER_LOSS; // Now 25
+            $baseXP = XP_PER_LOSS;
         } else if ($result === 'draw') {
             // Award half of win XP for a draw
             $baseXP = floor(XP_PER_WIN / 2);

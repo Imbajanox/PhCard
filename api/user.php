@@ -41,7 +41,7 @@ function getUserProfile() {
                 $xpForNext = $user['xp'];
                 $user['xp_for_next_level'] = $xpForNext;
                 $user['xp_progress'] = 0; // Show full/empty bar
-                $user['xp_needed'] = max(1, $xpForNext - $xpForCurrent); // Avoid division by zero
+                $user['xp_needed'] = max(1, $xpForNext - $xpForCurrent); // Ensure positive value for frontend calculations
             } else {
                 // Normal case: next level exists in requirements
                 $xpForNext = $LEVEL_REQUIREMENTS[$nextLevel];
