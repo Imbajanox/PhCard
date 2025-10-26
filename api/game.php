@@ -1035,16 +1035,13 @@ function endGame() {
 function updateQuestProgressForGame($result, $aiLevel, $conn) {
     $userId = $_SESSION['user_id'];
     
-    // Update quests for games played
-    updateQuestProgressHelper($conn, $userId, 'games_played', 1);
-    
     // Update quests for wins
     if ($result === 'win') {
-        updateQuestProgressHelper($conn, $userId, 'games_won', 1);
+        updateQuestProgressHelper($conn, $userId, 'win_games', 1);
         
         // Update quests for wins at specific AI levels
         if ($aiLevel >= 3) {
-            updateQuestProgressHelper($conn, $userId, 'win_hard_ai', 1, ['ai_level' => $aiLevel]);
+            updateQuestProgressHelper($conn, $userId, 'win_games', 1, ['ai_level' => $aiLevel]);
         }
     }
 }
