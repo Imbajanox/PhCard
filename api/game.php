@@ -94,7 +94,7 @@ function startGame() {
         ];
         
         // Draw initial hand
-        $gameState['player_hand'] = drawCards($availableCards, CARDS_IN_HAND);
+        $gameState['player_hand'] = drawCards($gameState['available_cards'], CARDS_IN_HAND);
         
         $_SESSION['game_state'] = $gameState;
         
