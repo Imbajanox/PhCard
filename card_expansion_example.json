@@ -1,0 +1,169 @@
+[
+  {
+    "name": "Flame Warrior",
+    "type": "monster",
+    "attack": 800,
+    "defense": 300,
+    "mana_cost": 4,
+    "keywords": ["charge"],
+    "required_level": 6,
+    "rarity": "rare",
+    "card_class": "warrior",
+    "description": "A fearless warrior wreathed in flames"
+  },
+  {
+    "name": "Frost Mage",
+    "type": "monster",
+    "attack": 500,
+    "defense": 600,
+    "mana_cost": 4,
+    "keywords": ["freeze"],
+    "required_level": 8,
+    "rarity": "rare",
+    "card_class": "mage",
+    "description": "Master of ice magic"
+  },
+  {
+    "name": "Holy Paladin",
+    "type": "monster",
+    "attack": 400,
+    "defense": 700,
+    "mana_cost": 5,
+    "keywords": ["taunt", "lifesteal"],
+    "required_level": 10,
+    "rarity": "epic",
+    "card_class": "paladin",
+    "description": "A devoted paladin blessed with holy power"
+  },
+  {
+    "name": "Shadow Priest",
+    "type": "monster",
+    "attack": 600,
+    "defense": 400,
+    "mana_cost": 4,
+    "keywords": ["stealth"],
+    "required_level": 9,
+    "rarity": "epic",
+    "card_class": "priest",
+    "description": "Channels the power of shadow"
+  },
+  {
+    "name": "Swift Rogue",
+    "type": "monster",
+    "attack": 900,
+    "defense": 200,
+    "mana_cost": 5,
+    "keywords": ["rush", "stealth"],
+    "required_level": 11,
+    "rarity": "epic",
+    "card_class": "rogue",
+    "description": "Strikes quickly from the shadows"
+  },
+  {
+    "name": "Arcane Missiles",
+    "type": "spell",
+    "effect": "damage:500",
+    "mana_cost": 3,
+    "required_level": 5,
+    "rarity": "common",
+    "card_class": "mage",
+    "description": "Launch magical missiles at your opponent"
+  },
+  {
+    "name": "Divine Light",
+    "type": "spell",
+    "effect": "heal:500",
+    "mana_cost": 3,
+    "required_level": 5,
+    "rarity": "common",
+    "card_class": "paladin",
+    "description": "Channel divine energy to restore health"
+  },
+  {
+    "name": "Poison Dagger",
+    "type": "spell",
+    "effect": "poison:150",
+    "mana_cost": 2,
+    "required_level": 7,
+    "rarity": "rare",
+    "card_class": "rogue",
+    "description": "Apply deadly poison that damages over time"
+  },
+  {
+    "name": "Battle Fury",
+    "type": "spell",
+    "effect": "boost:600",
+    "mana_cost": 4,
+    "required_level": 8,
+    "rarity": "rare",
+    "card_class": "warrior",
+    "description": "Empower your monsters with battle rage"
+  },
+  {
+    "name": "Mind Control",
+    "type": "spell",
+    "effect": "stun:1",
+    "mana_cost": 5,
+    "required_level": 12,
+    "rarity": "epic",
+    "card_class": "priest",
+    "description": "Take control of an enemy monster's mind"
+  },
+  {
+    "name": "Dragon Hatchling",
+    "type": "monster",
+    "attack": 300,
+    "defense": 200,
+    "mana_cost": 2,
+    "required_level": 3,
+    "rarity": "common",
+    "card_class": "neutral",
+    "description": "A young dragon learning to fly"
+  },
+  {
+    "name": "Elder Dragon",
+    "type": "monster",
+    "attack": 2000,
+    "defense": 1000,
+    "mana_cost": 9,
+    "keywords": ["windfury"],
+    "required_level": 20,
+    "rarity": "legendary",
+    "card_class": "neutral",
+    "description": "An ancient dragon of immense power"
+  },
+  {
+    "name": "Shield Bearer",
+    "type": "monster",
+    "attack": 200,
+    "defense": 800,
+    "mana_cost": 3,
+    "keywords": ["taunt", "divine_shield"],
+    "required_level": 4,
+    "rarity": "common",
+    "card_class": "neutral",
+    "description": "A stalwart defender with an impenetrable shield"
+  },
+  {
+    "name": "Berserker",
+    "type": "monster",
+    "attack": 1200,
+    "defense": 100,
+    "mana_cost": 6,
+    "keywords": ["charge", "windfury"],
+    "required_level": 15,
+    "rarity": "epic",
+    "card_class": "warrior",
+    "description": "Attacks with reckless fury"
+  },
+  {
+    "name": "Time Warp",
+    "type": "spell",
+    "effect": "draw:3",
+    "mana_cost": 5,
+    "required_level": 14,
+    "rarity": "epic",
+    "card_class": "mage",
+    "description": "Bend time to draw extra cards"
+  }
+]
