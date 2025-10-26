@@ -55,7 +55,9 @@
                 <div class="menu-buttons">
                     <button class="menu-btn" onclick="showScreen('game-setup-screen')">Neues Spiel</button>
                     <button class="menu-btn" onclick="showCardCollection()">Kartensammlung</button>
-                    <button class="menu-btn" onclick="window.location.href='dashboard.html'">Analytics & Simulation</button>
+                    <button class="menu-btn" id="deck-builder-btn" onclick="loadDeckBuilder()">Deck Builder</button>
+                    <button class="menu-btn" id="statistics-btn" onclick="window.location.href='statistics.html'">Statistiken</button>
+                    <button class="menu-btn" id="analytics-btn" onclick="window.location.href='dashboard.html'" style="display: none;">Analytics & Simulation</button>
                     <button class="menu-btn" onclick="logout()">Abmelden</button>
                 </div>
             </div>
@@ -84,6 +86,88 @@
             <div class="collection-container">
                 <h2>Meine Kartensammlung</h2>
                 <div id="card-collection" class="card-grid"></div>
+                <button class="back-btn" onclick="showScreen('menu-screen')">Zurück</button>
+            </div>
+        </div>
+        
+        <!-- Deck Builder Screen -->
+        <div id="deck-builder-screen" class="screen">
+            <div class="deck-builder-container">
+                <h2>Deck Builder</h2>
+                
+                <div class="deck-builder-layout">
+                    <!-- Deck List Sidebar -->
+                    <div class="deck-list-sidebar">
+                        <h3>Meine Decks</h3>
+                        <button class="action-btn" onclick="createNewDeck()">+ Neues Deck</button>
+                        <div id="deck-list" class="deck-list">
+                            <!-- Dynamically populated -->
+                        </div>
+                    </div>
+                    
+                    <!-- Deck Editor -->
+                    <div class="deck-editor">
+                        <div id="deck-editor-empty" class="empty-state">
+                            <p>Wähle ein Deck aus oder erstelle ein neues Deck</p>
+                        </div>
+                        
+                        <div id="deck-editor-content" style="display: none;">
+                            <div class="deck-header">
+                                <input type="text" id="deck-name-input" placeholder="Deck Name" />
+                                <select id="deck-class-select">
+                                    <option value="neutral">Neutral</option>
+                                    <option value="warrior">Krieger</option>
+                                    <option value="mage">Magier</option>
+                                    <option value="rogue">Schurke</option>
+                                    <option value="priest">Priester</option>
+                                    <option value="paladin">Paladin</option>
+                                </select>
+                                <button class="action-btn" onclick="saveDeck()">Speichern</button>
+                                <button class="action-btn" onclick="setActiveDeck()">Als Aktiv setzen</button>
+                                <button class="action-btn danger" onclick="deleteDeck()">Löschen</button>
+                            </div>
+                            
+                            <div class="deck-stats">
+                                <span>Karten: <strong id="deck-card-count">0</strong>/30</span>
+                                <span id="deck-validation-message"></span>
+                            </div>
+                            
+                            <div class="deck-editor-main">
+                                <!-- Current Deck Cards -->
+                                <div class="current-deck-cards">
+                                    <h4>Im Deck (<span id="deck-cards-count">0</span>)</h4>
+                                    <div id="current-deck-cards" class="card-list">
+                                        <!-- Dynamically populated -->
+                                    </div>
+                                </div>
+                                
+                                <!-- Available Cards -->
+                                <div class="available-cards">
+                                    <h4>Verfügbare Karten</h4>
+                                    <div class="filter-bar">
+                                        <input type="text" id="deck-card-search" placeholder="Suche..." onkeyup="filterDeckCards()" />
+                                        <select id="deck-card-type-filter" onchange="filterDeckCards()">
+                                            <option value="">Alle Typen</option>
+                                            <option value="monster">Monster</option>
+                                            <option value="spell">Zauber</option>
+                                        </select>
+                                        <select id="deck-card-rarity-filter" onchange="filterDeckCards()">
+                                            <option value="">Alle Seltenheiten</option>
+                                            <option value="common">Gewöhnlich</option>
+                                            <option value="rare">Selten</option>
+                                            <option value="epic">Episch</option>
+                                            <option value="legendary">Legendär</option>
+                                        </select>
+                                    </div>
+                                    <div id="available-deck-cards" class="card-list">
+                                        <!-- Dynamically populated -->
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
                 <button class="back-btn" onclick="showScreen('menu-screen')">Zurück</button>
             </div>
         </div>

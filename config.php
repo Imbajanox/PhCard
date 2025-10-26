@@ -64,4 +64,34 @@ function requireLogin() {
         exit();
     }
 }
+
+// Helper function to check if user is admin
+function isAdmin() {
+    if (!isLoggedIn()) {
+        return false;
+    }
+    
+    $conn = getDBConnection();
+    if (!$conn) {
+        return false;
+    }
+    
+    try {
+        $stmt = $conn->prepare("SELECT is_admin FROM users WHERE id = ?");
+        $stmt->execute([$_SESSION['user_id']]);
+        $user = $stmt->fetch(PDO::FETCH_ASSOC);
+        return $user && $user['is_admin'];
+    } catch(PDOException $e) {
+        return false;
+    }
+}
+
+// Helper function to require admin privileges
+function requireAdmin() {
+    if (!isAdmin()) {
+        header('Content-Type: application/json');
+        echo json_encode(['success' => false, 'error' => 'Admin access required']);
+        exit();
+    }
+}
 ?>
