@@ -3,6 +3,15 @@
 # PhCard Setup Script
 # This script helps set up the PhCard game environment
 
+# Exit on error
+set -e
+
+# Validate script has proper permissions
+if [ ! -x "$0" ]; then
+    echo "Error: Script doesn't have execute permissions. Run: chmod +x setup.sh"
+    exit 1
+fi
+
 echo "========================================"
 echo "PhCard - Setup Script"
 echo "========================================"

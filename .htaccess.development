@@ -1,9 +1,10 @@
-# PhCard .htaccess
+# PhCard .htaccess for DEVELOPMENT
+# Use this file during development by renaming it to .htaccess
+# For production, use .htaccess.production
 
-# Disable error display in production (enable only in development)
-php_flag display_errors Off
-php_flag display_startup_errors Off
-php_value error_log /var/log/php_errors.log
+# Enable error display for development
+php_flag display_errors On
+php_flag display_startup_errors On
 
 # Session settings
 php_value session.cookie_httponly 1

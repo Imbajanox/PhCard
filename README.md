@@ -56,6 +56,13 @@ Ein rundenbasiertes Browser-Kartenspiel gegen eine KI mit Level-System, XP und K
 4. **Webserver konfigurieren**
    - Stelle sicher, dass der Webserver auf das Projektverzeichnis zeigt
    - Die `index.html` sollte die Startseite sein
+   - **Für Apache:**
+     - Entwicklung: Die aktuelle `.htaccess` ist für Produktion konfiguriert
+     - Wenn du Fehler sehen möchtest, verwende `.htaccess.development`:
+       ```bash
+       cp .htaccess.development .htaccess
+       ```
+   - **Für Nginx:** Siehe separate Nginx-Konfiguration im Projekt
 
 5. **Starten**
    - Öffne den Browser und navigiere zur Anwendung
