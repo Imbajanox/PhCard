@@ -2,6 +2,7 @@
 require_once '../config.php';
 require_once 'GameEventSystem.php';
 require_once 'CardEffectRegistry.php';
+require_once 'PluginSystem.php';
 
 header('Content-Type: application/json');
 requireLogin();
@@ -9,6 +10,9 @@ requireLogin();
 // Initialize event system and effect registry
 GameEventSystem::initDefaultHooks();
 CardEffectRegistry::init();
+
+// Load plugins
+PluginSystem::init();
 
 $action = $_POST['action'] ?? '';
 

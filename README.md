@@ -4,6 +4,7 @@ Ein rundenbasiertes Browser-Kartenspiel gegen eine KI mit Level-System, XP und K
 
 ## Features
 
+### Core Game Features
 - **Rundenbasiertes Gameplay**: Spieler und KI wechseln sich ab, um Monster- und Zauberkarten zu spielen
 - **Monster- und Zauberkarten**: Verschiedene Kartentypen mit unterschiedlichen Effekten
 - **KI-Gegner**: Skalierbare KI mit 5 Schwierigkeitsstufen
@@ -12,6 +13,18 @@ Ein rundenbasiertes Browser-Kartenspiel gegen eine KI mit Level-System, XP und K
 - **Progression**: Stärkere KI-Gegner werden mit höherem Level verfügbar
 - **Datenbank-Backend**: PHP verwaltet Benutzer, Karten und Spielstände
 - **AJAX-basierte UI**: JavaScript steuert die Benutzeroberfläche
+
+### 🆕 Extensibility Features (NEW!)
+- **Plugin System**: Drop-in plugins für custom Funktionalität
+- **Event System**: Event-driven Architektur für Spielaktionen
+- **Effect Registry**: Einfaches Hinzufügen neuer Karteneffekte
+- **Card Factory**: JSON-basierte Kartenerstellung und -import
+- **Quest System**: Konfigurierbare Quests mit verschiedenen Zielen
+- **Achievement System**: Fortschritts-Tracking und Belohnungen
+- **Card Sets**: Organisiere Karten in Erweiterungen
+- **Developer Tools**: CLI-Tools und umfassende Dokumentation
+
+> 📚 **Für Entwickler**: Siehe [EXTENSIBILITY_README.md](EXTENSIBILITY_README.md) für Details zum Erweitern des Spiels
 
 ## Technologie-Stack
 
@@ -159,6 +172,60 @@ PhCard/
 ├── index.html         # Hauptseite
 └── README.md
 ```
+
+## Erweiterbarkeit (für Entwickler)
+
+PhCard verfügt über ein umfassendes Extensibility Framework, das es einfach macht, neue Features und Inhalte hinzuzufügen:
+
+### Schnelle Erweiterung
+
+```bash
+# Neue Karten aus JSON importieren
+php import_cards.php my_cards.json EXPANSION1
+
+# Quest/Achievement System installieren
+mysql -u root -p phcard < database_quest_achievement_system.sql
+
+# Extensibility Tests ausführen
+./test_extensibility.sh
+```
+
+### Plugin-Beispiel
+
+Erstelle `plugins/plugin_custom.php`:
+
+```php
+<?php
+// Neuen Karteneffekt registrieren
+CardEffectRegistry::register('super_damage', function($context) {
+    $context['gameState']['ai_hp'] -= 1000;
+    return $context['gameState'];
+});
+
+// Auf Spielereignisse reagieren
+GameEventSystem::on('game_end', function($data) {
+    error_log("Game ended: {$data['result']}");
+    return $data;
+});
+?>
+```
+
+### Dokumentation für Entwickler
+
+- **[EXTENSIBILITY_README.md](EXTENSIBILITY_README.md)** - Überblick über alle Features
+- **[EXTENSION_GUIDE.md](EXTENSION_GUIDE.md)** - Detaillierte Tutorials und Beispiele
+- **[QUICK_REFERENCE.md](QUICK_REFERENCE.md)** - Schnellreferenz für häufige Aufgaben
+- **[EXPANDABILITY_SUMMARY.md](EXPANDABILITY_SUMMARY.md)** - Zusammenfassung der Verbesserungen
+
+### Verfügbare Erweiterungspunkte
+
+- ✅ **Card Effects** - Neue Karteneffekte via Registry
+- ✅ **Game Events** - Event Listener für Spielaktionen
+- ✅ **Plugins** - Drop-in Erweiterungen
+- ✅ **Quests** - Konfigurierbare Aufgaben
+- ✅ **Achievements** - Fortschritts-Tracking
+- ✅ **Card Sets** - Organisiere Erweiterungen
+- ✅ **JSON Import** - Massenimport von Karten
 
 ## Lizenz
 

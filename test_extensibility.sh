@@ -12,6 +12,7 @@ php_files=(
     "api/CardEffectRegistry.php"
     "api/GameEventSystem.php"
     "api/CardFactory.php"
+    "api/PluginSystem.php"
     "api/quests.php"
     "api/card_sets.php"
     "import_cards.php"
@@ -57,6 +58,7 @@ required_files=(
     "api/CardEffectRegistry.php"
     "api/GameEventSystem.php"
     "api/CardFactory.php"
+    "api/PluginSystem.php"
     "api/quests.php"
     "api/card_sets.php"
     "database_quest_achievement_system.sql"
@@ -64,6 +66,8 @@ required_files=(
     "import_cards.php"
     "EXTENSION_GUIDE.md"
     "EXTENSIBILITY_README.md"
+    "QUICK_REFERENCE.md"
+    "EXPANDABILITY_SUMMARY.md"
 )
 
 all_exist=true
@@ -104,6 +108,13 @@ echo ""
 # Test 5: Class/Function Existence
 echo "Test 5: Class and Function Checks"
 echo "----------------------------------"
+if grep -q "class PluginSystem" api/PluginSystem.php; then
+    echo "  ✓ PluginSystem class defined"
+else
+    echo "  ✗ PluginSystem class not found"
+    all_valid=false
+fi
+
 if grep -q "class CardEffectRegistry" api/CardEffectRegistry.php; then
     echo "  ✓ CardEffectRegistry class defined"
 else
@@ -130,6 +141,13 @@ echo ""
 # Test 6: Integration Points
 echo "Test 6: Integration Point Verification"
 echo "---------------------------------------"
+if grep -q "require_once 'PluginSystem.php'" api/game.php; then
+    echo "  ✓ PluginSystem integrated in game.php"
+else
+    echo "  ✗ PluginSystem not integrated in game.php"
+    all_valid=false
+fi
+
 if grep -q "require_once 'GameEventSystem.php'" api/game.php; then
     echo "  ✓ GameEventSystem integrated in game.php"
 else
