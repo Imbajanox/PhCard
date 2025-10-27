@@ -695,3 +695,34 @@ body {
 .mt-20 {
     margin-top: 20px;
 }
+
+/* Quest Reset Controls */
+.quest-reset-controls {
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+    margin: 20px 0;
+}
+
+.reset-button {
+    padding: 10px 20px;
+    background: linear-gradient(135deg, #FF6B6B, #EE5A6F);
+    color: white;
+    border: none;
+    border-radius: 6px;
+    font-size: 0.95em;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 5px rgba(238, 90, 111, 0.3);
+}
+
+.reset-button:hover {
+    background: linear-gradient(135deg, #EE5A6F, #DC4C5C);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 10px rgba(238, 90, 111, 0.4);
+}
+
+.reset-button:active {
+    transform: translateY(0);
+}

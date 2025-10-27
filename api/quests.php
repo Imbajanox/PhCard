@@ -17,6 +17,15 @@ switch ($action) {
     case 'claim_quest_reward':
         claimQuestReward();
         break;
+    case 'reset_daily_quests':
+        resetDailyQuests();
+        break;
+    case 'reset_weekly_quests':
+        resetWeeklyQuests();
+        break;
+    case 'check_auto_reset':
+        checkAutoReset();
+        break;
     case 'get_achievements':
         getAchievements();
         break;
@@ -404,5 +413,163 @@ function unlockAchievement($userId, $achievementId, $conn) {
         'achievement_id' => $achievementId,
         'xp_reward' => $xpReward
     ]);
+}
+
+function resetDailyQuests() {
+    $conn = getDBConnection();
+    $userId = $_SESSION['user_id'];
+    
+    try {
+        // Check if reset is allowed (once per day)
+        $stmt = $conn->prepare("SELECT last_daily_reset FROM users WHERE id = ?");
+        $stmt->execute([$userId]);
+        $lastReset = $stmt->fetchColumn();
+        
+        $today = date('Y-m-d');
+        if ($lastReset === $today) {
+            throw new Exception("Daily quests can only be reset once per day");
+        }
+        
+        // Delete progress for daily quests that haven't been claimed
+        $stmt = $conn->prepare("
+            DELETE uqp FROM user_quest_progress uqp
+            JOIN quests q ON uqp.quest_id = q.id
+            WHERE uqp.user_id = ? 
+            AND q.quest_type = 'daily'
+            AND uqp.claimed = false
+        ");
+        $stmt->execute([$userId]);
+        $resetCount = $stmt->rowCount();
+        
+        // Update last reset time
+        $stmt = $conn->prepare("UPDATE users SET last_daily_reset = ? WHERE id = ?");
+        $stmt->execute([$today, $userId]);
+        
+        // Trigger event
+        GameEventSystem::trigger('daily_quests_reset', [
+            'user_id' => $userId,
+            'reset_count' => $resetCount
+        ]);
+        
+        echo json_encode([
+            'success' => true,
+            'message' => "Reset $resetCount daily quest(s)",
+            'reset_count' => $resetCount
+        ]);
+    } catch (Exception $e) {
+        echo json_encode(['success' => false, 'error' => $e->getMessage()]);
+    }
+}
+
+function resetWeeklyQuests() {
+    $conn = getDBConnection();
+    $userId = $_SESSION['user_id'];
+    
+    try {
+        // Check if reset is allowed (once per week)
+        $stmt = $conn->prepare("SELECT last_weekly_reset FROM users WHERE id = ?");
+        $stmt->execute([$userId]);
+        $lastReset = $stmt->fetchColumn();
+        
+        $thisWeek = date('Y-W'); // Year-Week format
+        $lastResetWeek = $lastReset ? date('Y-W', strtotime($lastReset)) : null;
+        
+        if ($lastResetWeek === $thisWeek) {
+            throw new Exception("Weekly quests can only be reset once per week");
+        }
+        
+        // Delete progress for weekly quests that haven't been claimed
+        $stmt = $conn->prepare("
+            DELETE uqp FROM user_quest_progress uqp
+            JOIN quests q ON uqp.quest_id = q.id
+            WHERE uqp.user_id = ? 
+            AND q.quest_type = 'weekly'
+            AND uqp.claimed = false
+        ");
+        $stmt->execute([$userId]);
+        $resetCount = $stmt->rowCount();
+        
+        // Update last reset time
+        $stmt = $conn->prepare("UPDATE users SET last_weekly_reset = NOW() WHERE id = ?");
+        $stmt->execute([$userId]);
+        
+        // Trigger event
+        GameEventSystem::trigger('weekly_quests_reset', [
+            'user_id' => $userId,
+            'reset_count' => $resetCount
+        ]);
+        
+        echo json_encode([
+            'success' => true,
+            'message' => "Reset $resetCount weekly quest(s)",
+            'reset_count' => $resetCount
+        ]);
+    } catch (Exception $e) {
+        echo json_encode(['success' => false, 'error' => $e->getMessage()]);
+    }
+}
+
+function checkAutoReset() {
+    $conn = getDBConnection();
+    $userId = $_SESSION['user_id'];
+    
+    try {
+        $stmt = $conn->prepare("SELECT last_daily_reset, last_weekly_reset FROM users WHERE id = ?");
+        $stmt->execute([$userId]);
+        $user = $stmt->fetch(PDO::FETCH_ASSOC);
+        
+        $today = date('Y-m-d');
+        $thisWeek = date('Y-W');
+        
+        $needsDailyReset = false;
+        $needsWeeklyReset = false;
+        
+        // Check if daily reset needed
+        if (!$user['last_daily_reset'] || $user['last_daily_reset'] < $today) {
+            $needsDailyReset = true;
+            
+            // Auto-reset unclaimed daily quests from previous days
+            $stmt = $conn->prepare("
+                DELETE uqp FROM user_quest_progress uqp
+                JOIN quests q ON uqp.quest_id = q.id
+                WHERE uqp.user_id = ? 
+                AND q.quest_type = 'daily'
+                AND uqp.claimed = false
+                AND DATE(uqp.started_at) < ?
+            ");
+            $stmt->execute([$userId, $today]);
+            
+            $stmt = $conn->prepare("UPDATE users SET last_daily_reset = ? WHERE id = ?");
+            $stmt->execute([$today, $userId]);
+        }
+        
+        // Check if weekly reset needed
+        $lastWeeklyResetWeek = $user['last_weekly_reset'] ? date('Y-W', strtotime($user['last_weekly_reset'])) : null;
+        if (!$lastWeeklyResetWeek || $lastWeeklyResetWeek < $thisWeek) {
+            $needsWeeklyReset = true;
+            
+            // Auto-reset unclaimed weekly quests from previous weeks
+            $stmt = $conn->prepare("
+                DELETE uqp FROM user_quest_progress uqp
+                JOIN quests q ON uqp.quest_id = q.id
+                WHERE uqp.user_id = ? 
+                AND q.quest_type = 'weekly'
+                AND uqp.claimed = false
+                AND YEARWEEK(uqp.started_at) < YEARWEEK(?)
+            ");
+            $stmt->execute([$userId, $today]);
+            
+            $stmt = $conn->prepare("UPDATE users SET last_weekly_reset = NOW() WHERE id = ?");
+            $stmt->execute([$userId]);
+        }
+        
+        echo json_encode([
+            'success' => true,
+            'daily_reset' => $needsDailyReset,
+            'weekly_reset' => $needsWeeklyReset
+        ]);
+    } catch (Exception $e) {
+        echo json_encode(['success' => false, 'error' => $e->getMessage()]);
+    }
 }
 ?>
