@@ -28,6 +28,10 @@ Complete transformation of the PhCard game interface into a cohesive retro arcad
 body::before {
     content: '';
     position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
     background: repeating-linear-gradient(
         0deg,
         rgba(0, 0, 0, 0.15) 0px,
@@ -43,8 +47,20 @@ body::before {
 ### Grid Background Pattern
 ```css
 background-image: 
-    repeating-linear-gradient(0deg, rgba(0, 255, 255, 0.03) 0px, transparent 1px, transparent 2px, rgba(0, 255, 255, 0.03) 3px),
-    repeating-linear-gradient(90deg, rgba(255, 0, 255, 0.03) 0px, transparent 1px, transparent 2px, rgba(255, 0, 255, 0.03) 3px);
+    repeating-linear-gradient(
+        0deg, 
+        rgba(0, 255, 255, 0.03) 0px, 
+        transparent 1px, 
+        transparent 2px, 
+        rgba(0, 255, 255, 0.03) 3px
+    ),
+    repeating-linear-gradient(
+        90deg, 
+        rgba(255, 0, 255, 0.03) 0px, 
+        transparent 1px, 
+        transparent 2px, 
+        rgba(255, 0, 255, 0.03) 3px
+    );
 ```
 
 ### Neon Glow
