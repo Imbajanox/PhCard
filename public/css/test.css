@@ -1,0 +1,154 @@
+/* Test Page Retro Styles */
+body {
+    font-family: 'Courier New', monospace;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+    background: #0a0e27;
+    background-image: 
+        repeating-linear-gradient(0deg, rgba(0, 255, 255, 0.03) 0px, transparent 1px, transparent 2px, rgba(0, 255, 255, 0.03) 3px),
+        repeating-linear-gradient(90deg, rgba(255, 0, 255, 0.03) 0px, transparent 1px, transparent 2px, rgba(255, 0, 255, 0.03) 3px);
+    color: #00ff00;
+    position: relative;
+}
+
+/* Retro scanline effect */
+body::before {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: repeating-linear-gradient(
+        0deg,
+        rgba(0, 0, 0, 0.15) 0px,
+        transparent 1px,
+        transparent 2px,
+        rgba(0, 0, 0, 0.15) 3px
+    );
+    pointer-events: none;
+    z-index: 9999;
+}
+
+.section {
+    background: #1a1a2e;
+    margin: 20px 0;
+    padding: 20px;
+    border: 3px solid #00ff00;
+    border-radius: 0;
+    box-shadow: 0 0 20px rgba(0, 255, 0, 0.3);
+}
+
+h1 { 
+    color: #00ff00;
+    text-shadow: 0 0 15px #00ff00;
+    text-transform: uppercase;
+    letter-spacing: 3px;
+}
+
+h2 { 
+    color: #00ffff;
+    border-bottom: 3px solid #00ffff;
+    padding-bottom: 10px;
+    text-shadow: 0 0 10px #00ffff;
+}
+
+.status { 
+    padding: 10px;
+    margin: 10px 0;
+    border-radius: 0;
+    border: 2px solid;
+}
+
+.success { 
+    background: rgba(0, 255, 0, 0.1);
+    color: #00ff00;
+    border-color: #00ff00;
+    box-shadow: 0 0 10px rgba(0, 255, 0, 0.5);
+}
+
+.error { 
+    background: rgba(255, 0, 0, 0.1);
+    color: #ff0000;
+    border-color: #ff0000;
+    box-shadow: 0 0 10px rgba(255, 0, 0, 0.5);
+}
+
+.info { 
+    background: rgba(0, 255, 255, 0.1);
+    color: #00ffff;
+    border-color: #00ffff;
+    box-shadow: 0 0 10px rgba(0, 255, 255, 0.5);
+}
+
+button {
+    background: #00ff00;
+    color: #0a0e27;
+    border: 3px solid #00ff00;
+    padding: 10px 20px;
+    border-radius: 0;
+    cursor: pointer;
+    margin: 5px;
+    font-family: 'Courier New', monospace;
+    font-weight: bold;
+    text-transform: uppercase;
+    box-shadow: 0 0 10px #00ff00;
+    transition: all 0.3s;
+}
+
+button:hover { 
+    background: #0a0e27;
+    color: #00ff00;
+    box-shadow: 0 0 20px #00ff00;
+}
+
+.test-result {
+    margin: 10px 0;
+    padding: 10px;
+    background: #0a0e27;
+    border-left: 4px solid #00ff00;
+    color: #00ffff;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 10px 0;
+}
+
+th, td {
+    padding: 10px;
+    border: 2px solid #00ffff;
+    text-align: left;
+}
+
+th {
+    background: #0a0e27;
+    color: #00ffff;
+    font-weight: bold;
+    text-shadow: 0 0 5px #00ffff;
+}
+
+td {
+    color: #00ff00;
+}
+
+tr:hover {
+    background: rgba(0, 255, 0, 0.1);
+}
+
+pre {
+    background: #0a0e27;
+    padding: 15px;
+    border: 2px solid #ff00ff;
+    border-radius: 0;
+    overflow-x: auto;
+    color: #ff00ff;
+    box-shadow: 0 0 10px rgba(255, 0, 255, 0.3);
+}
+
+code {
+    font-family: 'Courier New', monospace;
+    color: #ff00ff;
+}

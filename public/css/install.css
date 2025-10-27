@@ -1,0 +1,160 @@
+/* Install Page Retro Styles */
+body {
+    font-family: 'Courier New', monospace;
+    max-width: 800px;
+    margin: 50px auto;
+    padding: 20px;
+    background: #0a0e27;
+    background-image: 
+        repeating-linear-gradient(0deg, rgba(0, 255, 255, 0.03) 0px, transparent 1px, transparent 2px, rgba(0, 255, 255, 0.03) 3px),
+        repeating-linear-gradient(90deg, rgba(255, 0, 255, 0.03) 0px, transparent 1px, transparent 2px, rgba(255, 0, 255, 0.03) 3px);
+    color: #00ff00;
+    position: relative;
+}
+
+/* Retro scanline effect */
+body::before {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: repeating-linear-gradient(
+        0deg,
+        rgba(0, 0, 0, 0.15) 0px,
+        transparent 1px,
+        transparent 2px,
+        rgba(0, 0, 0, 0.15) 3px
+    );
+    pointer-events: none;
+    z-index: 9999;
+}
+
+.container {
+    background: #1a1a2e;
+    padding: 30px;
+    border: 4px solid #00ff00;
+    border-radius: 0;
+    box-shadow: 0 0 30px rgba(0, 255, 0, 0.5);
+}
+
+h1 { 
+    color: #00ff00;
+    text-shadow: 0 0 15px #00ff00;
+    text-transform: uppercase;
+    letter-spacing: 3px;
+}
+
+h2 {
+    color: #00ffff;
+    text-shadow: 0 0 10px #00ffff;
+    margin-top: 30px;
+    margin-bottom: 15px;
+}
+
+.success { 
+    color: #00ff00;
+    padding: 10px;
+    background: rgba(0, 255, 0, 0.1);
+    border: 2px solid #00ff00;
+    border-radius: 0;
+    margin: 10px 0;
+    box-shadow: 0 0 10px rgba(0, 255, 0, 0.5);
+}
+
+.error { 
+    color: #ff0000;
+    padding: 10px;
+    background: rgba(255, 0, 0, 0.1);
+    border: 2px solid #ff0000;
+    border-radius: 0;
+    margin: 10px 0;
+    box-shadow: 0 0 10px rgba(255, 0, 0, 0.5);
+}
+
+.info { 
+    color: #00ffff;
+    padding: 10px;
+    background: rgba(0, 255, 255, 0.1);
+    border: 2px solid #00ffff;
+    border-radius: 0;
+    margin: 10px 0;
+    box-shadow: 0 0 10px rgba(0, 255, 255, 0.5);
+}
+
+button {
+    background: #00ff00;
+    color: #0a0e27;
+    border: 3px solid #00ff00;
+    padding: 12px 30px;
+    border-radius: 0;
+    cursor: pointer;
+    font-size: 16px;
+    margin: 10px 5px;
+    font-family: 'Courier New', monospace;
+    font-weight: bold;
+    text-transform: uppercase;
+    box-shadow: 0 0 15px #00ff00;
+    transition: all 0.3s;
+}
+
+button:hover { 
+    background: #0a0e27;
+    color: #00ff00;
+    box-shadow: 0 0 25px #00ff00;
+}
+
+input {
+    width: 100%;
+    padding: 10px;
+    margin: 5px 0;
+    border: 3px solid #00ffff;
+    border-radius: 0;
+    background: #0a0e27;
+    color: #00ff00;
+    font-family: 'Courier New', monospace;
+}
+
+input:focus {
+    outline: none;
+    border-color: #ff00ff;
+    box-shadow: 0 0 10px #ff00ff;
+}
+
+.form-group {
+    margin-bottom: 15px;
+}
+
+label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: bold;
+    color: #00ffff;
+    text-shadow: 0 0 5px #00ffff;
+}
+
+pre {
+    background: #0a0e27;
+    padding: 15px;
+    border: 2px solid #ff00ff;
+    border-radius: 0;
+    overflow-x: auto;
+    color: #ff00ff;
+    box-shadow: 0 0 10px rgba(255, 0, 255, 0.3);
+}
+
+code {
+    font-family: 'Courier New', monospace;
+    color: #ff00ff;
+}
+
+p {
+    color: #00ffff;
+    line-height: 1.6;
+}
+
+strong {
+    color: #00ff00;
+    text-shadow: 0 0 3px #00ff00;
+}
