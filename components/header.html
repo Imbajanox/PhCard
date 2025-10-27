@@ -63,13 +63,10 @@
         const isFeaturePage = window.location.pathname.includes('/web/features/');
         const basePath = isFeaturePage ? '../../' : '';
         
-        // Check if main app functions are available (showCardCollection is more reliable)
-        const hasAppFunctions = typeof showCardCollection === 'function' && typeof loadDeckBuilder === 'function';
-        
         let buttons = [];
         
-        if (hasAppFunctions && !isFeaturePage) {
-            // Main app navigation
+        if (!isFeaturePage) {
+            // Main app navigation - uses app functions
             buttons = [
                 { label: 'Menü', onclick: "showScreen('menu-screen')" },
                 { label: 'Neues Spiel', onclick: "showScreen('game-setup-screen')" },
