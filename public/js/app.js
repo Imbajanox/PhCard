@@ -1145,7 +1145,19 @@ async function loadHeader() {
             throw new Error(`HTTP error! status: ${response.status}`);
         }
         const headerHtml = await response.text();
-        document.getElementById('header-placeholder').innerHTML = headerHtml;
+        const placeholder = document.getElementById('header-placeholder');
+        placeholder.innerHTML = headerHtml;
+        
+        // Execute scripts that were inserted via innerHTML
+        const scripts = placeholder.querySelectorAll('script');
+        scripts.forEach(oldScript => {
+            const newScript = document.createElement('script');
+            Array.from(oldScript.attributes).forEach(attr => {
+                newScript.setAttribute(attr.name, attr.value);
+            });
+            newScript.textContent = oldScript.textContent;
+            oldScript.parentNode.replaceChild(newScript, oldScript);
+        });
         
         // Initial visibility control for the header after it's loaded
         // This assumes the app starts on the 'auth-screen'.
