@@ -69,6 +69,7 @@
             // Main app navigation - uses app functions
             buttons = [
                 { label: 'Menü', onclick: "showScreen('menu-screen')" },
+                { label: 'Shop', onclick: `window.location.href='${basePath}web/features/shop.html'`, id: 'shop-btn' },
                 { label: 'Quests', onclick: `window.location.href='${basePath}web/features/quests.html'`, id: 'quests-btn' },
                 { label: 'Achievements', onclick: `window.location.href='${basePath}web/features/achievements.html'`, id: 'achievements-btn' },
                 { label: 'Card Sets', onclick: `window.location.href='${basePath}web/features/cardsets.html'`, id: 'card-sets-btn' },
@@ -78,6 +79,7 @@
             // Feature page navigation
             buttons = [
                 { label: 'Menü', onclick: `window.location.href='${basePath}index.html'` },
+                { label: 'Shop', onclick: "window.location.href='shop.html'", id: 'shop-btn' },
                 { label: 'Quests', onclick: "window.location.href='quests.html'", id: 'quests-btn' },
                 { label: 'Achievements', onclick: "window.location.href='achievements.html'", id: 'achievements-btn' },
                 { label: 'Card Sets', onclick: "window.location.href='cardsets.html'", id: 'card-sets-btn' },

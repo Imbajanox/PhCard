@@ -954,16 +954,39 @@ function endGame() {
         
         $leveledUp = $newLevel > $user['level'];
         
-        // Update user
+        // Calculate currency rewards
+        $coinsEarned = 0;
+        $gemsEarned = 0;
+        
         if ($result === 'win') {
-            $stmt = $conn->prepare("UPDATE users SET xp = ?, level = ?, total_wins = total_wins + 1 WHERE id = ?");
+            // Base coin reward + AI level bonus
+            $coinsEarned = 50 + ($gameState['ai_level'] * 10);
+            
+            // Chance for gems on win (10% base chance, +5% per AI level)
+            $gemChance = 10 + ($gameState['ai_level'] * 5);
+            if (mt_rand(1, 100) <= $gemChance) {
+                $gemsEarned = 1 + floor($gameState['ai_level'] / 2);
+            }
+        } else if ($result === 'loss') {
+            // Small consolation coins
+            $coinsEarned = 10 + ($gameState['ai_level'] * 2);
         } else if ($result === 'draw') {
-            // Draw doesn't count as win or loss, just update XP and level
-            $stmt = $conn->prepare("UPDATE users SET xp = ?, level = ? WHERE id = ?");
-        } else {
-            $stmt = $conn->prepare("UPDATE users SET xp = ?, level = ?, total_losses = total_losses + 1 WHERE id = ?");
+            // Half of win coins for draw
+            $coinsEarned = 25 + ($gameState['ai_level'] * 5);
         }
-        $stmt->execute([$newXp, $newLevel, $_SESSION['user_id']]);
+        
+        // Update user with currency
+        if ($result === 'win') {
+            $stmt = $conn->prepare("UPDATE users SET xp = ?, level = ?, total_wins = total_wins + 1, coins = coins + ?, gems = gems + ? WHERE id = ?");
+            $stmt->execute([$newXp, $newLevel, $coinsEarned, $gemsEarned, $_SESSION['user_id']]);
+        } else if ($result === 'draw') {
+            // Draw doesn't count as win or loss, just update XP, level, and currency
+            $stmt = $conn->prepare("UPDATE users SET xp = ?, level = ?, coins = coins + ?, gems = gems + ? WHERE id = ?");
+            $stmt->execute([$newXp, $newLevel, $coinsEarned, $gemsEarned, $_SESSION['user_id']]);
+        } else {
+            $stmt = $conn->prepare("UPDATE users SET xp = ?, level = ?, total_losses = total_losses + 1, coins = coins + ?, gems = gems + ? WHERE id = ?");
+            $stmt->execute([$newXp, $newLevel, $coinsEarned, $gemsEarned, $_SESSION['user_id']]);
+        }
         
         // Record game history with extended data
         $stmt = $conn->prepare("
@@ -1032,7 +1055,9 @@ function endGame() {
             'new_level' => $newLevel,
             'leveled_up' => $leveledUp,
             'unlocked_cards' => $unlockedCards,
-            'game_history_id' => $gameHistoryId
+            'game_history_id' => $gameHistoryId,
+            'coins_earned' => $coinsEarned,
+            'gems_earned' => $gemsEarned
         ]);
     } catch(PDOException $e) {
         echo json_encode(['success' => false, 'error' => 'Failed to save game result']);
