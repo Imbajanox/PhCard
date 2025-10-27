@@ -179,65 +179,59 @@
         <!-- Game Screen -->
         <div id="game-screen" class="screen">
             <div class="game-container">
-                <!-- Main game area -->
-                <div class="game-main">
-                    <!-- Game Info -->
-                    <div class="game-info">
-                        <div class="player-status">
-                            <h3>Spieler</h3>
-                            <div class="hp-bar">
-                                <div id="player-hp-fill" class="hp-fill player-hp"></div>
-                            </div>
-                            <p id="player-hp-text">HP: 2000 / 2000</p>
-                            <p id="player-mana-display" style="color: #00bfff; font-weight: bold;">Mana: 1 / 1</p>
+                <!-- Game Info -->
+                <div class="game-info">
+                    <div class="player-status">
+                        <h3>Spieler</h3>
+                        <div class="hp-bar">
+                            <div id="player-hp-fill" class="hp-fill player-hp"></div>
                         </div>
-                        
-                        <div class="game-status">
-                            <p>Runde: <span id="turn-count">1</span></p>
-                            <p>KI Level: <span id="ai-level-display">1</span></p>
-                        </div>
-                        
-                        <div class="ai-status">
-                            <h3>KI-Gegner</h3>
-                            <div class="hp-bar">
-                                <div id="ai-hp-fill" class="hp-fill ai-hp"></div>
-                            </div>
-                            <p id="ai-hp-text">HP: 2000 / 2000</p>
-                        </div>
+                        <p id="player-hp-text">HP: 2000 / 2000</p>
+                        <p id="player-mana-display" style="color: #00bfff; font-weight: bold;">Mana: 1 / 1</p>
                     </div>
                     
-                    <!-- Battle Field -->
-                    <div class="battlefield">
-                        <div class="field ai-field">
-                            <h4>KI Feld</h4>
-                            <div id="ai-field" class="card-slots"></div>
-                        </div>
-                        
-                        <div class="field player-field">
-                            <h4>Dein Feld</h4>
-                            <div id="player-field" class="card-slots"></div>
-                        </div>
+                    <div class="game-status">
+                        <p>Runde: <span id="turn-count">1</span></p>
+                        <p>KI Level: <span id="ai-level-display">1</span></p>
                     </div>
                     
-                    <!-- Player Hand -->
-                    <div class="hand-container">
-                        <h4>Deine Hand</h4>
-                        <div id="player-hand" class="hand"></div>
+                    <div class="ai-status">
+                        <h3>KI-Gegner</h3>
+                        <div class="hp-bar">
+                            <div id="ai-hp-fill" class="hp-fill ai-hp"></div>
+                        </div>
+                        <p id="ai-hp-text">HP: 2000 / 2000</p>
                     </div>
                 </div>
                 
-                <!-- Sidebar with battle log and controls -->
-                <div class="game-sidebar">
-                    <!-- Action Buttons -->
-                    <div class="action-buttons">
-                        <button id="end-turn-btn" onclick="endTurn()">Runde beenden</button>
+                <!-- Battle Field -->
+                <div class="battlefield">
+                    <div class="field ai-field">
+                        <h4>KI Feld</h4>
+                        <div id="ai-field" class="card-slots"></div>
                     </div>
                     
-                    <!-- Battle Log -->
-                    <div class="battle-log">
-                        <h4>Kampflog</h4>
-                        <div id="log-content"></div>
+                    <div class="field player-field">
+                        <h4>Dein Feld</h4>
+                        <div id="player-field" class="card-slots"></div>
                     </div>
+                </div>
+                
+                <!-- Player Hand -->
+                <div class="hand-container">
+                    <h4>Deine Hand</h4>
+                    <div id="player-hand" class="hand"></div>
+                </div>
+                
+                <!-- Action Buttons -->
+                <div class="action-buttons">
+                    <button id="end-turn-btn" onclick="endTurn()">Runde beenden</button>
+                </div>
+                
+                <!-- Battle Log -->
+                <div class="battle-log">
+                    <h4>Kampflog</h4>
+                    <div id="log-content"></div>
                 </div>
             </div>
         </div>
