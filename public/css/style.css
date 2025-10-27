@@ -1444,3 +1444,38 @@ h1, h2, h3, h4 {
     background: rgba(0, 255, 255, 0.2);
     box-shadow: 0 0 10px #00ffff;
 }
+
+/* Responsive Design for Smaller Screens */
+@media (max-width: 1200px) {
+    .game-container {
+        grid-template-columns: 1fr 250px;
+    }
+    
+    .card {
+        width: 120px;
+    }
+}
+
+@media (max-width: 900px) {
+    .game-container {
+        grid-template-columns: 1fr;
+        height: auto;
+        overflow-y: auto;
+    }
+    
+    .game-sidebar {
+        order: -1;
+        flex-direction: row;
+        gap: 10px;
+    }
+    
+    .battle-log {
+        flex: 1;
+        max-height: 200px;
+    }
+    
+    .action-buttons {
+        flex-direction: row;
+        align-items: center;
+    }
+}
