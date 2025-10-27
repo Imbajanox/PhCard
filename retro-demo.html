@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PhCard - Retro Theme Demo</title>
+    <link rel="stylesheet" href="public/css/style.css">
+</head>
+<body>
+    <div id="app">
+        <!-- Auth Screen Demo -->
+        <div id="auth-screen" class="screen active">
+            <div class="auth-container">
+                <h1>PhCard</h1>
+                <p class="tagline">Rundenbasiertes Kartenspiel</p>
+                
+                <div id="login-form" class="form-box active">
+                    <h2>Login</h2>
+                    <input type="text" id="login-username" placeholder="Benutzername" required>
+                    <input type="password" id="login-password" placeholder="Passwort" required>
+                    <button>Anmelden</button>
+                    <p>Noch kein Konto? <a href="#">Registrieren</a></p>
+                </div>
+                
+                <div id="auth-message" class="message success">
+                    Demo erfolgreich!
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Card Showcase -->
+    <div style="position: fixed; bottom: 20px; right: 20px; display: flex; gap: 10px;">
+        <div class="card monster">
+            <div class="card-mana-cost">3</div>
+            <div class="card-rarity legendary">Legendary</div>
+            <div class="card-name">Dragon</div>
+            <div class="card-type">Monster</div>
+            <div class="card-stats">ATK: 500 | HP: 800</div>
+            <div class="card-effects">
+                <span class="status-taunt">TAUNT</span>
+            </div>
+        </div>
+        
+        <div class="card spell">
+            <div class="card-mana-cost">2</div>
+            <div class="card-rarity rare">Rare</div>
+            <div class="card-name">Fireball</div>
+            <div class="card-type">Spell</div>
+            <div class="card-stats">Effect: damage 300</div>
+        </div>
+    </div>
+</body>
+</html>
