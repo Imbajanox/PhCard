@@ -21,6 +21,8 @@ let currentFilter = 'all';
 document.addEventListener('DOMContentLoaded', () => {
     loadQuests();
     setupFilterButtons();
+    setupResetButtons();
+    checkAutoReset();
 });
 
 /**
@@ -247,6 +249,104 @@ function escapeHtml(text) {
 //     return token ? token.getAttribute('content') : '';
 // }
 
+/**
+ * Setup reset button event listeners
+ */
+function setupResetButtons() {
+    const dailyResetBtn = document.getElementById('reset-daily-btn');
+    const weeklyResetBtn = document.getElementById('reset-weekly-btn');
+    
+    if (dailyResetBtn) {
+        dailyResetBtn.addEventListener('click', resetDailyQuests);
+    }
+    
+    if (weeklyResetBtn) {
+        weeklyResetBtn.addEventListener('click', resetWeeklyQuests);
+    }
+}
+
+/**
+ * Reset daily quests
+ */
+async function resetDailyQuests() {
+    if (!confirm('Are you sure you want to reset all daily quests? This will clear your progress on unclaimed daily quests.')) {
+        return;
+    }
+    
+    try {
+        const response = await fetch('../../api/quests.php?action=reset_daily_quests', {
+            method: 'POST',
+            credentials: 'include',
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+            alert(data.message);
+            loadQuests(); // Reload quests to show fresh state
+        } else {
+            alert('Failed to reset daily quests: ' + (data.error || 'Unknown error'));
+        }
+    } catch (error) {
+        console.error('Error resetting daily quests:', error);
+        alert('Unable to reset daily quests. Please try again later.');
+    }
+}
+
+/**
+ * Reset weekly quests
+ */
+async function resetWeeklyQuests() {
+    if (!confirm('Are you sure you want to reset all weekly quests? This will clear your progress on unclaimed weekly quests.')) {
+        return;
+    }
+    
+    try {
+        const response = await fetch('../../api/quests.php?action=reset_weekly_quests', {
+            method: 'POST',
+            credentials: 'include',
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+            alert(data.message);
+            loadQuests(); // Reload quests to show fresh state
+        } else {
+            alert('Failed to reset weekly quests: ' + (data.error || 'Unknown error'));
+        }
+    } catch (error) {
+        console.error('Error resetting weekly quests:', error);
+        alert('Unable to reset weekly quests. Please try again later.');
+    }
+}
+
+/**
+ * Check for automatic quest resets
+ */
+async function checkAutoReset() {
+    try {
+        const response = await fetch('../../api/quests.php?action=check_auto_reset', {
+            method: 'POST',
+            credentials: 'include'
+        });
+
+        const data = await response.json();
+
+        if (data.success && (data.daily_reset || data.weekly_reset)) {
+            // Silently reload quests if auto-reset happened
+            loadQuests();
+        }
+    } catch (error) {
+        console.error('Error checking auto reset:', error);
+    }
+}
 
 
 async function loadHeader() {
