@@ -1163,7 +1163,7 @@ function updateHeaderVisibility(screenId) {
     const headerElement = document.getElementById('main-navigation');
     
     if (headerElement) {
-        if (screenId === 'auth-screen') {
+        if (screenId === 'auth-screen' || screenId === 'menu-screen') {
             headerElement.style.display = 'none';
         } else {
             // Note: The visibility might need to be set to 'flex' 
