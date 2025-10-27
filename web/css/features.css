@@ -1,4 +1,4 @@
-/* Features CSS - Styling for Quests, Achievements, and Card Sets */
+/* Features Retro CSS - Styling for Quests, Achievements, and Card Sets */
 
 /* Global Styles */
 * {
@@ -8,20 +8,44 @@
 }
 
 body {
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    font-family: 'Courier New', 'Courier', monospace;
+    background: #0a0e27;
+    background-image: 
+        repeating-linear-gradient(0deg, rgba(0, 255, 255, 0.03) 0px, transparent 1px, transparent 2px, rgba(0, 255, 255, 0.03) 3px),
+        repeating-linear-gradient(90deg, rgba(255, 0, 255, 0.03) 0px, transparent 1px, transparent 2px, rgba(255, 0, 255, 0.03) 3px);
     min-height: 100vh;
     padding: 20px;
-    color: #333;
+    color: #00ff00;
+    position: relative;
+}
+
+/* Retro scanline effect */
+body::before {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: repeating-linear-gradient(
+        0deg,
+        rgba(0, 0, 0, 0.15) 0px,
+        transparent 1px,
+        transparent 2px,
+        rgba(0, 0, 0, 0.15) 3px
+    );
+    pointer-events: none;
+    z-index: 9999;
 }
 
 .container {
     max-width: 1200px;
     margin: 0 auto;
     margin-top: 50px;
-    background: white;
-    border-radius: 12px;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+    background: #1a1a2e;
+    border: 4px solid #00ff00;
+    border-radius: 0;
+    box-shadow: 0 0 30px rgba(0, 255, 0, 0.5);
     padding: 30px;
 }
 
@@ -30,18 +54,22 @@ body {
     text-align: center;
     margin-bottom: 40px;
     padding-bottom: 20px;
-    border-bottom: 3px solid #667eea;
+    border-bottom: 3px solid #00ff00;
 }
 
 .page-header h1 {
-    color: #667eea;
+    color: #00ff00;
     font-size: 2.5em;
     margin-bottom: 10px;
+    text-shadow: 0 0 15px #00ff00;
+    text-transform: uppercase;
+    letter-spacing: 3px;
 }
 
 .page-header p {
-    color: #666;
+    color: #00ffff;
     font-size: 1.1em;
+    text-shadow: 0 0 5px #00ffff;
 }
 
 /* Navigation */
@@ -55,23 +83,30 @@ body {
 
 .nav-links a {
     padding: 10px 20px;
-    background: #667eea;
-    color: white;
+    background: #00ff00;
+    color: #0a0e27;
     text-decoration: none;
-    border-radius: 6px;
-    transition: background 0.3s;
+    border: 3px solid #00ff00;
+    border-radius: 0;
+    transition: all 0.3s;
+    font-weight: bold;
+    text-transform: uppercase;
+    box-shadow: 0 0 10px #00ff00;
 }
 
 .nav-links a:hover {
-    background: #764ba2;
+    background: #0a0e27;
+    color: #00ff00;
+    box-shadow: 0 0 20px #00ff00;
 }
 
 /* Loading State */
 .loading {
     text-align: center;
     padding: 40px;
-    color: #666;
+    color: #00ffff;
     font-size: 1.2em;
+    text-shadow: 0 0 10px #00ffff;
 }
 
 .loading::after {
@@ -87,24 +122,26 @@ body {
 
 /* Error Message */
 .error-message {
-    background: #fee;
-    border: 2px solid #fcc;
-    border-radius: 8px;
+    background: rgba(255, 0, 0, 0.1);
+    border: 2px solid #ff0000;
+    border-radius: 0;
     padding: 20px;
     margin: 20px 0;
-    color: #c33;
+    color: #ff0000;
     text-align: center;
+    box-shadow: 0 0 15px rgba(255, 0, 0, 0.5);
 }
 
 .error-message h3 {
     margin-bottom: 10px;
+    text-shadow: 0 0 10px #ff0000;
 }
 
 /* Empty State */
 .empty-state {
     text-align: center;
     padding: 60px 20px;
-    color: #999;
+    color: #00ffff;
 }
 
 .empty-state svg {
@@ -124,19 +161,23 @@ body {
 
 .quest-filters button {
     padding: 10px 20px;
-    border: 2px solid #667eea;
-    background: white;
-    color: #667eea;
-    border-radius: 6px;
+    border: 3px solid #00ffff;
+    background: #0a0e27;
+    color: #00ffff;
+    border-radius: 0;
     cursor: pointer;
     transition: all 0.3s;
     font-size: 1em;
+    font-family: 'Courier New', monospace;
+    font-weight: bold;
+    text-transform: uppercase;
 }
 
 .quest-filters button.active,
 .quest-filters button:hover {
-    background: #667eea;
-    color: white;
+    background: #00ffff;
+    color: #0a0e27;
+    box-shadow: 0 0 15px #00ffff;
 }
 
 .quest-list {
@@ -145,26 +186,28 @@ body {
 }
 
 .quest-card {
-    background: #f8f9fa;
-    border-radius: 8px;
+    background: #0a0e27;
+    border: 3px solid #00ff00;
+    border-radius: 0;
     padding: 20px;
-    border-left: 4px solid #667eea;
     transition: transform 0.2s, box-shadow 0.2s;
+    box-shadow: 0 0 10px rgba(0, 255, 0, 0.3);
 }
 
 .quest-card:hover {
     transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 0 20px rgba(0, 255, 0, 0.5);
 }
 
 .quest-card.completed {
-    border-left-color: #28a745;
-    background: #f0f8f4;
+    border-color: #00ffff;
+    background: rgba(0, 255, 255, 0.05);
+    box-shadow: 0 0 15px rgba(0, 255, 255, 0.5);
 }
 
 .quest-card.claimed {
     opacity: 0.6;
-    border-left-color: #999;
+    border-color: #888;
 }
 
 .quest-header {
@@ -176,36 +219,44 @@ body {
 
 .quest-title {
     font-size: 1.3em;
-    color: #333;
+    color: #00ff00;
     font-weight: bold;
+    text-shadow: 0 0 5px #00ff00;
 }
 
 .quest-type {
     display: inline-block;
     padding: 4px 12px;
-    border-radius: 12px;
+    border-radius: 0;
+    border: 2px solid;
     font-size: 0.85em;
     font-weight: bold;
     text-transform: uppercase;
 }
 
 .quest-type.daily {
-    background: #ffeaa7;
-    color: #d63031;
+    background: rgba(255, 255, 0, 0.1);
+    color: #ffff00;
+    border-color: #ffff00;
+    box-shadow: 0 0 5px #ffff00;
 }
 
 .quest-type.weekly {
-    background: #74b9ff;
-    color: #0984e3;
+    background: rgba(0, 255, 255, 0.1);
+    color: #00ffff;
+    border-color: #00ffff;
+    box-shadow: 0 0 5px #00ffff;
 }
 
 .quest-type.story {
-    background: #a29bfe;
-    color: #6c5ce7;
+    background: rgba(255, 0, 255, 0.1);
+    color: #ff00ff;
+    border-color: #ff00ff;
+    box-shadow: 0 0 5px #ff00ff;
 }
 
 .quest-description {
-    color: #666;
+    color: #00ffff;
     margin-bottom: 15px;
     line-height: 1.5;
 }
@@ -217,31 +268,34 @@ body {
 .progress-bar {
     width: 100%;
     height: 20px;
-    background: #e0e0e0;
-    border-radius: 10px;
+    background: #0a0e27;
+    border: 2px solid #00ff00;
+    border-radius: 0;
     overflow: hidden;
     margin-top: 8px;
 }
 
 .progress-fill {
     height: 100%;
-    background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+    background: #00ff00;
+    box-shadow: 0 0 10px #00ff00;
     transition: width 0.3s;
     display: flex;
     align-items: center;
     justify-content: center;
-    color: white;
+    color: #0a0e27;
     font-size: 0.85em;
     font-weight: bold;
 }
 
 .progress-fill.complete {
-    background: linear-gradient(90deg, #28a745 0%, #20c997 100%);
+    background: #00ffff;
+    box-shadow: 0 0 10px #00ffff;
 }
 
 .progress-text {
     font-size: 0.9em;
-    color: #666;
+    color: #00ffff;
     margin-top: 5px;
 }
 
@@ -251,8 +305,9 @@ body {
     gap: 10px;
     margin-top: 10px;
     padding: 10px;
-    background: white;
-    border-radius: 6px;
+    background: #1a1a2e;
+    border: 2px solid #ff00ff;
+    border-radius: 0;
 }
 
 .reward-icon {
@@ -261,23 +316,31 @@ body {
 
 .claim-button {
     padding: 10px 20px;
-    background: #28a745;
-    color: white;
-    border: none;
-    border-radius: 6px;
+    background: #00ff00;
+    color: #0a0e27;
+    border: 3px solid #00ff00;
+    border-radius: 0;
     cursor: pointer;
     font-weight: bold;
-    transition: background 0.3s;
+    transition: all 0.3s;
     margin-top: 10px;
+    font-family: 'Courier New', monospace;
+    text-transform: uppercase;
+    box-shadow: 0 0 10px #00ff00;
 }
 
 .claim-button:hover {
-    background: #218838;
+    background: #0a0e27;
+    color: #00ff00;
+    box-shadow: 0 0 20px #00ff00;
 }
 
 .claim-button:disabled {
-    background: #ccc;
+    background: #333;
+    color: #666;
+    border-color: #666;
     cursor: not-allowed;
+    box-shadow: none;
 }
 
 /* Achievement Styles */
@@ -289,27 +352,32 @@ body {
 }
 
 .achievement-card {
-    background: #f8f9fa;
-    border-radius: 8px;
+    background: #0a0e27;
+    border: 3px solid #ff00ff;
+    border-radius: 0;
     padding: 20px;
     text-align: center;
     transition: transform 0.2s, box-shadow 0.2s;
     position: relative;
     overflow: hidden;
+    box-shadow: 0 0 10px rgba(255, 0, 255, 0.3);
 }
 
 .achievement-card:hover {
     transform: translateY(-4px);
-    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15);
+    box-shadow: 0 0 20px rgba(255, 0, 255, 0.5);
 }
 
 .achievement-card.unlocked {
-    background: linear-gradient(135deg, #ffeaa7 0%, #fdcb6e 100%);
+    background: rgba(255, 215, 0, 0.1);
+    border-color: #ffff00;
+    box-shadow: 0 0 15px rgba(255, 255, 0, 0.5);
 }
 
 .achievement-card.locked {
     opacity: 0.6;
-    background: #e9ecef;
+    background: #0a0e27;
+    border-color: #555;
 }
 
 .achievement-icon {
@@ -324,12 +392,13 @@ body {
 .achievement-title {
     font-size: 1.2em;
     font-weight: bold;
-    color: #333;
+    color: #00ff00;
     margin-bottom: 10px;
+    text-shadow: 0 0 5px #00ff00;
 }
 
 .achievement-description {
-    color: #666;
+    color: #00ffff;
     font-size: 0.95em;
     margin-bottom: 15px;
     line-height: 1.4;
@@ -343,16 +412,18 @@ body {
     display: inline-block;
     margin-top: 10px;
     padding: 6px 12px;
-    background: #667eea;
-    color: white;
-    border-radius: 4px;
+    background: #ff00ff;
+    color: #0a0e27;
+    border: 2px solid #ff00ff;
+    border-radius: 0;
     font-size: 0.9em;
+    box-shadow: 0 0 10px #ff00ff;
 }
 
 .achievement-date {
     margin-top: 10px;
     font-size: 0.85em;
-    color: #999;
+    color: #888;
 }
 
 /* Card Set Styles */
@@ -364,18 +435,18 @@ body {
 }
 
 .cardset-card {
-    background: #f8f9fa;
-    border-radius: 10px;
+    background: #0a0e27;
+    border: 3px solid #00ffff;
+    border-radius: 0;
     padding: 24px;
     cursor: pointer;
     transition: all 0.3s;
-    border: 2px solid transparent;
+    box-shadow: 0 0 10px rgba(0, 255, 255, 0.3);
 }
 
 .cardset-card:hover {
     transform: translateY(-4px);
-    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
-    border-color: #667eea;
+    box-shadow: 0 0 20px rgba(0, 255, 255, 0.5);
 }
 
 .cardset-header {
@@ -388,22 +459,25 @@ body {
 .cardset-name {
     font-size: 1.4em;
     font-weight: bold;
-    color: #333;
+    color: #00ff00;
+    text-shadow: 0 0 5px #00ff00;
 }
 
 .cardset-code {
     font-size: 0.9em;
-    color: #667eea;
+    color: #00ffff;
     font-weight: bold;
-    background: white;
+    background: #1a1a2e;
+    border: 2px solid #00ffff;
     padding: 4px 10px;
-    border-radius: 4px;
+    border-radius: 0;
 }
 
 .cardset-type {
     display: inline-block;
     padding: 4px 12px;
-    border-radius: 12px;
+    border-radius: 0;
+    border: 2px solid;
     font-size: 0.85em;
     font-weight: bold;
     text-transform: uppercase;
@@ -411,27 +485,35 @@ body {
 }
 
 .cardset-type.core {
-    background: #74b9ff;
-    color: #0984e3;
+    background: rgba(0, 255, 255, 0.1);
+    color: #00ffff;
+    border-color: #00ffff;
+    box-shadow: 0 0 5px #00ffff;
 }
 
 .cardset-type.expansion {
-    background: #a29bfe;
-    color: #6c5ce7;
+    background: rgba(255, 0, 255, 0.1);
+    color: #ff00ff;
+    border-color: #ff00ff;
+    box-shadow: 0 0 5px #ff00ff;
 }
 
 .cardset-type.promo {
-    background: #ffeaa7;
-    color: #d63031;
+    background: rgba(255, 255, 0, 0.1);
+    color: #ffff00;
+    border-color: #ffff00;
+    box-shadow: 0 0 5px #ffff00;
 }
 
 .cardset-type.seasonal {
-    background: #fd79a8;
-    color: #e84393;
+    background: rgba(255, 0, 0, 0.1);
+    color: #ff0000;
+    border-color: #ff0000;
+    box-shadow: 0 0 5px #ff0000;
 }
 
 .cardset-description {
-    color: #666;
+    color: #00ffff;
     margin-bottom: 15px;
     line-height: 1.5;
     min-height: 60px;
@@ -443,9 +525,9 @@ body {
     align-items: center;
     margin-top: 15px;
     padding-top: 15px;
-    border-top: 1px solid #dee2e6;
+    border-top: 2px solid #00ff00;
     font-size: 0.9em;
-    color: #666;
+    color: #00ff00;
 }
 
 .card-count {
@@ -464,7 +546,7 @@ body {
     left: 0;
     width: 100%;
     height: 100%;
-    background: rgba(0, 0, 0, 0.7);
+    background: rgba(0, 0, 0, 0.9);
     z-index: 1000;
     overflow-y: auto;
 }
@@ -477,32 +559,34 @@ body {
 }
 
 .modal-content {
-    background: white;
-    border-radius: 12px;
+    background: #1a1a2e;
+    border: 4px solid #00ff00;
+    border-radius: 0;
     max-width: 1000px;
     width: 100%;
     max-height: 90vh;
     overflow-y: auto;
     position: relative;
-    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+    box-shadow: 0 0 40px rgba(0, 255, 0, 0.5);
 }
 
 .modal-header {
     padding: 25px 30px;
-    border-bottom: 2px solid #e9ecef;
+    border-bottom: 3px solid #00ff00;
     display: flex;
     justify-content: space-between;
     align-items: center;
     position: sticky;
     top: 0;
-    background: white;
+    background: #1a1a2e;
     z-index: 10;
 }
 
 .modal-title {
     font-size: 1.8em;
-    color: #333;
+    color: #00ff00;
     font-weight: bold;
+    text-shadow: 0 0 10px #00ff00;
 }
 
 .close-modal {
@@ -510,7 +594,7 @@ body {
     border: none;
     font-size: 2em;
     cursor: pointer;
-    color: #999;
+    color: #ff0000;
     transition: color 0.3s;
     padding: 0;
     width: 40px;
@@ -518,10 +602,12 @@ body {
     display: flex;
     align-items: center;
     justify-content: center;
+    text-shadow: 0 0 10px #ff0000;
 }
 
 .close-modal:hover {
-    color: #333;
+    color: #ff0000;
+    text-shadow: 0 0 20px #ff0000;
 }
 
 .modal-body {
@@ -531,7 +617,7 @@ body {
 .modal-loading {
     text-align: center;
     padding: 60px 20px;
-    color: #666;
+    color: #00ffff;
 }
 
 /* Card Grid in Modal */
@@ -542,38 +628,51 @@ body {
 }
 
 .card-item {
-    background: #f8f9fa;
-    border-radius: 8px;
+    background: #0a0e27;
+    border: 3px solid #00ff00;
+    border-radius: 0;
     padding: 16px;
     text-align: center;
     transition: transform 0.2s;
-    border: 2px solid #e9ecef;
+    box-shadow: 0 0 10px rgba(0, 255, 0, 0.3);
 }
 
 .card-item:hover {
     transform: scale(1.05);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 0 20px rgba(0, 255, 0, 0.5);
 }
 
 .card-item.monster {
-    border-color: #ff6b6b;
+    border-color: #ff0000;
+    box-shadow: 0 0 10px rgba(255, 0, 0, 0.3);
+}
+
+.card-item.monster:hover {
+    box-shadow: 0 0 20px rgba(255, 0, 0, 0.5);
 }
 
 .card-item.spell {
-    border-color: #4ecdc4;
+    border-color: #00ffff;
+    box-shadow: 0 0 10px rgba(0, 255, 255, 0.3);
+}
+
+.card-item.spell:hover {
+    box-shadow: 0 0 20px rgba(0, 255, 255, 0.5);
 }
 
 .card-name {
     font-weight: bold;
-    color: #333;
+    color: #00ff00;
     margin-bottom: 8px;
     font-size: 1.1em;
+    text-shadow: 0 0 5px #00ff00;
 }
 
 .card-type {
     display: inline-block;
     padding: 3px 10px;
-    border-radius: 12px;
+    border-radius: 0;
+    border: 2px solid;
     font-size: 0.8em;
     font-weight: bold;
     text-transform: uppercase;
@@ -581,13 +680,15 @@ body {
 }
 
 .card-type.monster {
-    background: #ffe0e0;
-    color: #ff6b6b;
+    background: rgba(255, 0, 0, 0.1);
+    color: #ff0000;
+    border-color: #ff0000;
 }
 
 .card-type.spell {
-    background: #d4f4f1;
-    color: #4ecdc4;
+    background: rgba(0, 255, 255, 0.1);
+    color: #00ffff;
+    border-color: #00ffff;
 }
 
 .card-stats {
@@ -606,18 +707,19 @@ body {
 
 .stat-label {
     font-size: 0.75em;
-    color: #999;
+    color: #00ffff;
     text-transform: uppercase;
 }
 
 .stat-value {
     font-weight: bold;
-    color: #333;
+    color: #00ff00;
     font-size: 1.2em;
+    text-shadow: 0 0 3px #00ff00;
 }
 
 .card-description {
-    color: #666;
+    color: #00ffff;
     font-size: 0.85em;
     line-height: 1.4;
     margin-top: 10px;
@@ -632,23 +734,27 @@ body {
 }
 
 .card-rarity.common {
-    color: #999;
+    color: #888;
 }
 
 .card-rarity.uncommon {
-    color: #2ecc71;
+    color: #00ff00;
+    text-shadow: 0 0 3px #00ff00;
 }
 
 .card-rarity.rare {
-    color: #3498db;
+    color: #00ffff;
+    text-shadow: 0 0 3px #00ffff;
 }
 
 .card-rarity.epic {
-    color: #9b59b6;
+    color: #ff00ff;
+    text-shadow: 0 0 3px #ff00ff;
 }
 
 .card-rarity.legendary {
-    color: #f39c12;
+    color: #ffff00;
+    text-shadow: 0 0 3px #ffff00;
 }
 
 /* Responsive Design */
@@ -706,21 +812,24 @@ body {
 
 .reset-button {
     padding: 10px 20px;
-    background: linear-gradient(135deg, #FF6B6B, #EE5A6F);
-    color: white;
-    border: none;
-    border-radius: 6px;
+    background: #ff0000;
+    color: #0a0e27;
+    border: 3px solid #ff0000;
+    border-radius: 0;
     font-size: 0.95em;
     font-weight: bold;
     cursor: pointer;
     transition: all 0.3s ease;
-    box-shadow: 0 2px 5px rgba(238, 90, 111, 0.3);
+    box-shadow: 0 0 10px #ff0000;
+    font-family: 'Courier New', monospace;
+    text-transform: uppercase;
 }
 
 .reset-button:hover {
-    background: linear-gradient(135deg, #EE5A6F, #DC4C5C);
+    background: #0a0e27;
+    color: #ff0000;
     transform: translateY(-2px);
-    box-shadow: 0 4px 10px rgba(238, 90, 111, 0.4);
+    box-shadow: 0 0 20px #ff0000;
 }
 
 .reset-button:active {
