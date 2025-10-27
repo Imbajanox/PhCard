@@ -213,7 +213,7 @@ function escapeHtml(text) {
 
 async function loadHeader() {
     try {
-        const response = await fetch('../../header-other.html');
+        const response = await fetch('../../components/header.html');
         if (!response.ok) {
             throw new Error(`HTTP error! status: ${response.status}`);
         }
@@ -221,7 +221,6 @@ async function loadHeader() {
         document.getElementById('header-placeholder').innerHTML = headerHtml;
         
         // Initial visibility control for the header after it's loaded
-        // This assumes the app starts on the 'auth-screen'.
         updateHeaderVisibility(); 
         
     } catch (error) {

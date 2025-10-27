@@ -1,0 +1,97 @@
+<header id="main-navigation" class="navigation-header" style="display: none;">
+    <h1 class="header-title">PhCard</h1>
+    <nav id="main-nav-links">
+        <!-- Navigation buttons will be populated by JavaScript based on context -->
+    </nav>
+</header>
+
+<style>
+    .navigation-header {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        background: #2c3e50;
+        color: white;
+        padding: 10px 20px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+        z-index: 500;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .header-title {
+        font-size: 28px;
+        color: #ecf0f1;
+        margin: 0;
+    }
+
+    #main-nav-links {
+        display: flex;
+        gap: 10px;
+    }
+
+    .nav-btn {
+        padding: 10px 15px;
+        background: #34495e;
+        color: white;
+        border: none;
+        border-radius: 5px;
+        font-size: 16px;
+        cursor: pointer;
+        transition: background 0.3s;
+    }
+
+    .nav-btn:hover {
+        background: #4a637d;
+    }
+</style>
+
+<script>
+// Initialize header navigation based on context
+(function() {
+    const nav = document.getElementById('main-nav-links');
+    if (!nav) return;
+    
+    // Detect if we're in the main app or a feature page
+    const isFeaturePage = window.location.pathname.includes('/web/features/');
+    const basePath = isFeaturePage ? '../../' : '';
+    
+    // Check if main app functions are available
+    const hasAppFunctions = typeof showScreen === 'function';
+    
+    let buttons = [];
+    
+    if (hasAppFunctions) {
+        // Main app navigation
+        buttons = [
+            { label: 'Menü', onclick: "showScreen('menu-screen')" },
+            { label: 'Neues Spiel', onclick: "showScreen('game-setup-screen')" },
+            { label: 'Kartensammlung', onclick: "showCardCollection()" },
+            { label: 'Deck Builder', onclick: "loadDeckBuilder()", id: 'deck-builder-btn' },
+            { label: 'Quests', onclick: `window.location.href='${basePath}web/features/quests.html'`, id: 'quests-btn' },
+            { label: 'Achievements', onclick: `window.location.href='${basePath}web/features/achievements.html'`, id: 'achievements-btn' },
+            { label: 'Card Sets', onclick: `window.location.href='${basePath}web/features/cardsets.html'`, id: 'card-sets-btn' },
+            { label: 'Abmelden', onclick: "logout()" }
+        ];
+    } else {
+        // Feature page navigation
+        buttons = [
+            { label: 'Menü', onclick: `window.location.href='${basePath}index.html'` },
+            { label: 'Neues Spiel', onclick: `window.location.href='${basePath}index.html#game-setup-screen'` },
+            { label: 'Kartensammlung', onclick: `window.location.href='${basePath}index.html#card-collection'` },
+            { label: 'Deck Builder', onclick: `window.location.href='${basePath}index.html#deck-builder'`, id: 'deck-builder-btn' },
+            { label: 'Quests', onclick: "window.location.href='quests.html'", id: 'quests-btn' },
+            { label: 'Achievements', onclick: "window.location.href='achievements.html'", id: 'achievements-btn' },
+            { label: 'Card Sets', onclick: "window.location.href='cardsets.html'", id: 'card-sets-btn' },
+            { label: 'Abmelden', onclick: `window.location.href='${basePath}index.html'` }
+        ];
+    }
+    
+    // Create buttons
+    nav.innerHTML = buttons.map(btn => 
+        `<button class="nav-btn" ${btn.id ? `id="${btn.id}"` : ''} onclick="${btn.onclick}">${btn.label}</button>`
+    ).join('');
+})();
+</script>
