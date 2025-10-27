@@ -1350,3 +1350,53 @@ h1, h2, h3, h4 {
         transform: translateX(0);
     }
 }
+
+/* Header Navigation Styles */
+.navigation-header {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    background: #1a1a2e;
+    color: #00ff00;
+    padding: 10px 20px;
+    box-shadow: 0 4px 20px rgba(0, 255, 0, 0.5);
+    z-index: 500;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 3px solid #00ff00;
+}
+
+.header-title {
+    font-size: 28px;
+    color: #00ff00;
+    margin: 0;
+    text-shadow: 0 0 10px #00ff00;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+}
+
+#main-nav-links {
+    display: flex;
+    gap: 10px;
+}
+
+.nav-btn {
+    padding: 10px 15px;
+    background: #0a0e27;
+    color: #00ffff;
+    border: 2px solid #00ffff;
+    border-radius: 0;
+    font-size: 16px;
+    cursor: pointer;
+    transition: all 0.3s;
+    font-family: 'Courier New', monospace;
+    font-weight: bold;
+    text-transform: uppercase;
+}
+
+.nav-btn:hover {
+    background: rgba(0, 255, 255, 0.2);
+    box-shadow: 0 0 10px #00ffff;
+}
