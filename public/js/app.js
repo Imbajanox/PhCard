@@ -1140,12 +1140,24 @@ async function deleteDeck() {
 
 async function loadHeader() {
     try {
-        const response = await fetch('header.html');
+        const response = await fetch('components/header.html');
         if (!response.ok) {
             throw new Error(`HTTP error! status: ${response.status}`);
         }
         const headerHtml = await response.text();
-        document.getElementById('header-placeholder').innerHTML = headerHtml;
+        const placeholder = document.getElementById('header-placeholder');
+        placeholder.innerHTML = headerHtml;
+        
+        // Execute scripts that were inserted via innerHTML
+        const scripts = placeholder.querySelectorAll('script');
+        scripts.forEach(oldScript => {
+            const newScript = document.createElement('script');
+            Array.from(oldScript.attributes).forEach(attr => {
+                newScript.setAttribute(attr.name, attr.value);
+            });
+            newScript.textContent = oldScript.textContent;
+            oldScript.parentNode.replaceChild(newScript, oldScript);
+        });
         
         // Initial visibility control for the header after it's loaded
         // This assumes the app starts on the 'auth-screen'.
@@ -1163,7 +1175,7 @@ function updateHeaderVisibility(screenId) {
     const headerElement = document.getElementById('main-navigation');
     
     if (headerElement) {
-        if (screenId === 'auth-screen') {
+        if (screenId === 'auth-screen' || screenId === 'menu-screen') {
             headerElement.style.display = 'none';
         } else {
             // Note: The visibility might need to be set to 'flex' 

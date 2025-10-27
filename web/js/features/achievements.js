@@ -32,7 +32,7 @@ async function loadAchievements() {
         // Fetch achievements from API
         // Note: Add auth headers here if needed for your implementation
         const [achievementsResponse, userAchievementsResponse] = await Promise.all([
-            fetch('api/quests.php?action=get_achievements', {
+            fetch('../../api/quests.php?action=get_achievements', {
                 method: 'GET',
                 credentials: 'include', // Include session cookies
                 headers: {
@@ -41,7 +41,7 @@ async function loadAchievements() {
                     // 'X-CSRF-Token': getCsrfToken(),
                 }
             }),
-            fetch('api/quests.php?action=get_user_achievements', {
+            fetch('../../api/quests.php?action=get_user_achievements', {
                 method: 'GET',
                 credentials: 'include',
                 headers: {
@@ -213,15 +213,26 @@ function escapeHtml(text) {
 
 async function loadHeader() {
     try {
-        const response = await fetch('header-other.html');
+        const response = await fetch('../../components/header.html');
         if (!response.ok) {
             throw new Error(`HTTP error! status: ${response.status}`);
         }
         const headerHtml = await response.text();
-        document.getElementById('header-placeholder').innerHTML = headerHtml;
+        const placeholder = document.getElementById('header-placeholder');
+        placeholder.innerHTML = headerHtml;
+        
+        // Execute scripts that were inserted via innerHTML
+        const scripts = placeholder.querySelectorAll('script');
+        scripts.forEach(oldScript => {
+            const newScript = document.createElement('script');
+            Array.from(oldScript.attributes).forEach(attr => {
+                newScript.setAttribute(attr.name, attr.value);
+            });
+            newScript.textContent = oldScript.textContent;
+            oldScript.parentNode.replaceChild(newScript, oldScript);
+        });
         
         // Initial visibility control for the header after it's loaded
-        // This assumes the app starts on the 'auth-screen'.
         updateHeaderVisibility(); 
         
     } catch (error) {
