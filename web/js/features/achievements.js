@@ -32,7 +32,7 @@ async function loadAchievements() {
         // Fetch achievements from API
         // Note: Add auth headers here if needed for your implementation
         const [achievementsResponse, userAchievementsResponse] = await Promise.all([
-            fetch('../../api/quests.php?action=get_achievements', {
+            fetch('api/quests.php?action=get_achievements', {
                 method: 'GET',
                 credentials: 'include', // Include session cookies
                 headers: {
@@ -41,7 +41,7 @@ async function loadAchievements() {
                     // 'X-CSRF-Token': getCsrfToken(),
                 }
             }),
-            fetch('../../api/quests.php?action=get_user_achievements', {
+            fetch('api/quests.php?action=get_user_achievements', {
                 method: 'GET',
                 credentials: 'include',
                 headers: {
@@ -209,3 +209,45 @@ function escapeHtml(text) {
 //     const token = document.querySelector('meta[name="csrf-token"]');
 //     return token ? token.getAttribute('content') : '';
 // }
+
+
+async function loadHeader() {
+    try {
+        const response = await fetch('header.html');
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        const headerHtml = await response.text();
+        document.getElementById('header-placeholder').innerHTML = headerHtml;
+        
+        // Initial visibility control for the header after it's loaded
+        // This assumes the app starts on the 'auth-screen'.
+        updateHeaderVisibility(); 
+        
+    } catch (error) {
+        console.error("Could not load header:", error);
+    }
+}
+
+/**
+ * Manages the header's display based on the active screen.
+ */
+function updateHeaderVisibility() {
+    const headerElement = document.getElementById('main-navigation');
+    
+    if (headerElement) {
+        headerElement.style.display = 'flex'; 
+    }
+}
+
+// Intercept the showScreen function to call the header update
+const originalShowScreen = window.showScreen;
+window.showScreen = function(screenId) {
+    if (originalShowScreen) {
+        originalShowScreen(screenId);
+    }
+    updateHeaderVisibility();
+};
+
+// Call the function to load the header when the page loads
+document.addEventListener('DOMContentLoaded', loadHeader);

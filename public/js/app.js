@@ -1137,3 +1137,50 @@ async function deleteDeck() {
         alert('Fehler beim Löschen des Decks');
     }
 }
+
+async function loadHeader() {
+    try {
+        const response = await fetch('header.html');
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        const headerHtml = await response.text();
+        document.getElementById('header-placeholder').innerHTML = headerHtml;
+        
+        // Initial visibility control for the header after it's loaded
+        // This assumes the app starts on the 'auth-screen'.
+        updateHeaderVisibility('auth-screen'); 
+        
+    } catch (error) {
+        console.error("Could not load header:", error);
+    }
+}
+
+/**
+ * Manages the header's display based on the active screen.
+ */
+function updateHeaderVisibility(screenId) {
+    const headerElement = document.getElementById('main-navigation');
+    
+    if (headerElement) {
+        if (screenId === 'auth-screen') {
+            headerElement.style.display = 'none';
+        } else {
+            // Note: The visibility might need to be set to 'flex' 
+            // depending on the CSS setup, but 'block' or '' usually works.
+            headerElement.style.display = 'flex'; 
+        }
+    }
+}
+
+// Intercept the showScreen function to call the header update
+const originalShowScreen = window.showScreen;
+window.showScreen = function(screenId) {
+    if (originalShowScreen) {
+        originalShowScreen(screenId);
+    }
+    updateHeaderVisibility(screenId);
+};
+
+// Call the function to load the header when the page loads
+document.addEventListener('DOMContentLoaded', loadHeader);
