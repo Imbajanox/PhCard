@@ -47,7 +47,7 @@
         }
 
         .shop-tab.active {
-            color: #fff;
+            color: black;
             border-bottom-color: #4CAF50;
         }
 
@@ -65,6 +65,7 @@
             padding: 20px;
             text-align: center;
             transition: all 0.3s;
+            min-height: auto;
         }
 
         .shop-item:hover, .pack-item:hover {
@@ -120,6 +121,11 @@
             color: #00BCD4;
         }
 
+        .shop-item, .pack-item {
+            display: flex;
+            flex-direction: column;
+        }
+
         .buy-button {
             width: 100%;
             padding: 10px;
@@ -130,6 +136,7 @@
             font-weight: bold;
             cursor: pointer;
             transition: all 0.3s;
+            margin-top: auto;
         }
 
         .buy-button:hover {

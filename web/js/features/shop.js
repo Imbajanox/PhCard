@@ -12,10 +12,12 @@ let userCurrency = { coins: 0, gems: 0 };
 document.addEventListener('DOMContentLoaded', () => {
     loadHeader();
     loadCurrency();
-    loadShopItems();
-    loadCardPacks();
+    
     setupTabButtons();
     setupDailyLogin();
+
+    loadShopItems();
+    loadCardPacks();
 });
 
 /**
@@ -75,8 +77,16 @@ async function loadShopItems() {
 /**
  * Display shop items
  */
-function displayShopItems(items) {
+async function displayShopItems(items) {
     const container = document.getElementById('cards-container');
+
+    // Ensure we have the latest currency before rendering (avoids race on initial load)
+    try {
+        await loadCurrency();
+    } catch (e) {
+        // If loadCurrency fails, proceed with whatever currency we have (likely zeros)
+        console.warn('Warning: failed to refresh currency before rendering shop items', e);
+    }
 
     if (!items || items.length === 0) {
         container.innerHTML = `
@@ -330,14 +340,80 @@ function setupTabButtons() {
     // Close modal when clicking close button
     document.getElementById('modal-close').addEventListener('click', closePackModal);
 }
-
 /**
  * Setup daily login
  */
 function setupDailyLogin() {
     const claimBtn = document.getElementById('claim-daily-btn');
-    
+    const streakEl = document.getElementById('streak-display');
+    const dailyStatusEl = document.getElementById('daily-status');
+
+    if (!claimBtn) return;
+
+    // Refresh UI based on server status
+    async function refreshStatus() {
+        try {
+            // prevent cached responses
+            const response = await fetch('../../api/shop.php?action=get_daily_status&_=' + Date.now(), {
+                method: 'GET',
+                credentials: 'include',
+                cache: 'no-store'
+            });
+            const data = await response.json();
+
+            // Always defensively update the button state first so UI isn't left clickable on error
+            if (data && typeof data.claimed !== 'undefined') {
+                const claimed = !!data.claimed;
+                claimBtn.disabled = claimed;
+                claimBtn.textContent = claimed ? 'Claimed Today!' : 'Claim Reward';
+            }
+
+            if (data && data.success) {
+                if (typeof data.streak !== 'undefined' && streakEl) {
+                    streakEl.textContent = `🔥 ${data.streak} Day Streak!`;
+                }
+
+                if (typeof data.claimed !== 'undefined') {
+                    if (data.claimed) {
+                        if (dailyStatusEl) dailyStatusEl.textContent = data.message || 'Come back tomorrow for your next reward!';
+                    } else {
+                        if (dailyStatusEl) dailyStatusEl.textContent = data.message || 'Claim your daily reward!';
+                    }
+                } else {
+                    // no claimed flag from API - fall back to message if provided
+                    if (dailyStatusEl && data.message) dailyStatusEl.textContent = data.message;
+                }
+            } else {
+                // API returned failure - still show streak if included and ensure button state respects claimed flag if present
+                if (typeof data !== 'undefined' && typeof data.streak !== 'undefined' && streakEl) {
+                    streakEl.textContent = `🔥 ${data.streak} Day Streak!`;
+                }
+                // If API indicates already claimed via error text but no claimed flag, detect that:
+                if (data && typeof data.error === 'string' && data.error.toLowerCase().includes('already claimed')) {
+                    claimBtn.disabled = true;
+                    claimBtn.textContent = 'Claimed Today!';
+                    if (dailyStatusEl) dailyStatusEl.textContent = 'Come back tomorrow!';
+                }
+            }
+        } catch (error) {
+            console.error('Error checking daily login status:', error);
+            // On error, do not change button state (avoid enabling it if server indicated claimed previously).
+            // Optionally show a generic message:
+            if (dailyStatusEl && !dailyStatusEl.textContent) {
+                dailyStatusEl.textContent = 'Unable to check daily reward status right now.';
+            }
+        }
+    }
+
+    // Claim handler
     claimBtn.addEventListener('click', async () => {
+        // guard against double-clicks
+        if (claimBtn.disabled) return;
+
+        claimBtn.disabled = true;
+        const prevText = claimBtn.textContent;
+        claimBtn.textContent = 'Claiming...';
+
         try {
             const response = await fetch('../../api/shop.php?action=claim_daily_login', {
                 method: 'POST',
@@ -348,26 +424,41 @@ function setupDailyLogin() {
 
             if (data.success) {
                 alert(`${data.description}\nYou received: ${data.reward}\nStreak: ${data.streak} days!`);
-                document.getElementById('streak-display').textContent = `🔥 ${data.streak} Day Streak!`;
+                if (typeof data.streak !== 'undefined' && streakEl) {
+                    streakEl.textContent = `🔥 ${data.streak} Day Streak!`;
+                }
                 claimBtn.disabled = true;
                 claimBtn.textContent = 'Claimed Today!';
-                document.getElementById('daily-status').textContent = 'Come back tomorrow for your next reward!';
-                // Reload currency
-                loadCurrency();
+                if (dailyStatusEl) dailyStatusEl.textContent = 'Come back tomorrow for your next reward!';
+                // Reload currency and refresh status/UI
+                await loadCurrency();
+                await refreshStatus();
             } else {
-                if (data.error.includes('already claimed')) {
+                const errMsg = data.error || '';
+                if (errMsg.toLowerCase().includes('already claimed')) {
                     claimBtn.disabled = true;
                     claimBtn.textContent = 'Claimed Today!';
-                    document.getElementById('daily-status').textContent = 'Come back tomorrow!';
+                    if (dailyStatusEl) dailyStatusEl.textContent = 'Come back tomorrow!';
+                    if (typeof data.streak !== 'undefined' && streakEl) {
+                        streakEl.textContent = `🔥 ${data.streak} Day Streak!`;
+                    }
                 } else {
-                    alert('Failed to claim reward: ' + data.error);
+                    alert('Failed to claim reward: ' + errMsg);
+                    // restore button so user can try again
+                    claimBtn.disabled = false;
+                    claimBtn.textContent = prevText || 'Claim Reward';
                 }
             }
         } catch (error) {
             console.error('Error claiming daily login:', error);
             alert('Unable to claim daily reward. Please try again later.');
+            claimBtn.disabled = false;
+            claimBtn.textContent = prevText || 'Claim Reward';
         }
     });
+
+    // Initial check on load
+    refreshStatus();
 }
 
 /**
