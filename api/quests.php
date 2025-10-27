@@ -109,7 +109,76 @@ function claimQuestReward() {
         }
         
         // Award XP
-        $stmt = $conn->prepare("UPDATE users SET xp = xp + ? WHERE id = ?");
+        // Fetch current xp and level (lock row because we're in a transaction)
+        $stmt = $conn->prepare("SELECT xp, level FROM users WHERE id = ? FOR UPDATE");
+        $stmt->execute([$userId]);
+        $row = $stmt->fetch(PDO::FETCH_ASSOC);
+        $currentXp = intval($row['xp'] ?? 0);
+        $currentLevel = max(1, intval($row['level'] ?? 1));
+        $xpReward = intval($quest['xp_reward'] ?? 0);
+        $newXp = $currentXp + $xpReward;
+
+        // Determine new level. Prefer a 'levels' table if present, otherwise use $LEVEL_REQUIREMENTS from config.php
+        $newLevel = $currentLevel;
+        try {
+            $lvlStmt = $conn->prepare("SELECT level FROM levels WHERE xp_required <= ? ORDER BY level DESC LIMIT 1");
+            if ($lvlStmt->execute([$newXp]) && ($lvl = $lvlStmt->fetchColumn()) !== false) {
+            $newLevel = max(1, intval($lvl));
+            } else {
+            // Fallback to generated table from config.php
+            global $LEVEL_REQUIREMENTS;
+            if (!empty($LEVEL_REQUIREMENTS) && is_array($LEVEL_REQUIREMENTS)) {
+                $found = 1;
+                foreach ($LEVEL_REQUIREMENTS as $lvl => $reqXp) {
+                if ($newXp >= intval($reqXp)) {
+                    $found = max($found, intval($lvl));
+                } else {
+                    break;
+                }
+                }
+                $newLevel = $found;
+            } else {
+                // Final fallback formula
+                $newLevel = max(1, floor($newXp / 100) + 1);
+            }
+            }
+        } catch (Exception $e) {
+            // If levels table doesn't exist or query fails, fall back to config
+            global $LEVEL_REQUIREMENTS;
+            if (!empty($LEVEL_REQUIREMENTS) && is_array($LEVEL_REQUIREMENTS)) {
+            $found = 1;
+            foreach ($LEVEL_REQUIREMENTS as $lvl => $reqXp) {
+                if ($newXp >= intval($reqXp)) {
+                $found = max($found, intval($lvl));
+                } else {
+                break;
+                }
+            }
+            $newLevel = $found;
+            } else {
+            $newLevel = max(1, floor($newXp / 100) + 1);
+            }
+        }
+
+        // Apply XP (and level if increased)
+        if ($newLevel > $currentLevel) {
+            $updateStmt = $conn->prepare("UPDATE users SET xp = ?, level = ?, last_level_up_at = NOW() WHERE id = ?");
+            $updateStmt->execute([$newXp, $newLevel, $userId]);
+
+            // Trigger level up event
+            GameEventSystem::trigger('level_up', [
+            'user_id' => $userId,
+            'old_level' => $currentLevel,
+            'new_level' => $newLevel,
+            'xp' => $newXp
+            ]);
+        } else {
+            $updateStmt = $conn->prepare("UPDATE users SET xp = ? WHERE id = ?");
+            $updateStmt->execute([$newXp, $userId]);
+        }
+
+        // Prepare a harmless statement so the existing $stmt->execute([$quest['xp_reward'], $userId]) call later doesn't break
+        $stmt = $conn->prepare("SELECT ? AS xp_delta, ? AS user_id");
         $stmt->execute([$quest['xp_reward'], $userId]);
         
         // Award card if applicable
@@ -222,19 +291,32 @@ function updateQuestProgress() {
                 if (!$matches) continue;
             }
             
-            // Update or create progress
+            // Ensure integer target
+            $target = intval($quest['objective_target']);
+            
+            // Get current progress for this user & quest
+            $curStmt = $conn->prepare("SELECT progress FROM user_quest_progress WHERE user_id = ? AND quest_id = ?");
+            $curStmt->execute([$userId, $quest['id']]);
+            $currentProgress = intval($curStmt->fetchColumn() ?? 0);
+            
+            // Compute new progress and completed flag in PHP to avoid SQL ordering/boolean issues
+            $newProgress = $currentProgress + $value;
+            if ($newProgress > $target) {
+                $newProgress = $target;
+            }
+            $completed = ($newProgress >= $target) ? 1 : 0;
+            
+            // Update or create progress (use concrete new values for both insert and update)
             $stmt = $conn->prepare("
                 INSERT INTO user_quest_progress (user_id, quest_id, progress, completed)
                 VALUES (?, ?, ?, ?)
                 ON DUPLICATE KEY UPDATE 
-                    progress = LEAST(progress + ?, ?),
-                    completed = (progress + ? >= ?)
+                    progress = ?,
+                    completed = ?
             ");
-            $completed = ($value >= $quest['objective_target']);
             $stmt->execute([
-                $userId, $quest['id'], $value, $completed,
-                $value, $quest['objective_target'],
-                $value, $quest['objective_target']
+                $userId, $quest['id'], $newProgress, $completed,
+                $newProgress, $completed
             ]);
             $updated++;
         }

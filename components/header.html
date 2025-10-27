@@ -69,9 +69,6 @@
             // Main app navigation - uses app functions
             buttons = [
                 { label: 'Menü', onclick: "showScreen('menu-screen')" },
-                { label: 'Neues Spiel', onclick: "showScreen('game-setup-screen')" },
-                { label: 'Kartensammlung', onclick: "showCardCollection()" },
-                { label: 'Deck Builder', onclick: "loadDeckBuilder()", id: 'deck-builder-btn' },
                 { label: 'Quests', onclick: `window.location.href='${basePath}web/features/quests.html'`, id: 'quests-btn' },
                 { label: 'Achievements', onclick: `window.location.href='${basePath}web/features/achievements.html'`, id: 'achievements-btn' },
                 { label: 'Card Sets', onclick: `window.location.href='${basePath}web/features/cardsets.html'`, id: 'card-sets-btn' },
@@ -81,9 +78,6 @@
             // Feature page navigation
             buttons = [
                 { label: 'Menü', onclick: `window.location.href='${basePath}index.html'` },
-                { label: 'Neues Spiel', onclick: `window.location.href='${basePath}index.html#game-setup-screen'` },
-                { label: 'Kartensammlung', onclick: `window.location.href='${basePath}index.html#card-collection'` },
-                { label: 'Deck Builder', onclick: `window.location.href='${basePath}index.html#deck-builder'`, id: 'deck-builder-btn' },
                 { label: 'Quests', onclick: "window.location.href='quests.html'", id: 'quests-btn' },
                 { label: 'Achievements', onclick: "window.location.href='achievements.html'", id: 'achievements-btn' },
                 { label: 'Card Sets', onclick: "window.location.href='cardsets.html'", id: 'card-sets-btn' },

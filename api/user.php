@@ -57,7 +57,30 @@ function getUserProfile() {
             echo json_encode(['success' => false, 'error' => 'User not found']);
         }
     } catch(PDOException $e) {
-        echo json_encode(['success' => false, 'error' => 'Database error']);
+        error_log(sprintf(
+            "getUserProfile - PDOException for user_id=%s: %s in %s on line %s\nTrace: %s",
+            $_SESSION['user_id'] ?? 'unknown',
+            $e->getMessage(),
+            $e->getFile(),
+            $e->getLine(),
+            $e->getTraceAsString()
+        ));
+
+        $response = ['success' => false, 'error' => 'Database error'];
+
+        // If you have a DEBUG flag in config, return detailed error to client (only for development)
+        if (true) {
+            $response['debug'] = [
+            'message' => $e->getMessage(),
+            'code' => $e->getCode(),
+            'file' => $e->getFile(),
+            'line' => $e->getLine()
+            ];
+        } else {
+            $response['details'] = 'Internal server error. See server logs for more information.';
+        }
+
+        echo json_encode($response);
     }
 }
 

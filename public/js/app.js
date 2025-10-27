@@ -4,6 +4,7 @@ let gameState = null;
 
 // Initialize app
 document.addEventListener('DOMContentLoaded', () => {
+    //console.log("hallo");
     checkAuth();
 });
 
@@ -111,7 +112,7 @@ async function checkAuth() {
         });
         
         const data = await response.json();
-        
+        //console.log(data);
         if (data.logged_in) {
             loadUserProfile();
             showScreen('menu-screen');
@@ -128,17 +129,27 @@ async function loadUserProfile() {
     try {
         const response = await fetch('api/user.php?action=profile');
         const data = await response.json();
-        
+
         if (data.success) {
             currentUser = data.user;
             updateUserDisplay();
+        } else {
+            console.error('Failed to load user profile:', data);
+            // Show a user-facing message and return to the auth screen to avoid running with a broken state
+            // showMessage(data.error || 'Fehler beim Laden des Profils', true);
+            // currentUser = null;
+            // showScreen('auth-screen');
         }
     } catch (error) {
         console.error('Failed to load profile:', error);
+        // showMessage('Fehler beim Laden des Profils', true);
+        // currentUser = null;
+        // showScreen('auth-screen');
     }
 }
 
 function updateUserDisplay() {
+    console.log(currentUser);
     if (!currentUser) return;
     
     document.getElementById('username-display').textContent = currentUser.username;
@@ -264,6 +275,7 @@ async function startGame(aiLevel) {
         
         if (data.success) {
             gameState = data.game_state;
+            console.log(data);
             initGameDisplay();
             showScreen('game-screen');
         } else {
@@ -585,7 +597,7 @@ async function endTurn() {
             displayField('player');
             displayField('ai');
             document.getElementById('turn-count').textContent = gameState.turn_count;
-            
+            console.log(data.game_state.player_hand);
             // Add battle log with delay for readability
             let delay = 0;
             data.battle_log.forEach((log, index) => {
@@ -935,30 +947,48 @@ function displayCurrentDeckCards() {
         container.appendChild(item);
     });
 }
-
 function displayAvailableDeckCards() {
     const container = document.getElementById('available-deck-cards');
     container.innerHTML = '';
-    
+
     const filteredCards = filterCards(allUserCards);
-    
+
+    // Determine max copies per card. Normally 2, but if the user has fewer than 15 distinct cards
+    // allow more copies so a 30-card deck can be built.
+    const distinctAvailable = allUserCards.length || 0;
+    let maxCopies = 2;
+    if (distinctAvailable > 0 && distinctAvailable < 15) {
+        maxCopies = Math.max(2, Math.ceil(30 / distinctAvailable));
+    } else if (distinctAvailable === 0) {
+        maxCopies = 30; // fallback when no distinct cards (avoid division by zero)
+    }
+
+    // Show note when max copies was increased
+    if (maxCopies > 2) {
+        const note = document.createElement('div');
+        note.style.color = '#ffc107';
+        note.style.marginBottom = '8px';
+        note.textContent = `Hinweis: Da nur ${distinctAvailable} verschiedene Karten verfügbar sind, sind bis zu ${maxCopies} Kopien pro Karte erlaubt, damit ein 30-Karten-Deck möglich ist.`;
+        container.appendChild(note);
+    }
+
     if (filteredCards.length === 0) {
-        container.innerHTML = '<p style="color: #ccc;">Keine Karten verfügbar</p>';
+        container.innerHTML += '<p style="color: #ccc;">Keine Karten verfügbar</p>';
         return;
     }
-    
+
     filteredCards.forEach(card => {
         const item = document.createElement('div');
         item.className = 'deck-card-item';
-        
-        const stats = card.type === 'monster' 
-            ? `${card.attack}/${card.defense}` 
+
+        const stats = card.type === 'monster'
+            ? `${card.attack}/${card.defense}`
             : card.effect || '';
-        
+
         const inDeck = currentDeck.cards.find(c => c.id === card.id);
         const inDeckCount = inDeck ? inDeck.quantity : 0;
-        const canAdd = inDeckCount < 2; // Max 2 copies
-        
+        const canAdd = inDeckCount < maxCopies; // use dynamic maxCopies
+
         item.innerHTML = `
             <div class="deck-card-info">
                 <span class="deck-card-name">${card.name}</span>
@@ -966,10 +996,10 @@ function displayAvailableDeckCards() {
             </div>
             <div class="deck-card-actions">
                 ${inDeckCount > 0 ? `<span class="deck-card-quantity">${inDeckCount} im Deck</span>` : ''}
-                ${canAdd ? `<button class="card-action-btn" onclick="addCardToDeck(${card.id})">+</button>` : ''}
+                ${canAdd ? `<button class="card-action-btn" onclick="addCardToDeck(${card.id})">+</button>` : `<span style="color:#999; margin-left:8px;">Max ${maxCopies}</span>`}
             </div>
         `;
-        
+
         container.appendChild(item);
     });
 }
@@ -1175,7 +1205,7 @@ function updateHeaderVisibility(screenId) {
     const headerElement = document.getElementById('main-navigation');
     
     if (headerElement) {
-        if (screenId === 'auth-screen' || screenId === 'menu-screen') {
+        if (screenId === 'auth-screen') {
             headerElement.style.display = 'none';
         } else {
             // Note: The visibility might need to be set to 'flex' 

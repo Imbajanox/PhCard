@@ -95,7 +95,7 @@ function displayAchievements() {
 
     // Merge achievement data with user progress
     const achievementsWithProgress = allAchievements.map(achievement => {
-        const userProgress = userAchievements.find(ua => ua.achievement_id === achievement.id);
+        const userProgress = userAchievements.find(ua => ua.id === achievement.id);
         return {
             ...achievement,
             unlocked: userProgress ? userProgress.unlocked : false,
@@ -116,7 +116,10 @@ function displayAchievements() {
  */
 function createAchievementCard(achievement) {
     const isUnlocked = achievement.unlocked;
-    const progress = parseInt(achievement.progress) || 0;
+    let progress = parseInt(achievement.progress) || 0;
+    if(isUnlocked){
+        progress = parseInt(achievement.objective_target) || 1;
+    }
     const target = parseInt(achievement.objective_target) || 1;
     const percentage = Math.min((progress / target) * 100, 100);
     

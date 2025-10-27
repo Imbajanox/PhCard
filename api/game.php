@@ -43,21 +43,31 @@ function startGame() {
     
     try {
         // Get user's cards from deck or collection
+        // If no deck_id provided, use the user's active deck (is_active = true)
+        if ($deckId <= 0) {
+            $stmt = $conn->prepare("SELECT id FROM user_decks WHERE user_id = ? AND is_active = 1 LIMIT 1");
+            $stmt->execute([$_SESSION['user_id']]);
+            $activeDeck = $stmt->fetch(PDO::FETCH_ASSOC);
+            if ($activeDeck) {
+            $deckId = intval($activeDeck['id']);
+            }
+        }
+
         if ($deckId > 0) {
-            // Verify deck ownership
+            // Verify deck ownership (redundant if selected above, but keeps checks consistent)
             $stmt = $conn->prepare("SELECT id FROM user_decks WHERE id = ? AND user_id = ?");
             $stmt->execute([$deckId, $_SESSION['user_id']]);
             if (!$stmt->fetch()) {
-                echo json_encode(['success' => false, 'error' => 'Deck not found']);
-                return;
+            echo json_encode(['success' => false, 'error' => 'Deck not found']);
+            return;
             }
             
             // Get cards from deck
             $stmt = $conn->prepare("
-                SELECT c.*, dc.quantity 
-                FROM deck_cards dc 
-                JOIN cards c ON dc.card_id = c.id 
-                WHERE dc.deck_id = ?
+            SELECT c.*, dc.quantity 
+            FROM deck_cards dc 
+            JOIN cards c ON dc.card_id = c.id 
+            WHERE dc.deck_id = ?
             ");
             $stmt->execute([$deckId]);
             $deckCards = $stmt->fetchAll(PDO::FETCH_ASSOC);
