@@ -213,7 +213,7 @@ function escapeHtml(text) {
 
 async function loadHeader() {
     try {
-        const response = await fetch('header.html');
+        const response = await fetch('header-other.html');
         if (!response.ok) {
             throw new Error(`HTTP error! status: ${response.status}`);
         }
