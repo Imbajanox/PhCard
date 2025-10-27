@@ -962,8 +962,8 @@ function endGame() {
             // Base coin reward + AI level bonus
             $coinsEarned = 50 + ($gameState['ai_level'] * 10);
             
-            // Chance for gems on win (10% base chance, +5% per AI level)
-            $gemChance = 10 + ($gameState['ai_level'] * 5);
+            // Chance for gems on win (10% base chance, +5% per AI level, capped at 100%)
+            $gemChance = min(100, 10 + ($gameState['ai_level'] * 5));
             if (mt_rand(1, 100) <= $gemChance) {
                 $gemsEarned = 1 + floor($gameState['ai_level'] / 2);
             }

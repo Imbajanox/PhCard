@@ -86,8 +86,8 @@ Consecutive login streak system (7-day cycle):
 
 Streak tracking:
 - Login consecutively to maintain streak
-- Missing a day resets streak to 1
-- Longest streak is tracked for achievements
+- Missing a day resets the streak to 1
+- The longest streak is tracked for achievements
 
 ## Database Changes
 
