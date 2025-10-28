@@ -251,8 +251,10 @@ function generatePackCards($conn, $pack) {
     
     if (empty($availableCards)) {
         // Fallback: get all cards
-        $stmt = $conn->prepare("SELECT * FROM cards ORDER BY RAND() LIMIT ?");
-        $stmt->execute([$cardsNeeded]);
+        // Ensure cardsNeeded is within reasonable bounds (1-100)
+        $safeLimit = max(1, min(100, intval($cardsNeeded)));
+        $stmt = $conn->prepare("SELECT * FROM cards ORDER BY RAND() LIMIT " . $safeLimit);
+        $stmt->execute([]);
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
     

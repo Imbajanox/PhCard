@@ -886,9 +886,10 @@ function performAITurn($gameState) {
         3 => 7,   // Level 3: Moderate choices
         default => 8  // Level 4+: Full choices
     };
+    // Note: $cardLimit is safe - it's a hardcoded value from the match expression
     
-    $stmt = $conn->prepare("SELECT * FROM cards WHERE required_level <= ? ORDER BY RAND() LIMIT ?");
-    $stmt->execute([min($aiLevel * 2, 10), $cardLimit]);
+    $stmt = $conn->prepare("SELECT * FROM cards WHERE required_level <= ? ORDER BY RAND() LIMIT " . intval($cardLimit));
+    $stmt->execute([min($aiLevel * 2, 10)]);
     $aiCards = $stmt->fetchAll(PDO::FETCH_ASSOC);
     
     // AI plays cards based on available mana and strategy
