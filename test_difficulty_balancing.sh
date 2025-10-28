@@ -132,7 +132,7 @@ echo "Test 5: Randomness factors..."
 php -r "
 function testRandomness(\$aiLevel, \$iterations = 100) {
     \$min = PHP_INT_MAX;
-    \$max = 0;
+    \$max = PHP_INT_MIN;
     
     for (\$i = 0; \$i < \$iterations; \$i++) {
         if (\$aiLevel == 1) {
@@ -198,8 +198,8 @@ echo "All tests passed! ✓"
 echo "========================================"
 echo ""
 echo "Summary of AI Difficulty Changes:"
-echo "Level 1: Easy - 70% keyword reduction, 2 cards/turn, ±60% randomness"
-echo "Level 2: Moderate - 40% keyword reduction, 3 cards/turn, ±30% randomness"
+echo "Level 1: Very Easy - 70% keyword reduction, 2 cards/turn, ±60% randomness"
+echo "Level 2: Easy - 40% keyword reduction, 3 cards/turn, ±30% randomness"
 echo "Level 3: Normal - Standard play, 4 cards/turn, ±15% randomness"
 echo "Level 4+: Hard - Optimal play, 10 cards/turn, no randomness"
 echo ""
