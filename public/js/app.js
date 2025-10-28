@@ -6,6 +6,7 @@ let gameState = null;
 document.addEventListener('DOMContentLoaded', () => {
     //console.log("hallo");
     checkAuth();
+    loadLeaderboard(); // Load leaderboard on page load
 });
 
 // Show/Hide screens
@@ -17,6 +18,15 @@ function showScreen(screenId) {
 }
 
 // Authentication functions
+function showAuthScreen(formType) {
+    showScreen('auth-screen');
+    if (formType === 'register') {
+        showRegister();
+    } else {
+        showLogin();
+    }
+}
+
 function showLogin() {
     document.getElementById('login-form').classList.add('active');
     document.getElementById('register-form').classList.remove('active');
@@ -97,7 +107,8 @@ async function logout() {
         });
         
         currentUser = null;
-        showScreen('auth-screen');
+        showScreen('landing-screen');
+        loadLeaderboard(); // Reload leaderboard when user logs out
     } catch (error) {
         console.error('Logout error:', error);
     }
@@ -117,11 +128,71 @@ async function checkAuth() {
             loadUserProfile();
             showScreen('menu-screen');
         } else {
-            showScreen('auth-screen');
+            showScreen('landing-screen');
         }
     } catch (error) {
-        showScreen('auth-screen');
+        showScreen('landing-screen');
     }
+}
+
+// Leaderboard functions
+async function loadLeaderboard() {
+    const leaderboardContent = document.getElementById('leaderboard-content');
+    
+    try {
+        const response = await fetch('api/leaderboard.php?action=get');
+        const data = await response.json();
+        
+        if (data.success && data.leaderboard && data.leaderboard.length > 0) {
+            displayLeaderboard(data.leaderboard);
+        } else {
+            leaderboardContent.innerHTML = '<p style="text-align: center; color: #00ffff; padding: 20px;">Keine Spieler in der Bestenliste</p>';
+        }
+    } catch (error) {
+        console.error('Failed to load leaderboard:', error);
+        leaderboardContent.innerHTML = '<p style="text-align: center; color: #ff0000; padding: 20px;">Fehler beim Laden der Bestenliste</p>';
+    }
+}
+
+function displayLeaderboard(players) {
+    const leaderboardContent = document.getElementById('leaderboard-content');
+    
+    let html = '<table><thead><tr>';
+    html += '<th>Rang</th>';
+    html += '<th>Spieler</th>';
+    html += '<th>Level</th>';
+    html += '<th>XP</th>';
+    html += '<th>Siege</th>';
+    html += '<th>Spiele</th>';
+    html += '<th>Siegrate</th>';
+    html += '</tr></thead><tbody>';
+    
+    players.forEach((player, index) => {
+        const rank = index + 1;
+        let rankClass = 'leaderboard-rank';
+        if (rank === 1) rankClass += ' leaderboard-rank-1';
+        else if (rank === 2) rankClass += ' leaderboard-rank-2';
+        else if (rank === 3) rankClass += ' leaderboard-rank-3';
+        
+        html += '<tr>';
+        html += `<td class="${rankClass}">#${rank}</td>`;
+        html += `<td><strong>${escapeHtml(player.username)}</strong></td>`;
+        html += `<td>${player.level}</td>`;
+        html += `<td>${player.xp}</td>`;
+        html += `<td>${player.total_wins}</td>`;
+        html += `<td>${player.total_games}</td>`;
+        html += `<td>${player.win_rate}%</td>`;
+        html += '</tr>';
+    });
+    
+    html += '</tbody></table>';
+    leaderboardContent.innerHTML = html;
+}
+
+function escapeHtml(text) {
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
 }
 
 // User profile functions
