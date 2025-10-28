@@ -6,11 +6,13 @@ This pull request successfully addresses all three issues raised in the problem 
 
 ## Problem Statement (Original)
 
-> Look at he modified Combat system (Similar to heartstone). Can it be optimized? With only direct damage cards dealing damage to the player it feels like luck to win. How is it handled in heartstone?
+> Look at [the] modified Combat system (Similar to [Hearthstone]). Can it be optimized? With only direct damage cards dealing damage to the player it feels like luck to win. How is it handled in [H]earthstone?
 >
-> Also Cards dissappear fast after a round and cards who die in the same round dont even appear. We need a solution for that.
+> Also Cards [disappear] fast after a round and cards who [don't] die in the same round [don't] even appear. We need a solution for that.
 >
 > Damage to cards should be shown by a floating number like with the player heal and damage
+
+*Note: Brackets indicate minor corrections to original text for clarity*
 
 ## Solutions Delivered
 
@@ -105,6 +107,7 @@ showCardDamageNumber(playerType, cardIndex, amount);
 }
 
 .card-destroyed {
+    /* Ready for future use - graveyard animations */
     animation: card-destroyed 0.8s ease-out forwards;
 }
 ```
@@ -112,7 +115,7 @@ showCardDamageNumber(playerType, cardIndex, amount);
 **Benefits:**
 - Professional-looking effects
 - Consistent with existing UI
-- Ready for future enhancements
+- Ready for future enhancements (e.g., graveyard display)
 
 ## Code Quality
 
