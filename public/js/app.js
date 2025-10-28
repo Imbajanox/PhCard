@@ -693,14 +693,16 @@ async function endTurn() {
             let delay = 300; // Give a brief moment to see the board state
             
             // Show battle events with damage numbers
-            if (data.battle_events && Array.isArray(data.battle_events) && data.battle_events.length > 0) {
+            if (Array.isArray(data.battle_events) && data.battle_events.length > 0) {
                 for (let i = 0; i < data.battle_events.length; i++) {
                     const event = data.battle_events[i];
                     
                     setTimeout(() => {
                         if (event.type === 'damage') {
                             // Show damage number on the card
-                            // Note: Card index might not be accurate after removals, but damage numbers still show
+                            // Note: Card index may not match perfectly if cards were destroyed earlier,
+                            // but damage numbers still appear in the general area. This is acceptable
+                            // since the battle log provides exact details.
                             showCardDamageNumber(event.targetPlayer, event.targetIndex, event.amount);
                         } else if (event.type === 'destroyed') {
                             // Destroyed cards don't show because they're already removed from state
@@ -806,6 +808,8 @@ function showCardDamageNumber(playerType, cardIndex, amount) {
         // Highlight the card being damaged
         cardEl.classList.add('card-damage-flash');
         
+        // Remove effects after animation completes
+        // Damage number floats for 1000ms, card flash is 800ms
         setTimeout(() => {
             numberEl.remove();
             cardEl.classList.remove('card-damage-flash');
