@@ -146,11 +146,11 @@ async function loadLeaderboard() {
         if (data.success && data.leaderboard && data.leaderboard.length > 0) {
             displayLeaderboard(data.leaderboard);
         } else {
-            leaderboardContent.innerHTML = '<p style="text-align: center; color: #00ffff; padding: 20px;">Keine Spieler in der Bestenliste</p>';
+            leaderboardContent.innerHTML = '<p class="leaderboard-empty">Keine Spieler in der Bestenliste</p>';
         }
     } catch (error) {
         console.error('Failed to load leaderboard:', error);
-        leaderboardContent.innerHTML = '<p style="text-align: center; color: #ff0000; padding: 20px;">Fehler beim Laden der Bestenliste</p>';
+        leaderboardContent.innerHTML = '<p class="leaderboard-error">Fehler beim Laden der Bestenliste</p>';
     }
 }
 
@@ -190,9 +190,14 @@ function displayLeaderboard(players) {
 }
 
 function escapeHtml(text) {
-    const div = document.createElement('div');
-    div.textContent = text;
-    return div.innerHTML;
+    const escapeMap = {
+        '&': '&amp;',
+        '<': '&lt;',
+        '>': '&gt;',
+        '"': '&quot;',
+        "'": '&#039;'
+    };
+    return String(text).replace(/[&<>"']/g, char => escapeMap[char]);
 }
 
 // User profile functions

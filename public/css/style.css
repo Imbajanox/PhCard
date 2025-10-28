@@ -1523,6 +1523,18 @@ h1, h2, h3, h4 {
     font-size: 18px;
 }
 
+.leaderboard-empty {
+    text-align: center;
+    color: #00ffff;
+    padding: 20px;
+}
+
+.leaderboard-error {
+    text-align: center;
+    color: #ff0000;
+    padding: 20px;
+}
+
 .landing-footer {
     text-align: center;
     padding: 30px;
