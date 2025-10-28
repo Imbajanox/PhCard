@@ -10,8 +10,34 @@
     <div id="header-placeholder">
     </div>
     <div id="app">
+        <!-- Landing Page Screen (shown when not logged in) -->
+        <div id="landing-screen" class="screen active">
+            <div class="landing-container">
+                <div class="landing-hero">
+                    <h1 class="landing-title">PhCard</h1>
+                    <p class="landing-tagline">Rundenbasiertes Browser-Kartenspiel</p>
+                    <p class="landing-description">Kämpfe gegen die KI, sammle mächtige Karten und steige im Rang auf!</p>
+                </div>
+                
+                <div class="landing-leaderboard">
+                    <h2>Bestenliste</h2>
+                    <div id="leaderboard-content" class="leaderboard-table">
+                        <div class="loading-spinner">Lade Bestenliste...</div>
+                    </div>
+                </div>
+                
+                <div class="landing-footer">
+                    <p>Bereit zum Spielen?</p>
+                    <div class="footer-links">
+                        <a href="#" class="footer-btn" onclick="showAuthScreen('login'); return false;">Anmelden</a>
+                        <a href="#" class="footer-btn" onclick="showAuthScreen('register'); return false;">Registrieren</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
         <!-- Login/Register Screen -->
-        <div id="auth-screen" class="screen active">
+        <div id="auth-screen" class="screen">
             <div class="auth-container">
                 <h1>PhCard</h1>
                 <p class="tagline">Rundenbasiertes Kartenspiel</p>
@@ -34,6 +60,7 @@
                 </form>
                 
                 <div id="auth-message" class="message"></div>
+                <p class="back-to-landing"><a href="#" onclick="showScreen('landing-screen'); return false;">← Zurück zur Startseite</a></p>
             </div>
         </div>
         
