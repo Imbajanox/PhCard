@@ -878,8 +878,17 @@ function performAITurn($gameState) {
     
     // Get AI cards based on level
     $conn = getDBConnection();
-    $stmt = $conn->prepare("SELECT * FROM cards WHERE required_level <= ? ORDER BY RAND() LIMIT 8");
-    $stmt->execute([min($aiLevel * 2, 10)]);
+    
+    // Lower difficulty levels get fewer cards to choose from
+    $cardLimit = match($aiLevel) {
+        1 => 5,   // Level 1: Very limited choices
+        2 => 6,   // Level 2: Limited choices
+        3 => 7,   // Level 3: Moderate choices
+        default => 8  // Level 4+: Full choices
+    };
+    
+    $stmt = $conn->prepare("SELECT * FROM cards WHERE required_level <= ? ORDER BY RAND() LIMIT ?");
+    $stmt->execute([min($aiLevel * 2, 10), $cardLimit]);
     $aiCards = $stmt->fetchAll(PDO::FETCH_ASSOC);
     
     // AI plays cards based on available mana and strategy
@@ -906,6 +915,23 @@ function performAITurn($gameState) {
         }
         
         $score = scoreCard($card, $gameState, $aiHPPercent, $playerHPPercent, $playerFieldSize, $aiFieldSize, $playerFieldPower, $aiLevel);
+        
+        // Add randomness to lower difficulty levels to simulate mistakes
+        if ($aiLevel == 1) {
+            // Level 1: Very random, often plays wrong cards (±60% randomness)
+            $randomFactor = mt_rand(40, 160) / 100.0;
+            $score *= $randomFactor;
+        } else if ($aiLevel == 2) {
+            // Level 2: Some randomness (±30% randomness)
+            $randomFactor = mt_rand(70, 130) / 100.0;
+            $score *= $randomFactor;
+        } else if ($aiLevel == 3) {
+            // Level 3: Small randomness (±15% randomness)
+            $randomFactor = mt_rand(85, 115) / 100.0;
+            $score *= $randomFactor;
+        }
+        // Level 4+: No randomness, plays optimally
+        
         $scoredCards[] = ['card' => $card, 'score' => $score];
     }
     
@@ -915,7 +941,19 @@ function performAITurn($gameState) {
     });
     
     // Play cards in priority order
+    $cardsPlayed = 0;
+    $maxCardsToPlay = match($aiLevel) {
+        1 => 2,   // Level 1: Plays max 2 cards per turn (inefficient)
+        2 => 3,   // Level 2: Plays max 3 cards per turn
+        3 => 4,   // Level 3: Plays max 4 cards per turn
+        default => 10  // Level 4+: Plays as many as possible
+    };
+    
     foreach ($scoredCards as $scoredCard) {
+        if ($cardsPlayed >= $maxCardsToPlay) {
+            break; // Low level AI stops playing cards early
+        }
+        
         $card = $scoredCard['card'];
         $manaCost = intval($card['mana_cost'] ?? 1);
         
@@ -954,6 +992,7 @@ function performAITurn($gameState) {
             $actions[] = "AI played {$card['name']} (ATK: {$card['attack']}, HP: {$card['current_health']})";
             $aiMana -= $manaCost;
             $aiFieldSize++;
+            $cardsPlayed++;
             
             // Apply overload
             if (isset($card['overload']) && $card['overload'] > 0) {
@@ -982,6 +1021,7 @@ function performAITurn($gameState) {
             $gameState = $result['gameState'];
             $actions[] = $message;
             $aiMana -= $manaCost;
+            $cardsPlayed++;
             
             // Apply overload
             if (isset($card['overload']) && $card['overload'] > 0) {
@@ -1003,6 +1043,11 @@ function scoreCard($card, $gameState, $aiHPPercent, $playerHPPercent, $playerFie
     $score = 0;
     $manaCost = intval($card['mana_cost'] ?? 1);
     
+    // Lower difficulty levels use simpler/worse evaluation
+    // Level 1-2: Very basic, makes mistakes
+    // Level 3: Moderate play
+    // Level 4-5: Strong strategic play
+    
     if ($card['type'] === 'monster') {
         $attack = intval($card['attack'] ?? 0);
         $defense = intval($card['defense'] ?? 0);
@@ -1011,48 +1056,66 @@ function scoreCard($card, $gameState, $aiHPPercent, $playerHPPercent, $playerFie
         $statsValue = ($attack + $defense) / max(1, $manaCost);
         $score += $statsValue * 10;
         
-        // Bonus for keywords
+        // Bonus for keywords - scaled down significantly for low levels
         if (!empty($card['keywords'])) {
             $keywords = explode(',', $card['keywords']);
             foreach ($keywords as $keyword) {
                 $keyword = trim($keyword);
                 
+                // Low level AI doesn't understand keyword value well
+                $keywordMultiplier = match($aiLevel) {
+                    1 => 0.3,  // Level 1: Barely values keywords
+                    2 => 0.6,  // Level 2: Some value
+                    3 => 1.0,  // Level 3: Normal value
+                    4 => 1.5,  // Level 4: Higher value
+                    default => 2.0  // Level 5+: Very high value
+                };
+                
                 // Taunt is very valuable when player has strong board
                 if ($keyword === 'taunt' && $playerFieldPower > 0) {
-                    $score += 15 * $aiLevel;
+                    $score += 15 * $keywordMultiplier;
                 }
                 
                 // Divine Shield is always good
                 if ($keyword === 'divine_shield') {
-                    $score += 10 * $aiLevel;
+                    $score += 10 * $keywordMultiplier;
                 }
                 
                 // Lifesteal is valuable when HP is low
                 if ($keyword === 'lifesteal' && $aiHPPercent < 0.7) {
-                    $score += 12 * $aiLevel;
+                    $score += 12 * $keywordMultiplier;
                 }
                 
                 // Charge/Rush for immediate impact
                 if (in_array($keyword, ['charge', 'rush'])) {
-                    $score += 8 * $aiLevel;
+                    $score += 8 * $keywordMultiplier;
                 }
                 
                 // Windfury for damage
                 if ($keyword === 'windfury') {
-                    $score += 10 * $aiLevel;
+                    $score += 10 * $keywordMultiplier;
                 }
             }
         }
         
         // Prioritize monsters when we need board presence
+        // Lower level AI is worse at board management
         if ($aiFieldSize < $playerFieldSize) {
-            $score += 20;
+            if ($aiLevel >= 3) {
+                $score += 20;
+            } else if ($aiLevel == 2) {
+                $score += 10;
+            }
+            // Level 1 doesn't consider board presence much
         }
         
         // Higher level AI values efficient trades
         if ($aiLevel >= 3) {
             $score += $attack * 2; // Value attack more for aggression
+        } else if ($aiLevel == 2) {
+            $score += $attack; // Some preference for attack
         }
+        // Level 1 doesn't have attack preference
         
     } else if ($card['type'] === 'spell') {
         $effect = $card['effect'];
@@ -1062,15 +1125,31 @@ function scoreCard($card, $gameState, $aiHPPercent, $playerHPPercent, $playerFie
             $damage = isset($matches[1]) ? intval($matches[1]) : 0;
             
             // Value damage based on opponent HP
-            $score += $damage * 5;
+            // Low level AI doesn't value damage spells as well
+            $damageMultiplier = match($aiLevel) {
+                1 => 2,   // Level 1: Undervalues damage
+                2 => 3,   // Level 2: Some value
+                3 => 5,   // Level 3: Normal value
+                4 => 6,   // Level 4: Higher value
+                default => 7  // Level 5+: Very high value
+            };
+            $score += $damage * $damageMultiplier;
             
             // More valuable when opponent is low HP (finish them!)
+            // Low level AI is bad at calculating lethal
             if ($playerHPPercent < 0.3) {
-                $score += 50 * $aiLevel;
+                if ($aiLevel >= 4) {
+                    $score += 50;
+                } else if ($aiLevel == 3) {
+                    $score += 30;
+                } else if ($aiLevel == 2) {
+                    $score += 15;
+                }
+                // Level 1 doesn't recognize lethal opportunities
             }
             
-            // Less valuable early game
-            if ($gameState['turn_count'] < 3) {
+            // Less valuable early game - but low level AI doesn't know this
+            if ($gameState['turn_count'] < 3 && $aiLevel >= 3) {
                 $score -= 10;
             }
         } else if (strpos($effect, 'heal') !== false) {
@@ -1078,22 +1157,48 @@ function scoreCard($card, $gameState, $aiHPPercent, $playerHPPercent, $playerFie
             $heal = isset($matches[1]) ? intval($matches[1]) : 0;
             
             // Only valuable when HP is low
-            if ($aiHPPercent < 0.6) {
-                $score += $heal * (1 - $aiHPPercent) * 10;
+            // Low level AI uses heals inefficiently
+            if ($aiLevel <= 2) {
+                // Levels 1-2 overvalue healing
+                if ($aiHPPercent < 0.8) {
+                    $score += $heal * (1 - $aiHPPercent) * 15;
+                } else {
+                    $score -= 5; // Small negative
+                }
             } else {
-                $score -= 20; // Negative value if not needed
+                if ($aiHPPercent < 0.6) {
+                    $score += $heal * (1 - $aiHPPercent) * 10;
+                } else {
+                    $score -= 20; // Negative value if not needed
+                }
             }
         } else if (strpos($effect, 'boost') !== false) {
             // Only valuable if we have monsters
+            // Low level AI doesn't understand boost value well
             if ($aiFieldSize > 0) {
-                $score += 15 * $aiFieldSize * $aiLevel;
+                $boostValue = match($aiLevel) {
+                    1 => 5,   // Level 1: Barely values boosts
+                    2 => 10,  // Level 2: Some value
+                    3 => 15,  // Level 3: Normal value
+                    4 => 20,  // Level 4: Higher value
+                    default => 25  // Level 5+: Very high value
+                };
+                $score += $boostValue * $aiFieldSize;
             } else {
                 $score -= 30; // Very negative if no monsters
             }
         } else if (strpos($effect, 'stun') !== false) {
             // Valuable against strong player board
+            // Low level AI doesn't understand stun value
             if ($playerFieldSize > 0) {
-                $score += 20 * $playerFieldSize * $aiLevel;
+                $stunValue = match($aiLevel) {
+                    1 => 5,   // Level 1: Barely values stun
+                    2 => 10,  // Level 2: Some value
+                    3 => 15,  // Level 3: Normal value
+                    4 => 20,  // Level 4: Higher value
+                    default => 25  // Level 5+: Very high value
+                };
+                $score += $stunValue * $playerFieldSize;
             }
         }
         
@@ -1103,9 +1208,14 @@ function scoreCard($card, $gameState, $aiHPPercent, $playerHPPercent, $playerFie
         }
     }
     
-    // Mana efficiency bonus
+    // Mana efficiency bonus - low level AI doesn't care about efficiency as much
     $manaEfficiency = 10 - $manaCost;
-    $score += $manaEfficiency;
+    if ($aiLevel >= 3) {
+        $score += $manaEfficiency;
+    } else if ($aiLevel == 2) {
+        $score += $manaEfficiency * 0.5;
+    }
+    // Level 1 doesn't consider mana efficiency
     
     return $score;
 }
