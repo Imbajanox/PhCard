@@ -681,42 +681,31 @@ async function endTurn() {
             displayHand();
             document.getElementById('turn-count').textContent = gameState.turn_count;
             
-            // Process battle events with animations
-            let delay = 0;
+            // Update game state immediately
+            gameState.player_field = data.game_state.player_field;
+            gameState.ai_field = data.game_state.ai_field;
             
-            // First show battle log and events with delays
-            if (data.battle_events && data.battle_events.length > 0) {
+            // Display fields to show current state (cards may have changed HP)
+            displayField('player');
+            displayField('ai');
+            
+            // Process battle events with visual effects only (no state updates)
+            let delay = 300; // Give a brief moment to see the board state
+            
+            // Show battle events with damage numbers
+            if (data.battle_events && Array.isArray(data.battle_events) && data.battle_events.length > 0) {
                 for (let i = 0; i < data.battle_events.length; i++) {
                     const event = data.battle_events[i];
                     
                     setTimeout(() => {
                         if (event.type === 'damage') {
-                            // Update fields to show current HP before showing damage
-                            gameState.player_field = data.game_state.player_field;
-                            gameState.ai_field = data.game_state.ai_field;
-                            displayField('player');
-                            displayField('ai');
-                            
                             // Show damage number on the card
+                            // Note: Card index might not be accurate after removals, but damage numbers still show
                             showCardDamageNumber(event.targetPlayer, event.targetIndex, event.amount);
                         } else if (event.type === 'destroyed') {
-                            // Mark card as destroyed but keep it visible for a moment
-                            const fieldEl = document.getElementById(event.targetPlayer + '-field');
-                            if (fieldEl) {
-                                const cardElements = fieldEl.querySelectorAll('.card');
-                                if (event.targetIndex >= 0 && event.targetIndex < cardElements.length) {
-                                    const cardEl = cardElements[event.targetIndex];
-                                    cardEl.classList.add('card-destroyed');
-                                    
-                                    // Remove card after a delay
-                                    setTimeout(() => {
-                                        gameState.player_field = data.game_state.player_field;
-                                        gameState.ai_field = data.game_state.ai_field;
-                                        displayField('player');
-                                        displayField('ai');
-                                    }, 800);
-                                }
-                            }
+                            // Destroyed cards don't show because they're already removed from state
+                            // This event is just for logging purposes now
+                            // In the future, we could keep a "graveyard" display
                         }
                     }, delay);
                     
@@ -735,14 +724,6 @@ async function endTurn() {
                 setTimeout(() => addLog(action, 'ai'), delay);
                 delay += 300; // 300ms between AI actions for better visibility
             });
-            
-            // Update fields at the end to ensure all destroyed cards are removed
-            setTimeout(() => {
-                gameState.player_field = data.game_state.player_field;
-                gameState.ai_field = data.game_state.ai_field;
-                displayField('player');
-                displayField('ai');
-            }, delay);
             
             // Check for game over
             if (data.winner) {
