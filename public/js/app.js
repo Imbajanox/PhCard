@@ -664,24 +664,67 @@ async function endTurn() {
         const data = await response.json();
         
         if (data.success) {
+            // Store old field states to track destroyed cards
+            const oldPlayerField = [...gameState.player_field];
+            const oldAIField = [...gameState.ai_field];
+            
+            // Update game state immediately for HP/mana
             gameState.player_hp = data.game_state.player_hp;
             gameState.ai_hp = data.game_state.ai_hp;
             gameState.player_mana = data.game_state.player_mana;
             gameState.player_max_mana = data.game_state.player_max_mana;
             gameState.player_hand = data.game_state.player_hand;
-            gameState.player_field = data.game_state.player_field;
-            gameState.ai_field = data.game_state.ai_field;
             gameState.turn_count = data.game_state.turn_count;
             
             updateHP();
             updateMana();
             displayHand();
-            displayField('player');
-            displayField('ai');
             document.getElementById('turn-count').textContent = gameState.turn_count;
-            console.log(data.game_state.player_hand);
-            // Add battle log with delay for readability
+            
+            // Process battle events with animations
             let delay = 0;
+            
+            // First show battle log and events with delays
+            if (data.battle_events && data.battle_events.length > 0) {
+                for (let i = 0; i < data.battle_events.length; i++) {
+                    const event = data.battle_events[i];
+                    
+                    setTimeout(() => {
+                        if (event.type === 'damage') {
+                            // Update fields to show current HP before showing damage
+                            gameState.player_field = data.game_state.player_field;
+                            gameState.ai_field = data.game_state.ai_field;
+                            displayField('player');
+                            displayField('ai');
+                            
+                            // Show damage number on the card
+                            showCardDamageNumber(event.targetPlayer, event.targetIndex, event.amount);
+                        } else if (event.type === 'destroyed') {
+                            // Mark card as destroyed but keep it visible for a moment
+                            const fieldEl = document.getElementById(event.targetPlayer + '-field');
+                            if (fieldEl) {
+                                const cardElements = fieldEl.querySelectorAll('.card');
+                                if (event.targetIndex >= 0 && event.targetIndex < cardElements.length) {
+                                    const cardEl = cardElements[event.targetIndex];
+                                    cardEl.classList.add('card-destroyed');
+                                    
+                                    // Remove card after a delay
+                                    setTimeout(() => {
+                                        gameState.player_field = data.game_state.player_field;
+                                        gameState.ai_field = data.game_state.ai_field;
+                                        displayField('player');
+                                        displayField('ai');
+                                    }, 800);
+                                }
+                            }
+                        }
+                    }, delay);
+                    
+                    delay += 400; // 400ms between events
+                }
+            }
+            
+            // Add battle log with delay for readability
             data.battle_log.forEach((log, index) => {
                 setTimeout(() => addLog(log), delay);
                 delay += 200; // 200ms between each log entry
@@ -692,6 +735,14 @@ async function endTurn() {
                 setTimeout(() => addLog(action, 'ai'), delay);
                 delay += 300; // 300ms between AI actions for better visibility
             });
+            
+            // Update fields at the end to ensure all destroyed cards are removed
+            setTimeout(() => {
+                gameState.player_field = data.game_state.player_field;
+                gameState.ai_field = data.game_state.ai_field;
+                displayField('player');
+                displayField('ai');
+            }, delay);
             
             // Check for game over
             if (data.winner) {
@@ -750,6 +801,35 @@ function showDamageNumber(targetEl, amount) {
     setTimeout(() => {
         numberEl.remove();
     }, 1000);
+}
+
+function showCardDamageNumber(playerType, cardIndex, amount) {
+    // Get the field element
+    const fieldEl = document.getElementById(playerType + '-field');
+    if (!fieldEl) return;
+    
+    // Get the specific card element
+    const cardElements = fieldEl.querySelectorAll('.card');
+    if (cardIndex >= 0 && cardIndex < cardElements.length) {
+        const cardEl = cardElements[cardIndex];
+        const rect = cardEl.getBoundingClientRect();
+        
+        const numberEl = document.createElement('div');
+        numberEl.className = 'damage-number';
+        numberEl.textContent = `-${amount}`;
+        numberEl.style.left = (rect.left + rect.width / 2) + 'px';
+        numberEl.style.top = (rect.top + rect.height / 2) + 'px';
+        
+        document.body.appendChild(numberEl);
+        
+        // Highlight the card being damaged
+        cardEl.classList.add('card-damage-flash');
+        
+        setTimeout(() => {
+            numberEl.remove();
+            cardEl.classList.remove('card-damage-flash');
+        }, 1000);
+    }
 }
 
 function showHealNumber(targetEl, amount) {

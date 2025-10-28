@@ -393,6 +393,7 @@ function endTurn() {
     
     // Battle phase - player monsters attack
     $battleLog = [];
+    $battleEvents = []; // Track structured events for client-side animations
     
     // Process status effects at start of battle
     $battleLog = array_merge($battleLog, processStatusEffects($gameState, 'player'));
@@ -441,12 +442,28 @@ function endTurn() {
                     $damage = $playerMonster['attack'];
                     $aiMonster['current_health'] -= $damage;
                     $battleLog[] = "{$playerMonster['name']} attacks {$aiMonster['name']} for {$damage} damage (HP: {$aiMonster['current_health']}/{$aiMonster['max_health']})";
+                    $battleEvents[] = [
+                        'type' => 'damage',
+                        'source' => $playerMonster['name'],
+                        'target' => $aiMonster['name'],
+                        'targetPlayer' => 'ai',
+                        'targetIndex' => $aiMonsterIndex,
+                        'amount' => $damage
+                    ];
                     
                     // Counter-attack damage (both monsters damage each other)
                     $counterDamage = $aiMonster['attack'];
                     $playerMonster['current_health'] -= $counterDamage;
                     $gameState['player_field'][$i]['current_health'] = $playerMonster['current_health'];
                     $battleLog[] = "{$aiMonster['name']} deals {$counterDamage} counter-damage to {$playerMonster['name']} (HP: {$playerMonster['current_health']}/{$playerMonster['max_health']})";
+                    $battleEvents[] = [
+                        'type' => 'damage',
+                        'source' => $aiMonster['name'],
+                        'target' => $playerMonster['name'],
+                        'targetPlayer' => 'player',
+                        'targetIndex' => $i,
+                        'amount' => $counterDamage
+                    ];
                     
                     // Apply Lifesteal
                     if (isset($playerMonster['status_effects']) && in_array('lifesteal', $playerMonster['status_effects'])) {
@@ -463,6 +480,12 @@ function endTurn() {
                     
                     // Check if defender is destroyed
                     if ($aiMonster['current_health'] <= 0) {
+                        $battleEvents[] = [
+                            'type' => 'destroyed',
+                            'target' => $aiMonster['name'],
+                            'targetPlayer' => 'ai',
+                            'targetIndex' => $aiMonsterIndex
+                        ];
                         array_splice($gameState['ai_field'], $aiMonsterIndex, 1);
                         $battleLog[] = "{$aiMonster['name']} was destroyed!";
                     }
@@ -487,12 +510,28 @@ function endTurn() {
                 $damage = $playerMonster['attack'];
                 $aiMonster['current_health'] -= $damage;
                 $battleLog[] = "{$playerMonster['name']} attacks {$aiMonster['name']} for {$damage} damage (HP: {$aiMonster['current_health']}/{$aiMonster['max_health']})";
+                $battleEvents[] = [
+                    'type' => 'damage',
+                    'source' => $playerMonster['name'],
+                    'target' => $aiMonster['name'],
+                    'targetPlayer' => 'ai',
+                    'targetIndex' => 0,
+                    'amount' => $damage
+                ];
                 
                 // Counter-attack damage (both monsters damage each other)
                 $counterDamage = $aiMonster['attack'];
                 $playerMonster['current_health'] -= $counterDamage;
                 $gameState['player_field'][$i]['current_health'] = $playerMonster['current_health'];
                 $battleLog[] = "{$aiMonster['name']} deals {$counterDamage} counter-damage to {$playerMonster['name']} (HP: {$playerMonster['current_health']}/{$playerMonster['max_health']})";
+                $battleEvents[] = [
+                    'type' => 'damage',
+                    'source' => $aiMonster['name'],
+                    'target' => $playerMonster['name'],
+                    'targetPlayer' => 'player',
+                    'targetIndex' => $i,
+                    'amount' => $counterDamage
+                ];
                 
                 // Apply Lifesteal
                 if (isset($playerMonster['status_effects']) && in_array('lifesteal', $playerMonster['status_effects'])) {
@@ -502,6 +541,12 @@ function endTurn() {
                 
                 // Check if defender is destroyed
                 if ($aiMonster['current_health'] <= 0) {
+                    $battleEvents[] = [
+                        'type' => 'destroyed',
+                        'target' => $aiMonster['name'],
+                        'targetPlayer' => 'ai',
+                        'targetIndex' => 0
+                    ];
                     array_shift($gameState['ai_field']);
                     $battleLog[] = "{$aiMonster['name']} was destroyed!";
                 }
@@ -547,6 +592,12 @@ function endTurn() {
     for ($i = count($gameState['player_field']) - 1; $i >= 0; $i--) {
         if ($gameState['player_field'][$i]['current_health'] <= 0) {
             $destroyedMonster = $gameState['player_field'][$i];
+            $battleEvents[] = [
+                'type' => 'destroyed',
+                'target' => $destroyedMonster['name'],
+                'targetPlayer' => 'player',
+                'targetIndex' => $i
+            ];
             array_splice($gameState['player_field'], $i, 1);
             $battleLog[] = "{$destroyedMonster['name']} was destroyed in combat!";
         }
@@ -605,15 +656,37 @@ function endTurn() {
                 $damage = $aiMonster['attack'];
                 $playerMonster['current_health'] -= $damage;
                 $battleLog[] = "AI {$aiMonster['name']} attacks {$playerMonster['name']} for {$damage} damage (HP: {$playerMonster['current_health']}/{$playerMonster['max_health']})";
+                $battleEvents[] = [
+                    'type' => 'damage',
+                    'source' => $aiMonster['name'],
+                    'target' => $playerMonster['name'],
+                    'targetPlayer' => 'player',
+                    'targetIndex' => $playerMonsterIndex,
+                    'amount' => $damage
+                ];
                 
                 // Counter-attack damage
                 $counterDamage = $playerMonster['attack'];
                 $aiMonster['current_health'] -= $counterDamage;
                 $gameState['ai_field'][$ai_i]['current_health'] = $aiMonster['current_health'];
                 $battleLog[] = "{$playerMonster['name']} deals {$counterDamage} counter-damage to {$aiMonster['name']} (HP: {$aiMonster['current_health']}/{$aiMonster['max_health']})";
+                $battleEvents[] = [
+                    'type' => 'damage',
+                    'source' => $playerMonster['name'],
+                    'target' => $aiMonster['name'],
+                    'targetPlayer' => 'ai',
+                    'targetIndex' => $ai_i,
+                    'amount' => $counterDamage
+                ];
                 
                 // Check if player monster is destroyed
                 if ($playerMonster['current_health'] <= 0) {
+                    $battleEvents[] = [
+                        'type' => 'destroyed',
+                        'target' => $playerMonster['name'],
+                        'targetPlayer' => 'player',
+                        'targetIndex' => $playerMonsterIndex
+                    ];
                     array_splice($gameState['player_field'], $playerMonsterIndex, 1);
                     $battleLog[] = "{$playerMonster['name']} was destroyed!";
                 }
@@ -626,15 +699,37 @@ function endTurn() {
             $damage = $aiMonster['attack'];
             $playerMonster['current_health'] -= $damage;
             $battleLog[] = "AI {$aiMonster['name']} attacks {$playerMonster['name']} for {$damage} damage (HP: {$playerMonster['current_health']}/{$playerMonster['max_health']})";
+            $battleEvents[] = [
+                'type' => 'damage',
+                'source' => $aiMonster['name'],
+                'target' => $playerMonster['name'],
+                'targetPlayer' => 'player',
+                'targetIndex' => 0,
+                'amount' => $damage
+            ];
             
             // Counter-attack damage
             $counterDamage = $playerMonster['attack'];
             $aiMonster['current_health'] -= $counterDamage;
             $gameState['ai_field'][$ai_i]['current_health'] = $aiMonster['current_health'];
             $battleLog[] = "{$playerMonster['name']} deals {$counterDamage} counter-damage to {$aiMonster['name']} (HP: {$aiMonster['current_health']}/{$aiMonster['max_health']})";
+            $battleEvents[] = [
+                'type' => 'damage',
+                'source' => $playerMonster['name'],
+                'target' => $aiMonster['name'],
+                'targetPlayer' => 'ai',
+                'targetIndex' => $ai_i,
+                'amount' => $counterDamage
+            ];
             
             // Check if player monster is destroyed
             if ($playerMonster['current_health'] <= 0) {
+                $battleEvents[] = [
+                    'type' => 'destroyed',
+                    'target' => $playerMonster['name'],
+                    'targetPlayer' => 'player',
+                    'targetIndex' => 0
+                ];
                 array_shift($gameState['player_field']);
                 $battleLog[] = "{$playerMonster['name']} was destroyed!";
             }
@@ -650,6 +745,12 @@ function endTurn() {
     for ($i = count($gameState['ai_field']) - 1; $i >= 0; $i--) {
         if ($gameState['ai_field'][$i]['current_health'] <= 0) {
             $destroyedMonster = $gameState['ai_field'][$i];
+            $battleEvents[] = [
+                'type' => 'destroyed',
+                'target' => $destroyedMonster['name'],
+                'targetPlayer' => 'ai',
+                'targetIndex' => $i
+            ];
             array_splice($gameState['ai_field'], $i, 1);
             $battleLog[] = "AI {$destroyedMonster['name']} was destroyed in combat!";
         }
@@ -716,6 +817,7 @@ function endTurn() {
     echo json_encode([
         'success' => true,
         'battle_log' => $battleLog,
+        'battle_events' => $battleEvents,
         'ai_actions' => $aiActions,
         'game_state' => [
             'player_hp' => $gameState['player_hp'],

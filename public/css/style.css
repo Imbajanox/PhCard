@@ -1323,6 +1323,44 @@ h1, h2, h3, h4 {
     }
 }
 
+.card-damage-flash {
+    animation: card-damage-flash 0.8s ease-in-out;
+}
+
+@keyframes card-damage-flash {
+    0%, 100% {
+        box-shadow: inherit;
+        border-color: inherit;
+    }
+    25%, 75% {
+        box-shadow: 0 0 20px #ff0000, 0 4px 8px rgba(0, 0, 0, 0.3);
+        border-color: #ff0000;
+    }
+    50% {
+        box-shadow: 0 0 30px #ff0000, 0 4px 8px rgba(0, 0, 0, 0.3);
+        border-color: #ff0000;
+    }
+}
+
+.card-destroyed {
+    animation: card-destroyed 0.8s ease-out forwards;
+}
+
+@keyframes card-destroyed {
+    0% {
+        opacity: 1;
+        transform: scale(1) rotate(0deg);
+    }
+    50% {
+        opacity: 0.5;
+        transform: scale(1.1) rotate(5deg);
+    }
+    100% {
+        opacity: 0;
+        transform: scale(0.8) rotate(-10deg);
+    }
+}
+
 .log-entry {
     padding: 8px;
     margin: 4px 0;
