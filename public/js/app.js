@@ -2,6 +2,16 @@
 let currentUser = null;
 let gameState = null;
 
+// Animation timing constants
+const ANIMATION_DURATIONS = {
+    DAMAGE_NUMBER: 1000,      // Floating damage number animation
+    CARD_FLASH: 800,          // Card damage flash animation
+    BATTLE_INITIAL_DELAY: 300,  // Delay before battle events start
+    BATTLE_EVENT_DELAY: 400,    // Delay between battle events
+    BATTLE_LOG_DELAY: 200,      // Delay between log entries
+    AI_ACTION_DELAY: 300        // Delay between AI action messages
+};
+
 // Initialize app
 document.addEventListener('DOMContentLoaded', () => {
     //console.log("hallo");
@@ -690,7 +700,7 @@ async function endTurn() {
             displayField('ai');
             
             // Process battle events with visual effects only (no state updates)
-            let delay = 300; // Give a brief moment to see the board state
+            let delay = ANIMATION_DURATIONS.BATTLE_INITIAL_DELAY;
             
             // Show battle events with damage numbers
             if (Array.isArray(data.battle_events) && data.battle_events.length > 0) {
@@ -711,20 +721,20 @@ async function endTurn() {
                         }
                     }, delay);
                     
-                    delay += 400; // 400ms between events
+                    delay += ANIMATION_DURATIONS.BATTLE_EVENT_DELAY;
                 }
             }
             
             // Add battle log with delay for readability
             data.battle_log.forEach((log, index) => {
                 setTimeout(() => addLog(log), delay);
-                delay += 200; // 200ms between each log entry
+                delay += ANIMATION_DURATIONS.BATTLE_LOG_DELAY;
             });
             
             // Add AI actions with delay
             data.ai_actions.forEach((action, index) => {
                 setTimeout(() => addLog(action, 'ai'), delay);
-                delay += 300; // 300ms between AI actions for better visibility
+                delay += ANIMATION_DURATIONS.AI_ACTION_DELAY;
             });
             
             // Check for game over
@@ -809,11 +819,10 @@ function showCardDamageNumber(playerType, cardIndex, amount) {
         cardEl.classList.add('card-damage-flash');
         
         // Remove effects after animation completes
-        // Damage number floats for 1000ms, card flash is 800ms
         setTimeout(() => {
             numberEl.remove();
             cardEl.classList.remove('card-damage-flash');
-        }, 1000);
+        }, ANIMATION_DURATIONS.DAMAGE_NUMBER);
     }
 }
 
