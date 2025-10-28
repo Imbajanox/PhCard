@@ -283,7 +283,13 @@ function createCardElement(card, showQuantity = false) {
     let descriptionHTML = `<div class="card-description">${card.description || ''}</div>`; // Move description here
 
     if (card.type === 'monster') {
-        statsHTML = `<div class="card-stats">ATK: ${card.attack} / DEF: ${card.defense}</div>`;
+        // Display ATK and HP (current_health if available, otherwise health or defense)
+        const currentHP = card.current_health !== undefined ? card.current_health : (card.health || card.defense);
+        const maxHP = card.max_health !== undefined ? card.max_health : (card.health || card.defense);
+        statsHTML = `<div class="card-stats">
+            <span class="stat-atk">ATK: ${card.attack}</span>
+            <span class="stat-hp">HP: ${currentHP}${maxHP !== currentHP ? '/' + maxHP : ''}</span>
+        </div>`;
     } else if (card.type === 'spell') {
         // Updated logic for spell cards to match image, showing effect in stats area
         if (card.effect) {

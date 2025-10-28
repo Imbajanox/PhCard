@@ -554,6 +554,23 @@ h1, h2, h3, h4 {
     white-space: pre-wrap;
     color: #ff00ff;
     text-shadow: 0 0 3px #ff00ff;
+    display: flex;
+    justify-content: space-around;
+    gap: 10px;
+}
+
+.stat-atk, .stat-hp {
+    display: inline-block;
+}
+
+.stat-atk {
+    color: #ff4444;
+    text-shadow: 0 0 3px #ff4444;
+}
+
+.stat-hp {
+    color: #44ff44;
+    text-shadow: 0 0 3px #44ff44;
 }
 
 .card-description {

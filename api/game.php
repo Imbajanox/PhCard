@@ -262,11 +262,15 @@ function playCard() {
             }
         }
         
+        // Initialize current_health to max health (or defense if health not set)
+        $card['current_health'] = $card['health'] ?? $card['defense'];
+        $card['max_health'] = $card['health'] ?? $card['defense'];
+        
         $gameState['player_field'][] = $card;
         if (empty($message)) {
-            $message = "Played {$card['name']} (ATK: {$card['attack']}, DEF: {$card['defense']})";
+            $message = "Played {$card['name']} (ATK: {$card['attack']}, HP: {$card['current_health']})";
         } else {
-            $message .= "(ATK: {$card['attack']}, DEF: {$card['defense']})";
+            $message .= "(ATK: {$card['attack']}, HP: {$card['current_health']})";
         }
     } else if ($card['type'] === 'spell') {
         $result = applySpellEffect($gameState, $card, 'player', $target); 
@@ -409,54 +413,86 @@ function endTurn() {
         });
         
         if (count($tauntMonsters) > 0) {
-            $aiMonster = reset($tauntMonsters);
-            $damage = max(0, $playerMonster['attack'] - $aiMonster['defense']);
+            // Attack taunt monster
+            $aiMonsterIndex = null;
+            foreach ($gameState['ai_field'] as $idx => $m) {
+                if (isset($m['status_effects']) && in_array('taunt', $m['status_effects'])) {
+                    $aiMonsterIndex = $idx;
+                    break;
+                }
+            }
             
-            // Check for Divine Shield
-            if (isset($aiMonster['status_effects']) && in_array('divine_shield', $aiMonster['status_effects'])) {
-                $battleLog[] = "{$playerMonster['name']} attacks {$aiMonster['name']} but Divine Shield absorbs the damage!";
-                // Remove divine shield
-                $aiMonster['status_effects'] = array_diff($aiMonster['status_effects'], ['divine_shield']);
-            } else {
-                $gameState['ai_hp'] -= $damage;
-                $battleLog[] = "{$playerMonster['name']} attacks {$aiMonster['name']} for {$damage} damage";
+            if ($aiMonsterIndex !== null) {
+                $aiMonster = &$gameState['ai_field'][$aiMonsterIndex];
                 
-                // Apply Lifesteal
-                if (isset($playerMonster['status_effects']) && in_array('lifesteal', $playerMonster['status_effects'])) {
-                    $gameState['player_hp'] = min($gameState['player_hp'] + $damage, STARTING_HP);
-                    $battleLog[] = "{$playerMonster['name']} heals for {$damage} HP (Lifesteal)";
-                }
-                
-                // Apply Poison
-                if (isset($playerMonster['status_effects']) && in_array('poison', $playerMonster['status_effects'])) {
-                    if (!isset($aiMonster['status_effects'])) $aiMonster['status_effects'] = [];
-                    $aiMonster['status_effects'][] = 'poisoned';
-                    $aiMonster['poison_damage'] = 50;
-                }
-                
-                if ($aiMonster['defense'] <= $playerMonster['attack']) {
-                    // Find and remove the monster
-                    foreach ($gameState['ai_field'] as $idx => $m) {
-                        if ($m['id'] === $aiMonster['id']) {
-                            array_splice($gameState['ai_field'], $idx, 1);
-                            break;
-                        }
+                // Check for Divine Shield
+                if (isset($aiMonster['status_effects']) && in_array('divine_shield', $aiMonster['status_effects'])) {
+                    $battleLog[] = "{$playerMonster['name']} attacks {$aiMonster['name']} but Divine Shield absorbs the damage!";
+                    // Remove divine shield - defender still deals counter-damage
+                    $aiMonster['status_effects'] = array_diff($aiMonster['status_effects'], ['divine_shield']);
+                    
+                    // Counter-attack damage (defender fights back)
+                    $counterDamage = $aiMonster['attack'];
+                    $playerMonster['current_health'] -= $counterDamage;
+                    $gameState['player_field'][$i]['current_health'] = $playerMonster['current_health'];
+                    $battleLog[] = "{$aiMonster['name']} deals {$counterDamage} counter-damage to {$playerMonster['name']}";
+                } else {
+                    // Deal damage to the monster's HP
+                    $damage = $playerMonster['attack'];
+                    $aiMonster['current_health'] -= $damage;
+                    $battleLog[] = "{$playerMonster['name']} attacks {$aiMonster['name']} for {$damage} damage (HP: {$aiMonster['current_health']}/{$aiMonster['max_health']})";
+                    
+                    // Counter-attack damage (both monsters damage each other)
+                    $counterDamage = $aiMonster['attack'];
+                    $playerMonster['current_health'] -= $counterDamage;
+                    $gameState['player_field'][$i]['current_health'] = $playerMonster['current_health'];
+                    $battleLog[] = "{$aiMonster['name']} deals {$counterDamage} counter-damage to {$playerMonster['name']} (HP: {$playerMonster['current_health']}/{$playerMonster['max_health']})";
+                    
+                    // Apply Lifesteal
+                    if (isset($playerMonster['status_effects']) && in_array('lifesteal', $playerMonster['status_effects'])) {
+                        $gameState['player_hp'] = min($gameState['player_hp'] + $damage, STARTING_HP);
+                        $battleLog[] = "{$playerMonster['name']} heals for {$damage} HP (Lifesteal)";
                     }
-                    $battleLog[] = "{$aiMonster['name']} was destroyed!";
+                    
+                    // Apply Poison
+                    if (isset($playerMonster['status_effects']) && in_array('poison', $playerMonster['status_effects'])) {
+                        if (!isset($aiMonster['status_effects'])) $aiMonster['status_effects'] = [];
+                        $aiMonster['status_effects'][] = 'poisoned';
+                        $aiMonster['poison_damage'] = 50;
+                    }
+                    
+                    // Check if defender is destroyed
+                    if ($aiMonster['current_health'] <= 0) {
+                        array_splice($gameState['ai_field'], $aiMonsterIndex, 1);
+                        $battleLog[] = "{$aiMonster['name']} was destroyed!";
+                    }
                 }
             }
         } else if (count($gameState['ai_field']) > 0) {
-            $aiMonster = $gameState['ai_field'][0];
-            $damage = max(0, $playerMonster['attack'] - $aiMonster['defense']);
+            // Attack first monster on field
+            $aiMonster = &$gameState['ai_field'][0];
             
             // Check for Divine Shield
             if (isset($aiMonster['status_effects']) && in_array('divine_shield', $aiMonster['status_effects'])) {
                 $battleLog[] = "{$playerMonster['name']} attacks {$aiMonster['name']} but Divine Shield absorbs the damage!";
                 $aiMonster['status_effects'] = array_diff($aiMonster['status_effects'], ['divine_shield']);
-                $gameState['ai_field'][0] = $aiMonster;
+                
+                // Counter-attack damage
+                $counterDamage = $aiMonster['attack'];
+                $playerMonster['current_health'] -= $counterDamage;
+                $gameState['player_field'][$i]['current_health'] = $playerMonster['current_health'];
+                $battleLog[] = "{$aiMonster['name']} deals {$counterDamage} counter-damage to {$playerMonster['name']}";
             } else {
-                $gameState['ai_hp'] -= $damage;
-                $battleLog[] = "{$playerMonster['name']} attacks {$aiMonster['name']} for {$damage} damage";
+                // Deal damage to the monster's HP
+                $damage = $playerMonster['attack'];
+                $aiMonster['current_health'] -= $damage;
+                $battleLog[] = "{$playerMonster['name']} attacks {$aiMonster['name']} for {$damage} damage (HP: {$aiMonster['current_health']}/{$aiMonster['max_health']})";
+                
+                // Counter-attack damage (both monsters damage each other)
+                $counterDamage = $aiMonster['attack'];
+                $playerMonster['current_health'] -= $counterDamage;
+                $gameState['player_field'][$i]['current_health'] = $playerMonster['current_health'];
+                $battleLog[] = "{$aiMonster['name']} deals {$counterDamage} counter-damage to {$playerMonster['name']} (HP: {$playerMonster['current_health']}/{$playerMonster['max_health']})";
                 
                 // Apply Lifesteal
                 if (isset($playerMonster['status_effects']) && in_array('lifesteal', $playerMonster['status_effects'])) {
@@ -464,12 +500,14 @@ function endTurn() {
                     $battleLog[] = "{$playerMonster['name']} heals for {$damage} HP (Lifesteal)";
                 }
                 
-                if ($aiMonster['defense'] <= $playerMonster['attack']) {
+                // Check if defender is destroyed
+                if ($aiMonster['current_health'] <= 0) {
                     array_shift($gameState['ai_field']);
                     $battleLog[] = "{$aiMonster['name']} was destroyed!";
                 }
             }
         } else {
+            // Direct attack to player
             $gameState['ai_hp'] -= $playerMonster['attack'];
             $battleLog[] = "{$playerMonster['name']} attacks directly for {$playerMonster['attack']} damage";
             
@@ -483,13 +521,34 @@ function endTurn() {
         // Windfury - attack twice
         if (isset($playerMonster['status_effects']) && in_array('windfury', $playerMonster['status_effects'])) {
             if (count($gameState['ai_field']) > 0) {
-                $damage = max(0, $playerMonster['attack'] - $gameState['ai_field'][0]['defense']);
-                $gameState['ai_hp'] -= $damage;
+                $aiMonster = &$gameState['ai_field'][0];
+                $damage = $playerMonster['attack'];
+                $aiMonster['current_health'] -= $damage;
                 $battleLog[] = "{$playerMonster['name']} attacks again (Windfury) for {$damage} damage!";
+                
+                // Counter-attack from second Windfury attack
+                $counterDamage = $aiMonster['attack'];
+                $playerMonster['current_health'] -= $counterDamage;
+                $gameState['player_field'][$i]['current_health'] = $playerMonster['current_health'];
+                $battleLog[] = "{$aiMonster['name']} deals {$counterDamage} counter-damage";
+                
+                if ($aiMonster['current_health'] <= 0) {
+                    array_shift($gameState['ai_field']);
+                    $battleLog[] = "{$aiMonster['name']} was destroyed!";
+                }
             } else {
                 $gameState['ai_hp'] -= $playerMonster['attack'];
                 $battleLog[] = "{$playerMonster['name']} attacks again (Windfury) for {$playerMonster['attack']} damage!";
             }
+        }
+    }
+    
+    // Clean up destroyed player monsters (killed by counter-attacks)
+    for ($i = count($gameState['player_field']) - 1; $i >= 0; $i--) {
+        if ($gameState['player_field'][$i]['current_health'] <= 0) {
+            $destroyedMonster = $gameState['player_field'][$i];
+            array_splice($gameState['player_field'], $i, 1);
+            $battleLog[] = "{$destroyedMonster['name']} was destroyed in combat!";
         }
     }
     
@@ -511,51 +570,89 @@ function endTurn() {
     
     // Battle phase - AI monsters attack (only if AI is still alive)
     if ($gameState['ai_hp'] > 0) {
-        foreach ($gameState['ai_field'] as $aiMonster) {
-        // Check if monster can attack
-        $canAttack = true;
-        if (isset($aiMonster['status_effects']) && in_array('stunned', $aiMonster['status_effects'])) {
-            $canAttack = false;
-            $battleLog[] = "AI {$aiMonster['name']} is stunned and cannot attack";
-        }
-        
-        if (!$canAttack) continue;
-        
-        // Check for Taunt
-        $tauntMonsters = array_filter($gameState['player_field'], function($m) {
-            return isset($m['status_effects']) && in_array('taunt', $m['status_effects']);
+        // Use indexed loop to track monster positions
+        for ($ai_i = 0; $ai_i < count($gameState['ai_field']); $ai_i++) {
+            $aiMonster = $gameState['ai_field'][$ai_i];
+            
+            // Check if monster can attack
+            $canAttack = true;
+            if (isset($aiMonster['status_effects']) && in_array('stunned', $aiMonster['status_effects'])) {
+                $canAttack = false;
+                $battleLog[] = "AI {$aiMonster['name']} is stunned and cannot attack";
+            }
+            
+            if (!$canAttack) continue;
+            
+            // Check for Taunt
+            $tauntMonsters = array_filter($gameState['player_field'], function($m) {
+                return isset($m['status_effects']) && in_array('taunt', $m['status_effects']);
         });
         
         if (count($tauntMonsters) > 0) {
-            $playerMonster = reset($tauntMonsters);
-            $damage = max(0, $aiMonster['attack'] - $playerMonster['defense']);
-            $gameState['player_hp'] -= $damage;
-            $battleLog[] = "AI {$aiMonster['name']} attacks {$playerMonster['name']} for {$damage} damage";
-            
-            if ($playerMonster['defense'] <= $aiMonster['attack']) {
-                foreach ($gameState['player_field'] as $idx => $m) {
-                    if ($m['id'] === $playerMonster['id']) {
-                        array_splice($gameState['player_field'], $idx, 1);
-                        break;
-                    }
+            // Attack taunt monster
+            $playerMonsterIndex = null;
+            foreach ($gameState['player_field'] as $idx => $m) {
+                if (isset($m['status_effects']) && in_array('taunt', $m['status_effects'])) {
+                    $playerMonsterIndex = $idx;
+                    break;
                 }
-                $battleLog[] = "{$playerMonster['name']} was destroyed!";
+            }
+            
+            if ($playerMonsterIndex !== null) {
+                $playerMonster = &$gameState['player_field'][$playerMonsterIndex];
+                
+                // AI monster attacks player monster - both deal damage to each other
+                $damage = $aiMonster['attack'];
+                $playerMonster['current_health'] -= $damage;
+                $battleLog[] = "AI {$aiMonster['name']} attacks {$playerMonster['name']} for {$damage} damage (HP: {$playerMonster['current_health']}/{$playerMonster['max_health']})";
+                
+                // Counter-attack damage
+                $counterDamage = $playerMonster['attack'];
+                $aiMonster['current_health'] -= $counterDamage;
+                $gameState['ai_field'][$ai_i]['current_health'] = $aiMonster['current_health'];
+                $battleLog[] = "{$playerMonster['name']} deals {$counterDamage} counter-damage to {$aiMonster['name']} (HP: {$aiMonster['current_health']}/{$aiMonster['max_health']})";
+                
+                // Check if player monster is destroyed
+                if ($playerMonster['current_health'] <= 0) {
+                    array_splice($gameState['player_field'], $playerMonsterIndex, 1);
+                    $battleLog[] = "{$playerMonster['name']} was destroyed!";
+                }
             }
         } else if (count($gameState['player_field']) > 0) {
-            $playerMonster = $gameState['player_field'][0];
-            $damage = max(0, $aiMonster['attack'] - $playerMonster['defense']);
-            $gameState['player_hp'] -= $damage;
-            $battleLog[] = "AI {$aiMonster['name']} attacks {$playerMonster['name']} for {$damage} damage";
+            // Attack first monster on field
+            $playerMonster = &$gameState['player_field'][0];
             
-            if ($playerMonster['defense'] <= $aiMonster['attack']) {
+            // AI monster attacks player monster - both deal damage to each other
+            $damage = $aiMonster['attack'];
+            $playerMonster['current_health'] -= $damage;
+            $battleLog[] = "AI {$aiMonster['name']} attacks {$playerMonster['name']} for {$damage} damage (HP: {$playerMonster['current_health']}/{$playerMonster['max_health']})";
+            
+            // Counter-attack damage
+            $counterDamage = $playerMonster['attack'];
+            $aiMonster['current_health'] -= $counterDamage;
+            $gameState['ai_field'][$ai_i]['current_health'] = $aiMonster['current_health'];
+            $battleLog[] = "{$playerMonster['name']} deals {$counterDamage} counter-damage to {$aiMonster['name']} (HP: {$aiMonster['current_health']}/{$aiMonster['max_health']})";
+            
+            // Check if player monster is destroyed
+            if ($playerMonster['current_health'] <= 0) {
                 array_shift($gameState['player_field']);
                 $battleLog[] = "{$playerMonster['name']} was destroyed!";
             }
         } else {
+            // Direct attack to player
             $gameState['player_hp'] -= $aiMonster['attack'];
             $battleLog[] = "AI {$aiMonster['name']} attacks directly for {$aiMonster['attack']} damage";
         }
+        }
     }
+    
+    // Clean up destroyed AI monsters (killed by counter-attacks)
+    for ($i = count($gameState['ai_field']) - 1; $i >= 0; $i--) {
+        if ($gameState['ai_field'][$i]['current_health'] <= 0) {
+            $destroyedMonster = $gameState['ai_field'][$i];
+            array_splice($gameState['ai_field'], $i, 1);
+            $battleLog[] = "AI {$destroyedMonster['name']} was destroyed in combat!";
+        }
     }
     
     // Switch back to player
@@ -658,9 +755,9 @@ function processStatusEffects(&$gameState, $player) {
         for ($i = count($gameState[$fieldKey]) - 1; $i >= 0; $i--) {
             $monster = &$gameState[$fieldKey][$i];
             if (isset($monster['poison_damage'])) {
-                $monster['defense'] -= $monster['poison_damage'];
-                $log[] = "{$monster['name']} takes {$monster['poison_damage']} poison damage";
-                if ($monster['defense'] <= 0) {
+                $monster['current_health'] -= $monster['poison_damage'];
+                $log[] = "{$monster['name']} takes {$monster['poison_damage']} poison damage (HP: {$monster['current_health']}/{$monster['max_health']})";
+                if ($monster['current_health'] <= 0) {
                     array_splice($gameState[$fieldKey], $i, 1);
                     $log[] = "{$monster['name']} was destroyed by poison!";
                 }
@@ -747,8 +844,12 @@ function performAITurn($gameState) {
                 $card['status_effects'] = array_values(array_unique($card['status_effects']));
             }
             
+            // Initialize current_health to max health (or defense if health not set)
+            $card['current_health'] = $card['health'] ?? $card['defense'];
+            $card['max_health'] = $card['health'] ?? $card['defense'];
+            
             $gameState['ai_field'][] = $card;
-            $actions[] = "AI played {$card['name']} (ATK: {$card['attack']}, DEF: {$card['defense']})";
+            $actions[] = "AI played {$card['name']} (ATK: {$card['attack']}, HP: {$card['current_health']})";
             $aiMana -= $manaCost;
             $aiFieldSize++;
             
