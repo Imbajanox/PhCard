@@ -16,22 +16,22 @@
                 <h1>PhCard</h1>
                 <p class="tagline">Rundenbasiertes Kartenspiel</p>
                 
-                <div id="login-form" class="form-box active">
+                <form id="login-form" class="form-box active">
                     <h2>Login</h2>
                     <input type="text" id="login-username" placeholder="Benutzername" required>
                     <input type="password" id="login-password" placeholder="Passwort" required>
                     <button onclick="login()">Anmelden</button>
                     <p>Noch kein Konto? <a href="#" onclick="showRegister(); return false;">Registrieren</a></p>
-                </div>
+                </form>
                 
-                <div id="register-form" class="form-box">
+                <form id="register-form" class="form-box">
                     <h2>Registrieren</h2>
                     <input type="text" id="register-username" placeholder="Benutzername" required>
                     <input type="email" id="register-email" placeholder="E-Mail" required>
                     <input type="password" id="register-password" placeholder="Passwort" required>
                     <button onclick="register()">Registrieren</button>
                     <p>Bereits ein Konto? <a href="#" onclick="showLogin(); return false;">Anmelden</a></p>
-                </div>
+                </form>
                 
                 <div id="auth-message" class="message"></div>
             </div>
