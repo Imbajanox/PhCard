@@ -21,9 +21,8 @@ This directory contains the refactored, modular source code for PhCard.
 #### `/game/` - Game Logic
 - `GameState.php` - Game state management (initialization, persistence, turn management)
 - `GameActions.php` - Game flow operations (start, mulligan, end) ✓
-- `BattleSystem.php` - Combat resolution and battle mechanics ✓
+- `BattleSystem.php` - Combat resolution, battle mechanics, and spell effects ✓
 - `AIPlayer.php` - AI opponent logic and card scoring ✓
-- `CardEffects.php` - Card effects integrated into BattleSystem ✓
 
 #### `/features/` - Feature Modules
 - `Shop.php` - Shop operations and currency management ✓
