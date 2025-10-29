@@ -55,15 +55,14 @@ This directory contains the refactored, modular source code for PhCard.
 #### `/deck/` - Deck Management
 - `deck-builder.js` - Deck building interface and operations (450 lines) ✓
 
-#### `/features/` - Feature Modules
-- `/shop/` - (Planned) Shop interface and purchasing
-- `/quests/` - (Planned) Quest display and tracking
-- `/achievements/` - (Planned) Achievement display
-
 #### `/dashboard/` - Analytics Dashboard
-- `overview.js` - (Planned) Dashboard overview and stats
-- `card-stats.js` - (Planned) Card statistics and analysis
-- `simulation.js` - (Planned) Deck simulation
+- `dashboard.js` - Dashboard overview and stats ✓
+
+#### `/features/` - Feature Modules
+- `achievements.js` - Achievement display and tracking ✓
+- `cardsets.js` - Card sets interface ✓
+- `quests.js` - Quest display and tracking ✓
+- `shop.js` - Shop interface and purchasing ✓
 
 ## Usage
 
