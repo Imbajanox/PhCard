@@ -56,11 +56,11 @@ class PluginSystem {
         }
         
         // Ensure CardEffectRegistry and GameEventSystem are initialized
-        if (class_exists('CardEffectRegistry')) {
+        if (class_exists('Utils\\CardEffectRegistry')) {
             CardEffectRegistry::init();
         }
         
-        if (class_exists('GameEventSystem')) {
+        if (class_exists('Utils\\GameEventSystem')) {
             GameEventSystem::initDefaultHooks();
         }
         
