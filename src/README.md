@@ -131,7 +131,7 @@ Load modules in proper order in HTML:
 
 ## Migration Status
 
-See [REFACTORING_GUIDE.md](../REFACTORING_GUIDE.md) for detailed implementation status and migration strategy.
+See [../documentation/REFACTORING_GUIDE.md](../documentation/REFACTORING_GUIDE.md) for detailed implementation status and migration strategy.
 
 ## Contributing
 
