@@ -104,14 +104,17 @@ PhCard/
 - [x] Extract deck builder module (deck-builder.js) - 450 lines
 - [x] Update HTML files to load modules in correct order
 
-### Phase 3: PHP Refactoring (Planned)
-- [ ] Extract game logic from game.php
-- [ ] Create AIPlayer class
-- [ ] Create BattleSystem class
-- [ ] Create CardEffects class
-- [ ] Refactor shop.php into Shop model
-- [ ] Refactor quests.php into Quest model
-- [ ] Update API endpoints to use new classes
+### Phase 3: PHP Refactoring ✓
+- [x] Extract game logic from game.php
+- [x] Create AIPlayer class (game/AIPlayer.php)
+- [x] Create BattleSystem class (game/BattleSystem.php)
+- [x] Create GameActions class (game/GameActions.php)
+- [x] CardEffects integrated into BattleSystem
+- [x] Refactor shop.php into Shop model (features/Shop.php)
+- [x] Create DailyReward class (features/DailyReward.php)
+- [x] Refactor quests.php into Quest model (features/Quest.php)
+- [x] Create Achievement class (features/Achievement.php)
+- [x] Create refactored API endpoints (game_refactored.php, shop_refactored.php, quests_refactored.php)
 
 ### Phase 4: Testing & Validation (Pending)
 - [ ] Test authentication flow
@@ -285,11 +288,24 @@ class AIPlayer {
 - `/src/backend/models/User.php` - User data model
 - `/src/backend/models/Deck.php` - Deck data model
 - `/src/backend/game/GameState.php` - Game state management
+- `/src/backend/game/GameActions.php` - Game flow operations (Phase 3)
+- `/src/backend/game/BattleSystem.php` - Combat mechanics (Phase 3)
+- `/src/backend/game/AIPlayer.php` - AI decision-making (Phase 3)
+- `/src/backend/features/Shop.php` - Shop operations (Phase 3)
+- `/src/backend/features/DailyReward.php` - Daily login rewards (Phase 3)
+- `/src/backend/features/Quest.php` - Quest management (Phase 3)
+- `/src/backend/features/Achievement.php` - Achievement system (Phase 3)
 - `/autoload.php` - PHP class autoloader
 - `/src/frontend/js/core/app.js` - Minimal entry point
-- `/public/js/modules/auth.js` - Authentication module
-- `/public/js/modules/user-profile.js` - User profile module
-- `/public/js/modules/card-collection.js` - Card collection module
+- `/src/frontend/js/auth/auth.js` - Authentication module
+- `/src/frontend/js/user/profile.js` - User profile module
+- `/src/frontend/js/user/collection.js` - Card collection module
+- `/src/frontend/js/game/game.js` - Game logic module
+- `/src/frontend/js/game/ui-effects.js` - UI animations module
+- `/src/frontend/js/deck/deck-builder.js` - Deck management module
+- `/api/game_refactored.php` - Refactored game API (Phase 3)
+- `/api/shop_refactored.php` - Refactored shop API (Phase 3)
+- `/api/quests_refactored.php` - Refactored quests API (Phase 3)
 
 ### Copied Files
 - Utility classes moved to `/src/backend/utils/`
