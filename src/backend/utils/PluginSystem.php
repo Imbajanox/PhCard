@@ -1,4 +1,7 @@
 <?php
+
+namespace Utils;
+
 /**
  * Plugin System for PhCard
  * 
@@ -53,12 +56,12 @@ class PluginSystem {
         }
         
         // Ensure CardEffectRegistry and GameEventSystem are initialized
-        if (class_exists('CardEffectRegistry')) {
-            CardEffectRegistry::init();
+        if (class_exists('Utils\\CardEffectRegistry')) {
+            \Utils\CardEffectRegistry::init();
         }
         
-        if (class_exists('GameEventSystem')) {
-            GameEventSystem::initDefaultHooks();
+        if (class_exists('Utils\\GameEventSystem')) {
+            \Utils\GameEventSystem::initDefaultHooks();
         }
         
         self::loadPlugins();

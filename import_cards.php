@@ -14,6 +14,8 @@
 require_once 'config.php';
 require_once 'src/backend/utils/CardFactory.php';
 
+use Utils\CardFactory;
+
 // Check command line arguments
 if ($argc < 2) {
     echo "Usage: php import_cards.php <json_file> [set_code]\n";

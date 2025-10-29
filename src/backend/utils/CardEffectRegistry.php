@@ -1,4 +1,7 @@
 <?php
+
+namespace Utils;
+
 /**
  * Card Effect Registry - Extensible card effect system
  * 

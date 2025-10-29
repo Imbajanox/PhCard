@@ -1,4 +1,7 @@
 <?php
+
+namespace Core;
+
 /**
  * Database Connection Management
  * Handles database connections and queries
