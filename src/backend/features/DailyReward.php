@@ -3,6 +3,7 @@
 namespace Features;
 
 use Core\Database;
+use Utils\GameEventSystem;
 
 /**
  * DailyReward handles daily login rewards and streaks

@@ -3,6 +3,7 @@
 namespace Features;
 
 use Core\Database;
+use Utils\GameEventSystem;
 
 /**
  * Achievement manages achievement system operations

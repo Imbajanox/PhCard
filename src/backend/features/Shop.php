@@ -3,6 +3,7 @@
 namespace Features;
 
 use Core\Database;
+use Utils\GameEventSystem;
 
 /**
  * Shop handles shop operations and pack purchases

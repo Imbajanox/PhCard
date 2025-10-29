@@ -3,6 +3,7 @@
 namespace Features;
 
 use Core\Database;
+use Utils\GameEventSystem;
 
 /**
  * Quest manages quest system operations
