@@ -51,9 +51,11 @@ Ein rundenbasiertes Browser-Kartenspiel gegen eine KI mit Level-System, XP und K
 
 2. **Datenbank konfigurieren**
    - Erstelle eine MySQL-Datenbank
-   - Importiere das Schema:
+   - Importiere das Schema (siehe [sql/README.md](sql/README.md) für Details):
      ```bash
-     mysql -u root -p < database.sql
+     mysql -u root -p < sql/database.sql
+     mysql -u root -p < sql/database_extensions.sql
+     # ... weitere SQL-Dateien nach Bedarf
      ```
 
 3. **Konfiguration anpassen**
@@ -137,11 +139,19 @@ Ein rundenbasiertes Browser-Kartenspiel gegen eine KI mit Level-System, XP und K
 - `GET /api/user.php?action=profile` - Benutzerprofil abrufen
 - `GET /api/user.php?action=cards` - Kartensammlung abrufen
 
-### Spiel (`api/game.php`)
-- `POST /api/game.php?action=start` - Neues Spiel starten
-- `POST /api/game.php?action=play_card` - Karte spielen
-- `POST /api/game.php?action=end_turn` - Runde beenden
-- `POST /api/game.php?action=end_game` - Spiel beenden und Ergebnis speichern
+### Spiel (`api/game_refactored.php`)
+- `POST /api/game_refactored.php?action=start` - Neues Spiel starten
+- `POST /api/game_refactored.php?action=play_card` - Karte spielen
+- `POST /api/game_refactored.php?action=end_turn` - Runde beenden
+- `POST /api/game_refactored.php?action=end_game` - Spiel beenden und Ergebnis speichern
+
+### Shop (`api/shop_refactored.php`)
+- `GET /api/shop_refactored.php?action=list` - Shop-Items abrufen
+- `POST /api/shop_refactored.php?action=purchase` - Item kaufen
+
+### Quests (`api/quests_refactored.php`)
+- `GET /api/quests_refactored.php?action=get_active_quests` - Aktive Quests abrufen
+- `POST /api/quests_refactored.php?action=claim_quest_reward` - Quest-Belohnung einfordern
 
 ## Datenbankschema
 
@@ -158,19 +168,35 @@ Ein rundenbasiertes Browser-Kartenspiel gegen eine KI mit Level-System, XP und K
 
 ```
 PhCard/
-├── api/
-│   ├── auth.php       # Authentifizierung
-│   ├── game.php       # Spiellogik
-│   └── user.php       # Benutzerdaten
-├── public/
-│   ├── css/
-│   │   └── style.css  # Styling
-│   └── js/
-│       └── app.js     # Frontend-Logik
-├── config.php         # Konfiguration
-├── database.sql       # Datenbankschema
-├── index.html         # Hauptseite
-└── README.md
+├── api/                    # Backend API endpoints
+│   ├── auth.php           # Authentifizierung
+│   ├── game_refactored.php # Refactored game logic
+│   ├── shop_refactored.php # Refactored shop
+│   ├── quests_refactored.php # Refactored quests
+│   └── user.php           # Benutzerdaten
+├── src/                   # Modular source code
+│   ├── backend/           # Backend modules
+│   │   ├── game/         # Game logic
+│   │   ├── features/     # Features (shop, quests, achievements)
+│   │   ├── models/       # Data models
+│   │   └── utils/        # Utilities
+│   └── frontend/         # Frontend modules
+├── public/               # Public assets
+│   ├── css/             # Main stylesheets
+│   └── js/              # Main JavaScript
+├── web/                 # Modular feature UI
+│   ├── features/        # Feature HTML pages
+│   ├── css/             # Feature styles
+│   └── js/              # Feature JavaScript
+├── sql/                 # Database migrations
+│   └── README.md        # Migration guide
+├── documentation/       # Comprehensive docs
+│   └── README.md        # Documentation index
+├── scripts/             # Utility scripts
+├── demos/               # Demo/test pages
+├── config.php           # Configuration
+├── index.html           # Main entry point
+└── README.md            # This file
 ```
 
 ## Erweiterbarkeit (für Entwickler)
@@ -184,10 +210,10 @@ PhCard verfügt über ein umfassendes Extensibility Framework, das es einfach ma
 php import_cards.php my_cards.json EXPANSION1
 
 # Quest/Achievement System installieren
-mysql -u root -p phcard < database_quest_achievement_system.sql
+mysql -u root -p phcard < sql/database_quest_achievement_system.sql
 
 # Extensibility Tests ausführen
-./test_extensibility.sh
+bash scripts/test_extensibility.sh
 ```
 
 ### Plugin-Beispiel
@@ -212,10 +238,11 @@ GameEventSystem::on('game_end', function($data) {
 
 ### Dokumentation für Entwickler
 
-- **[EXTENSIBILITY_README.md](EXTENSIBILITY_README.md)** - Überblick über alle Features
-- **[EXTENSION_GUIDE.md](EXTENSION_GUIDE.md)** - Detaillierte Tutorials und Beispiele
-- **[QUICK_REFERENCE.md](QUICK_REFERENCE.md)** - Schnellreferenz für häufige Aufgaben
-- **[EXPANDABILITY_SUMMARY.md](EXPANDABILITY_SUMMARY.md)** - Zusammenfassung der Verbesserungen
+- **[documentation/README.md](documentation/README.md)** - Complete documentation index
+- **[documentation/EXTENSIBILITY_README.md](documentation/EXTENSIBILITY_README.md)** - Überblick über alle Features
+- **[documentation/EXTENSION_GUIDE.md](documentation/EXTENSION_GUIDE.md)** - Detaillierte Tutorials und Beispiele
+- **[documentation/QUICK_REFERENCE.md](documentation/QUICK_REFERENCE.md)** - Schnellreferenz für häufige Aufgaben
+- **[documentation/REFACTORING_GUIDE.md](documentation/REFACTORING_GUIDE.md)** - Architecture and refactoring guide
 
 ### Verfügbare Erweiterungspunkte
 
