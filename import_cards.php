@@ -12,7 +12,7 @@
  */
 
 require_once 'config.php';
-require_once 'api/CardFactory.php';
+require_once 'src/backend/utils/CardFactory.php';
 
 // Check command line arguments
 if ($argc < 2) {
