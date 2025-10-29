@@ -88,9 +88,9 @@ src/backend/
 ### Refactored API Endpoints
 Created clean, modular API files that use the new classes:
 
-- **api/game_refactored.php** - Uses GameActions, BattleSystem, AIPlayer, Quest, Achievement
-- **api/shop_refactored.php** - Uses Shop, DailyReward
-- **api/quests_refactored.php** - Uses Quest, Achievement
+- **api/game.php** - Uses GameActions, BattleSystem, AIPlayer, Quest, Achievement
+- **api/shop.php** - Uses Shop, DailyReward
+- **api/quests.php** - Uses Quest, Achievement
 
 These new endpoints are drop-in replacements for the original files with identical functionality.
 
@@ -158,9 +158,9 @@ $achievement->checkAchievements($userId);
 ## Backward Compatibility
 
 All original API files remain unchanged. The refactored versions are:
-- `api/game_refactored.php` (can replace `api/game.php`)
-- `api/shop_refactored.php` (can replace `api/shop.php`)
-- `api/quests_refactored.php` (can replace `api/quests.php`)
+- `api/game.php` (can replace `api/game.php`)
+- `api/shop.php` (can replace `api/shop.php`)
+- `api/quests.php` (can replace `api/quests.php`)
 
 This allows gradual migration with zero breaking changes.
 

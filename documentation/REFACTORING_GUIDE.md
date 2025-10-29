@@ -114,7 +114,7 @@ PhCard/
 - [x] Create DailyReward class (features/DailyReward.php)
 - [x] Refactor quests.php into Quest model (features/Quest.php)
 - [x] Create Achievement class (features/Achievement.php)
-- [x] Create refactored API endpoints (game_refactored.php, shop_refactored.php, quests_refactored.php)
+- [x] Create refactored API endpoints (game.php, shop.php, quests.php)
 
 ### Phase 4: Testing & Validation (Pending)
 - [ ] Test authentication flow
@@ -303,9 +303,9 @@ class AIPlayer {
 - `/src/frontend/js/game/game.js` - Game logic module
 - `/src/frontend/js/game/ui-effects.js` - UI animations module
 - `/src/frontend/js/deck/deck-builder.js` - Deck management module
-- `/api/game_refactored.php` - Refactored game API (Phase 3)
-- `/api/shop_refactored.php` - Refactored shop API (Phase 3)
-- `/api/quests_refactored.php` - Refactored quests API (Phase 3)
+- `/api/game.php` - Refactored game API (Phase 3)
+- `/api/shop.php` - Refactored shop API (Phase 3)
+- `/api/quests.php` - Refactored quests API (Phase 3)
 
 ### Copied Files
 - Utility classes moved to `/src/backend/utils/`

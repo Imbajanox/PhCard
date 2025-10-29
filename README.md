@@ -139,19 +139,19 @@ Ein rundenbasiertes Browser-Kartenspiel gegen eine KI mit Level-System, XP und K
 - `GET /api/user.php?action=profile` - Benutzerprofil abrufen
 - `GET /api/user.php?action=cards` - Kartensammlung abrufen
 
-### Spiel (`api/game_refactored.php`)
-- `POST /api/game_refactored.php?action=start` - Neues Spiel starten
-- `POST /api/game_refactored.php?action=play_card` - Karte spielen
-- `POST /api/game_refactored.php?action=end_turn` - Runde beenden
-- `POST /api/game_refactored.php?action=end_game` - Spiel beenden und Ergebnis speichern
+### Spiel (`api/game.php`)
+- `POST /api/game.php?action=start` - Neues Spiel starten
+- `POST /api/game.php?action=play_card` - Karte spielen
+- `POST /api/game.php?action=end_turn` - Runde beenden
+- `POST /api/game.php?action=end_game` - Spiel beenden und Ergebnis speichern
 
-### Shop (`api/shop_refactored.php`)
-- `GET /api/shop_refactored.php?action=list` - Shop-Items abrufen
-- `POST /api/shop_refactored.php?action=purchase` - Item kaufen
+### Shop (`api/shop.php`)
+- `GET /api/shop.php?action=list` - Shop-Items abrufen
+- `POST /api/shop.php?action=purchase` - Item kaufen
 
-### Quests (`api/quests_refactored.php`)
-- `GET /api/quests_refactored.php?action=get_active_quests` - Aktive Quests abrufen
-- `POST /api/quests_refactored.php?action=claim_quest_reward` - Quest-Belohnung einfordern
+### Quests (`api/quests.php`)
+- `GET /api/quests.php?action=get_active_quests` - Aktive Quests abrufen
+- `POST /api/quests.php?action=claim_quest_reward` - Quest-Belohnung einfordern
 
 ## Datenbankschema
 
@@ -170,9 +170,9 @@ Ein rundenbasiertes Browser-Kartenspiel gegen eine KI mit Level-System, XP und K
 PhCard/
 ├── api/                    # Backend API endpoints
 │   ├── auth.php           # Authentifizierung
-│   ├── game_refactored.php # Refactored game logic
-│   ├── shop_refactored.php # Refactored shop
-│   ├── quests_refactored.php # Refactored quests
+│   ├── game.php # Refactored game logic
+│   ├── shop.php # Refactored shop
+│   ├── quests.php # Refactored quests
 │   └── user.php           # Benutzerdaten
 ├── src/                   # Modular source code
 │   ├── backend/           # Backend modules
