@@ -93,16 +93,16 @@ PhCard/
 - [x] Created game state management (GameState.php)
 - [x] Moved utility classes to new location
 
-### Phase 2: JavaScript Refactoring (In Progress)
+### Phase 2: JavaScript Refactoring ✓
 - [x] Created modular structure
 - [x] Extracted authentication module (auth.js) - 119 lines
-- [x] Extracted user profile module (user-profile.js) - 111 lines  
-- [x] Extracted card collection module (card-collection.js) - 99 lines
+- [x] Extracted user profile module (profile.js) - 111 lines  
+- [x] Extracted card collection module (collection.js) - 99 lines
 - [x] Created minimal core app.js - 30 lines
-- [ ] Extract game logic module (game.js) - ~425 lines
-- [ ] Extract UI effects module (ui-effects.js) - ~152 lines
-- [ ] Extract deck builder module (deck-builder.js) - ~440 lines
-- [ ] Update HTML to load modules in correct order
+- [x] Extract game logic module (game.js) - 425 lines
+- [x] Extract UI effects module (ui-effects.js) - 150 lines
+- [x] Extract deck builder module (deck-builder.js) - 450 lines
+- [x] Update HTML files to load modules in correct order
 
 ### Phase 3: PHP Refactoring (Planned)
 - [ ] Extract game logic from game.php

@@ -274,6 +274,22 @@
         </div>
     </div>
     
-    <script src="public/js/app.js"></script>
+    <!-- Load JavaScript modules in dependency order -->
+    <!-- Core must load first -->
+    <script src="src/frontend/js/core/app.js"></script>
+    
+    <!-- User modules -->
+    <script src="src/frontend/js/user/profile.js"></script>
+    <script src="src/frontend/js/user/collection.js"></script>
+    
+    <!-- Authentication -->
+    <script src="src/frontend/js/auth/auth.js"></script>
+    
+    <!-- Game modules (ui-effects before game) -->
+    <script src="src/frontend/js/game/ui-effects.js"></script>
+    <script src="src/frontend/js/game/game.js"></script>
+    
+    <!-- Deck builder -->
+    <script src="src/frontend/js/deck/deck-builder.js"></script>
 </body>
 </html>
