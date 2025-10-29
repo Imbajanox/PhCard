@@ -121,7 +121,7 @@ class Shop {
             $this->db->commit();
             
             // Trigger event
-            \GameEventSystem::trigger('card_purchased', [
+            GameEventSystem::trigger('card_purchased', [
                 'user_id' => $userId,
                 'card_id' => $cardId,
                 'price_coins' => $item['price_coins'],
@@ -197,7 +197,7 @@ class Shop {
             $this->db->commit();
             
             // Trigger event
-            \GameEventSystem::trigger('pack_opened', [
+            GameEventSystem::trigger('pack_opened', [
                 'user_id' => $userId,
                 'pack_id' => $packId,
                 'cards' => $cards

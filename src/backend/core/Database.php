@@ -1,11 +1,14 @@
 <?php
-
-namespace Core;
-
 /**
  * Database Connection Management
  * Handles database connections and queries
  */
+namespace Core;
+
+use Exception;
+use PDO;
+use PDOException;
+
 class Database {
     private static $instance = null;
     private $connection;
@@ -27,7 +30,7 @@ class Database {
     /**
      * Get PDO connection
      */
-    public function getConnection() {
+    public function getConnection(): PDO {
         return $this->connection;
     }
     

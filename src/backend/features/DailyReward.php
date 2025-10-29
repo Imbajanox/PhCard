@@ -135,7 +135,7 @@ class DailyReward {
             $this->db->commit();
             
             // Trigger event
-            \GameEventSystem::trigger('daily_login_claimed', [
+            GameEventSystem::trigger('daily_login_claimed', [
                 'user_id' => $userId,
                 'streak' => $currentStreak,
                 'reward_type' => $reward['reward_type'],

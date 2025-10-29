@@ -5,6 +5,7 @@ namespace Game;
 use Core\Database;
 use Models\User;
 use Models\Deck;
+use Utils\GameEventSystem;
 
 /**
  * GameActions handles game flow operations (start, mulligan, end)
@@ -271,7 +272,7 @@ class GameActions {
             }
             
             // Trigger game end event
-            \GameEventSystem::trigger('game_end', [
+            GameEventSystem::trigger('game_end', [
                 'user_id' => $userId,
                 'result' => $result,
                 'xp_gained' => $xpGained,
@@ -281,7 +282,7 @@ class GameActions {
             
             // Trigger level up event if applicable
             if ($leveledUp) {
-                \GameEventSystem::trigger('level_up', [
+                GameEventSystem::trigger('level_up', [
                     'user_id' => $userId,
                     'old_level' => $user['level'],
                     'new_level' => $newLevel,

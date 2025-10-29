@@ -114,7 +114,7 @@ class Achievement {
             }
             
             // Trigger event
-            \GameEventSystem::trigger('achievement_unlocked', [
+            GameEventSystem::trigger('achievement_unlocked', [
                 'user_id' => $userId,
                 'achievement_id' => $achievementId,
                 'xp_reward' => $xpReward

@@ -136,7 +136,7 @@ class Quest {
             $this->db->commit();
             
             // Trigger event
-            \GameEventSystem::trigger('quest_claimed', [
+            GameEventSystem::trigger('quest_claimed', [
                 'user_id' => $userId,
                 'quest_id' => $questId,
                 'xp_reward' => $xpReward
