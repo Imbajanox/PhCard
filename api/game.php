@@ -9,6 +9,9 @@ use Game\GameActions;
 use Game\BattleSystem;
 use Features\Quest;
 use Features\Achievement;
+use Utils\GameEventSystem;
+use Utils\CardEffectRegistry;
+use Utils\PluginSystem;
 
 header('Content-Type: application/json');
 requireLogin();

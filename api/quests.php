@@ -5,6 +5,7 @@ require_once '../src/backend/utils/GameEventSystem.php';
 
 use Features\Quest;
 use Features\Achievement;
+use Utils\GameEventSystem;
 
 header('Content-Type: application/json');
 requireLogin();

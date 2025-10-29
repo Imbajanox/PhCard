@@ -1,4 +1,7 @@
 <?php
+
+namespace Utils;
+
 /**
  * Game Event System
  * 

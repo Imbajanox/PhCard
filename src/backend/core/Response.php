@@ -1,4 +1,7 @@
 <?php
+
+namespace Core;
+
 /**
  * JSON Response Helper
  * Standardizes API responses

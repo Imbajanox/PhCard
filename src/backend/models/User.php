@@ -1,4 +1,9 @@
 <?php
+
+namespace Models;
+
+use Core\Database;
+
 /**
  * User Model
  * Handles user data and operations

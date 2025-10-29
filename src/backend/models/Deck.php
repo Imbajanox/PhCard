@@ -1,4 +1,9 @@
 <?php
+
+namespace Models;
+
+use Core\Database;
+
 /**
  * Deck Model
  * Handles deck data and operations

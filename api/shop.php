@@ -5,6 +5,7 @@ require_once '../src/backend/utils/GameEventSystem.php';
 
 use Features\Shop;
 use Features\DailyReward;
+use Utils\GameEventSystem;
 
 header('Content-Type: application/json');
 requireLogin();

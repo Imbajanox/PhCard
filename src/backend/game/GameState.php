@@ -1,4 +1,7 @@
 <?php
+
+namespace Game;
+
 /**
  * Game State Management
  * Handles game state initialization and persistence

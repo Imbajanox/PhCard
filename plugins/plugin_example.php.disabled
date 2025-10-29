@@ -10,6 +10,9 @@
  * To enable this plugin, rename it to plugin_example.php
  */
 
+use Utils\CardEffectRegistry;
+use Utils\GameEventSystem;
+
 // === Custom Card Effects ===
 
 // Example: Register a "triple damage" effect

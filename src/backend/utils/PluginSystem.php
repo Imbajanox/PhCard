@@ -1,4 +1,7 @@
 <?php
+
+namespace Utils;
+
 /**
  * Plugin System for PhCard
  * 

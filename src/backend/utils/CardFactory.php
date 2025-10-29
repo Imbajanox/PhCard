@@ -1,4 +1,7 @@
 <?php
+
+namespace Utils;
+
 /**
  * Card Factory - Configuration-driven card creation
  * 
