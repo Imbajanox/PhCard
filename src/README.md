@@ -20,16 +20,15 @@ This directory contains the refactored, modular source code for PhCard.
 
 #### `/game/` - Game Logic
 - `GameState.php` - Game state management (initialization, persistence, turn management)
-- `GameActions.php` - (Planned) Player actions (play card, end turn, etc.)
-- `BattleSystem.php` - (Planned) Combat resolution and battle mechanics
-- `AIPlayer.php` - (Planned) AI opponent logic and card scoring
-- `CardEffects.php` - (Planned) Card effect implementations
+- `GameActions.php` - Game flow operations (start, mulligan, end) ✓
+- `BattleSystem.php` - Combat resolution, battle mechanics, and spell effects ✓
+- `AIPlayer.php` - AI opponent logic and card scoring ✓
 
 #### `/features/` - Feature Modules
-- `Shop.php` - (Planned) Shop operations and currency management
-- `Quest.php` - (Planned) Quest system logic
-- `Achievement.php` - (Planned) Achievement tracking and unlocking
-- `DailyReward.php` - (Planned) Daily login rewards
+- `Shop.php` - Shop operations and currency management ✓
+- `DailyReward.php` - Daily login rewards ✓
+- `Quest.php` - Quest system logic ✓
+- `Achievement.php` - Achievement tracking and unlocking ✓
 
 #### `/utils/` - Utility Classes
 - `CardFactory.php` - Card creation and initialization
@@ -50,12 +49,11 @@ This directory contains the refactored, modular source code for PhCard.
 - `collection.js` - Card collection display and rendering (99 lines)
 
 #### `/game/` - Game Logic
-- `game.js` - (Planned) Game state, card playing, turn management
-- `battle.js` - (Planned) Battle animations and resolution
-- `ui-effects.js` - (Planned) Visual feedback (damage numbers, animations)
+- `game.js` - Game state, card playing, turn management (425 lines) ✓
+- `ui-effects.js` - Visual feedback (damage numbers, animations) (150 lines) ✓
 
 #### `/deck/` - Deck Management
-- `deck-builder.js` - (Planned) Deck building interface and operations
+- `deck-builder.js` - Deck building interface and operations (450 lines) ✓
 
 #### `/features/` - Feature Modules
 - `/shop/` - (Planned) Shop interface and purchasing
@@ -114,8 +112,18 @@ Load modules in proper order in HTML:
 - `game.php`: 1531 lines - entire game backend in one file
 - Hard to maintain, test, and extend
 
-### After Refactoring
-- Focused modules: each < 200 lines
+### After Refactoring (Phase 3 Complete)
+- **Backend modules**: Each class < 450 lines
+  - GameActions.php: ~330 lines
+  - BattleSystem.php: ~620 lines
+  - AIPlayer.php: ~340 lines
+  - Shop.php: ~300 lines
+  - Quest.php: ~215 lines
+  - Achievement.php: ~125 lines
+- **Frontend modules**: Each < 450 lines
+  - game.js: 425 lines
+  - deck-builder.js: 450 lines
+  - ui-effects.js: 150 lines
 - Clear separation of concerns
 - Easy to find and fix bugs
 - Testable units
