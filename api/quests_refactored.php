@@ -1,7 +1,7 @@
 <?php
 require_once '../config.php';
 require_once '../autoload.php';
-require_once 'GameEventSystem.php';
+require_once '../src/backend/utils/GameEventSystem.php';
 
 use Features\Quest;
 use Features\Achievement;
