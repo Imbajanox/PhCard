@@ -1,9 +1,9 @@
 <?php
 require_once '../config.php';
 require_once '../autoload.php';
-require_once 'GameEventSystem.php';
-require_once 'CardEffectRegistry.php';
-require_once 'PluginSystem.php';
+require_once '../src/backend/utils/GameEventSystem.php';
+require_once '../src/backend/utils/CardEffectRegistry.php';
+require_once '../src/backend/utils/PluginSystem.php';
 
 use Game\GameActions;
 use Game\BattleSystem;
