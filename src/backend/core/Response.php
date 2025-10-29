@@ -3,6 +3,8 @@
  * JSON Response Helper
  * Standardizes API responses
  */
+namespace Core;
+
 class Response {
     /**
      * Send success response
