@@ -11,7 +11,7 @@ function showDamageNumber(targetEl, amount) {
     
     setTimeout(() => {
         numberEl.remove();
-    }, 1000);
+    }, ANIMATION_DURATIONS.DAMAGE_NUMBER);
 }
 
 function showCardDamageNumber(playerType, cardIndex, amount) {
@@ -57,7 +57,7 @@ function showHealNumber(targetEl, amount) {
     
     setTimeout(() => {
         numberEl.remove();
-    }, 1000);
+    }, ANIMATION_DURATIONS.DAMAGE_NUMBER);
 }
 
 function highlightCard(cardEl) {
