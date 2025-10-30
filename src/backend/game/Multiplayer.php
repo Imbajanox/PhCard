@@ -660,7 +660,6 @@ class Multiplayer {
             'unlocked_cards' => $unlockedCards
         ];
     }
-    }
     
     /**
      * Initialize stats for a user if not exists
