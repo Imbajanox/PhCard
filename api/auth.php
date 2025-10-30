@@ -111,9 +111,9 @@ function logout() {
 
 function checkAuth() {
     if (isLoggedIn()) {
-        echo json_encode(['success' => true, 'logged_in' => true, 'username' => $_SESSION['username']]);
+        echo json_encode(['success' => true, 'authenticated' => true, 'logged_in' => true, 'user_id' => $_SESSION['user_id'], 'username' => $_SESSION['username']]);
     } else {
-        echo json_encode(['success' => true, 'logged_in' => false]);
+        echo json_encode(['success' => true, 'authenticated' => false, 'logged_in' => false]);
     }
 }
 ?>
