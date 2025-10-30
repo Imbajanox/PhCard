@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PhCard - Multiplayer</title>
+    <link rel="stylesheet" href="../public/css/style.css">
+    <link rel="stylesheet" href="css/multiplayer.css">
+</head>
+<body>
+    <div id="app">
+        <!-- Multiplayer Lobby Screen -->
+        <div id="multiplayer-lobby-screen" class="screen active">
+            <div class="lobby-container">
+                <h1>Multiplayer Lobby</h1>
+                
+                <div class="lobby-actions">
+                    <button onclick="createMultiplayerGame()" class="btn-primary">Create Game</button>
+                    <button onclick="loadAvailableGames()" class="btn-secondary">Refresh</button>
+                    <button onclick="window.location.href='../index.html'" class="btn-back">Back to Menu</button>
+                </div>
+                
+                <div class="available-games">
+                    <h2>Available Games</h2>
+                    <div id="available-games-list">
+                        <div class="loading">Loading games...</div>
+                    </div>
+                </div>
+                
+                <div id="multiplayer-content">
+                    <!-- Dynamic content goes here -->
+                </div>
+            </div>
+        </div>
+        
+        <!-- Multiplayer Game Screen -->
+        <div id="multiplayer-game-screen" class="screen">
+            <div class="game-container">
+                <div class="game-header">
+                    <h2>Multiplayer Game</h2>
+                    <div id="mp-turn-indicator" class="turn-indicator">Waiting...</div>
+                </div>
+                
+                <div class="game-board">
+                    <!-- Opponent Section -->
+                    <div class="opponent-section">
+                        <div class="player-info">
+                            <div class="hp-display">
+                                HP: <span id="mp-opponent-hp">2000</span>
+                            </div>
+                        </div>
+                        <div id="mp-opponent-field" class="field opponent-field">
+                            <!-- Opponent's monsters will appear here -->
+                        </div>
+                    </div>
+                    
+                    <!-- Player Section -->
+                    <div class="player-section">
+                        <div id="mp-player-field" class="field player-field">
+                            <!-- Player's monsters will appear here -->
+                        </div>
+                        <div class="player-info">
+                            <div class="hp-display">
+                                HP: <span id="mp-player-hp">2000</span>
+                            </div>
+                            <div class="mana-display">
+                                Mana: <span id="mp-player-mana">1 / 1</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Player Hand -->
+                    <div class="hand-section">
+                        <h3>Your Hand</h3>
+                        <div id="mp-player-hand" class="hand">
+                            <!-- Player's cards will appear here -->
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="game-controls">
+                    <button id="mp-end-turn-btn" onclick="endMultiplayerTurn()" class="btn-primary">End Turn</button>
+                    <button onclick="surrenderMultiplayerGame()" class="btn-danger">Surrender</button>
+                </div>
+                
+                <div class="game-log">
+                    <h3>Battle Log</h3>
+                    <div id="log-content" class="log-content">
+                        <!-- Battle log will appear here -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // Get current user ID from session
+        let currentUserId = null;
+        
+        async function initUser() {
+            try {
+                const response = await fetch('../api/auth.php?action=check');
+                const data = await response.json();
+                
+                if (data.authenticated) {
+                    currentUserId = data.user_id;
+                } else {
+                    window.location.href = '../index.html';
+                }
+            } catch (error) {
+                console.error('Failed to check auth:', error);
+                window.location.href = '../index.html';
+            }
+        }
+        
+        function showScreen(screenId) {
+            document.querySelectorAll('.screen').forEach(screen => {
+                screen.classList.remove('active');
+            });
+            document.getElementById(screenId).classList.add('active');
+        }
+        
+        function addLog(message) {
+            const logEl = document.getElementById('log-content');
+            if (logEl) {
+                const entry = document.createElement('div');
+                entry.className = 'log-entry';
+                entry.textContent = message;
+                logEl.appendChild(entry);
+                logEl.scrollTop = logEl.scrollHeight;
+            }
+        }
+        
+        // Initialize on page load
+        window.addEventListener('DOMContentLoaded', async () => {
+            await initUser();
+            initMultiplayer();
+        });
+    </script>
+    
+    <script src="../src/frontend/js/game/multiplayer.js"></script>
+</body>
+</html>
