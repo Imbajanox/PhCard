@@ -1,20 +1,28 @@
 # PhCard - Browser-basiertes Kartenspiel
 
-Ein rundenbasiertes Browser-Kartenspiel gegen eine KI mit Level-System, XP und Kartenprogression.
+Ein rundenbasiertes Browser-Kartenspiel mit Einzelspieler (vs KI) und Mehrspieler (PvP) Modi, Level-System, XP und Kartenprogression.
 
 ## Features
 
 ### Core Game Features
-- **Rundenbasiertes Gameplay**: Spieler und KI wechseln sich ab, um Monster- und Zauberkarten zu spielen
+- **Rundenbasiertes Gameplay**: Spieler und KI/Gegenspieler wechseln sich ab, um Monster- und Zauberkarten zu spielen
 - **Monster- und Zauberkarten**: Verschiedene Kartentypen mit unterschiedlichen Effekten
-- **KI-Gegner**: Skalierbare KI mit 5 Schwierigkeitsstufen
+- **🆕 Multiplayer (PvP)**: Spiele gegen andere Spieler in Echtzeit
+- **KI-Gegner**: Skalierbare KI mit 5 Schwierigkeitsstufen (Einzelspieler-Modus)
 - **Level-System**: Sammle XP durch Siege und steige im Level auf
 - **Kartenfreischaltung**: Höhere Level schalten mächtigere Karten frei
 - **Progression**: Stärkere KI-Gegner werden mit höherem Level verfügbar
 - **Datenbank-Backend**: PHP verwaltet Benutzer, Karten und Spielstände
 - **AJAX-basierte UI**: JavaScript steuert die Benutzeroberfläche
 
-### 🆕 Extensibility Features (NEW!)
+### 🆕 Multiplayer Features (NEW!)
+- **Game Lobby**: Erstelle oder trete Multiplayer-Spielen bei
+- **Echtzeit-Updates**: Automatische Aktualisierung des Spielstatus
+- **Rating-System**: Kompetitives Ranking basierend auf Siegen und Niederlagen
+- **Spielstatistiken**: Verfolge deine PvP-Siege, Niederlagen und Win-Streaks
+- **Spielhistorie**: Vollständiges Logging aller Spielzüge
+
+### Extensibility Features
 - **Plugin System**: Drop-in plugins für custom Funktionalität
 - **Event System**: Event-driven Architektur für Spielaktionen
 - **Effect Registry**: Einfaches Hinzufügen neuer Karteneffekte
@@ -24,7 +32,9 @@ Ein rundenbasiertes Browser-Kartenspiel gegen eine KI mit Level-System, XP und K
 - **Card Sets**: Organisiere Karten in Erweiterungen
 - **Developer Tools**: CLI-Tools und umfassende Dokumentation
 
-> 📚 **Für Entwickler**: Siehe [EXTENSIBILITY_README.md](EXTENSIBILITY_README.md) für Details zum Erweitern des Spiels
+> 📚 **Für Entwickler**: Siehe [documentation/EXTENSIBILITY_README.md](documentation/EXTENSIBILITY_README.md) für Details zum Erweitern des Spiels
+> 
+> 🎮 **Multiplayer**: Siehe [documentation/MULTIPLAYER_README.md](documentation/MULTIPLAYER_README.md) für Details zum Multiplayer-System
 
 ## Technologie-Stack
 
@@ -53,8 +63,9 @@ Ein rundenbasiertes Browser-Kartenspiel gegen eine KI mit Level-System, XP und K
    - Erstelle eine MySQL-Datenbank
    - Importiere das Schema (siehe [sql/README.md](sql/README.md) für Details):
      ```bash
-     mysql -u root -p < sql/database.sql
-     mysql -u root -p < sql/database_extensions.sql
+     mysql -u root -p phcard < sql/database.sql
+     mysql -u root -p phcard < sql/database_extensions.sql
+     mysql -u root -p phcard < sql/database_multiplayer.sql  # Für Multiplayer-Support
      # ... weitere SQL-Dateien nach Bedarf
      ```
 
@@ -140,10 +151,20 @@ Ein rundenbasiertes Browser-Kartenspiel gegen eine KI mit Level-System, XP und K
 - `GET /api/user.php?action=cards` - Kartensammlung abrufen
 
 ### Spiel (`api/game.php`)
-- `POST /api/game.php?action=start` - Neues Spiel starten
+- `POST /api/game.php?action=start` - Neues Einzelspieler-Spiel starten (vs KI)
 - `POST /api/game.php?action=play_card` - Karte spielen
 - `POST /api/game.php?action=end_turn` - Runde beenden
 - `POST /api/game.php?action=end_game` - Spiel beenden und Ergebnis speichern
+
+### 🆕 Multiplayer (`api/multiplayer.php`)
+- `POST /api/multiplayer.php?action=create_game` - Neues Multiplayer-Spiel erstellen
+- `POST /api/multiplayer.php?action=join_game` - Einem Spiel beitreten
+- `GET /api/multiplayer.php?action=list_games` - Verfügbare Spiele auflisten
+- `GET /api/multiplayer.php?action=get_state` - Aktuellen Spielstand abrufen
+- `POST /api/multiplayer.php?action=play_card` - Karte im Multiplayer spielen
+- `POST /api/multiplayer.php?action=end_turn` - Runde im Multiplayer beenden
+- `POST /api/multiplayer.php?action=surrender` - Multiplayer-Spiel aufgeben
+- `GET /api/multiplayer.php?action=current_game` - Aktives Spiel des Benutzers abrufen
 
 ### Shop (`api/shop.php`)
 - `GET /api/shop.php?action=list` - Shop-Items abrufen
