@@ -153,9 +153,18 @@ class GameState {
         $manaKey = $player . '_mana';
         $maxManaKey = $player . '_max_mana';
         $overloadKey = $player . '_overload';
+        $turnCountKey = $player . '_turn_count';
         
-        // Increase max mana (up to 10)
-        if ($this->state[$maxManaKey] < 10) {
+        // Initialize turn count if not exists
+        if (!isset($this->state[$turnCountKey])) {
+            $this->state[$turnCountKey] = 0;
+        }
+        
+        // Increment turn count for this player
+        $this->state[$turnCountKey]++;
+        
+        // Only increase max mana after the first turn (i.e., from turn 2 onwards)
+        if ($this->state[$turnCountKey] > 1 && $this->state[$maxManaKey] < 10) {
             $this->state[$maxManaKey]++;
         }
         

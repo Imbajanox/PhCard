@@ -170,15 +170,65 @@
     border-radius: 8px;
     color: white;
     text-align: center;
+    position: relative;
 }
 
 .field-card.monster {
     background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
 }
 
+.field-card .card-mana-cost {
+    position: absolute;
+    top: 3px;
+    right: 3px;
+    background: rgba(0, 0, 0, 0.7);
+    color: #4FC3F7;
+    border-radius: 50%;
+    width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    font-size: 0.75em;
+    border: 2px solid #4FC3F7;
+}
+
+.field-card .card-rarity {
+    position: absolute;
+    top: 3px;
+    left: 3px;
+    padding: 2px 6px;
+    border-radius: 3px;
+    font-size: 0.6em;
+    font-weight: bold;
+    text-transform: uppercase;
+}
+
+.field-card .card-rarity.common {
+    background: #9e9e9e;
+    color: white;
+}
+
+.field-card .card-rarity.rare {
+    background: #2196F3;
+    color: white;
+}
+
+.field-card .card-rarity.epic {
+    background: #9C27B0;
+    color: white;
+}
+
+.field-card .card-rarity.legendary {
+    background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%);
+    color: #000;
+}
+
 .field-card .card-name {
     font-weight: bold;
     margin-bottom: 8px;
+    margin-top: 20px;
     font-size: 0.9em;
 }
 
@@ -212,6 +262,7 @@
     cursor: pointer;
     transition: transform 0.2s, box-shadow 0.2s;
     flex-shrink: 0;
+    position: relative;
 }
 
 .card:hover {
@@ -227,17 +278,113 @@
     background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
 }
 
+.card-mana-cost {
+    position: absolute;
+    top: 5px;
+    right: 5px;
+    background: rgba(0, 0, 0, 0.7);
+    color: #4FC3F7;
+    border-radius: 50%;
+    width: 30px;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    font-size: 0.9em;
+    border: 2px solid #4FC3F7;
+}
+
+.card-rarity {
+    position: absolute;
+    top: 5px;
+    left: 5px;
+    padding: 2px 8px;
+    border-radius: 3px;
+    font-size: 0.7em;
+    font-weight: bold;
+    text-transform: uppercase;
+}
+
+.card-rarity.common {
+    background: #9e9e9e;
+    color: white;
+}
+
+.card-rarity.rare {
+    background: #2196F3;
+    color: white;
+}
+
+.card-rarity.epic {
+    background: #9C27B0;
+    color: white;
+}
+
+.card-rarity.legendary {
+    background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%);
+    color: #000;
+}
+
 .card .card-name {
     font-weight: bold;
     margin-bottom: 10px;
+    margin-top: 25px;
     font-size: 1em;
     text-align: center;
+}
+
+.card .card-type {
+    font-size: 0.7em;
+    text-align: center;
+    opacity: 0.8;
+    margin-bottom: 5px;
+    text-transform: uppercase;
 }
 
 .card .card-stats {
     display: flex;
     justify-content: space-around;
     margin-top: 10px;
+    font-size: 0.9em;
+}
+
+.card .stat-atk {
+    color: #ff6b6b;
+}
+
+.card .stat-hp {
+    color: #4ecdc4;
+}
+
+.card .card-description {
+    font-size: 0.7em;
+    margin-top: 8px;
+    opacity: 0.9;
+    text-align: center;
+    font-style: italic;
+}
+
+.card .card-effects {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    margin-top: 6px;
+    justify-content: center;
+}
+
+.card .card-effects span {
+    font-size: 0.65em;
+    padding: 2px 6px;
+    border-radius: 3px;
+    background: rgba(255, 255, 255, 0.2);
+}
+
+.card .card-overload {
+    font-size: 0.75em;
+    color: #ff9800;
+    text-align: center;
+    margin-top: 5px;
 }
 
 .card .card-mana {

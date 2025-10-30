@@ -220,7 +220,7 @@ async function loadMultiplayerGameState(gameId) {
         if (data.success) {
             if (data.status === 'finished') {
                 clearInterval(pollInterval);
-                showMultiplayerGameEnd(data.winner_id);
+                showMultiplayerGameEnd(data.winner_id, data.rewards);
                 return;
             }
             
@@ -380,7 +380,7 @@ async function endMultiplayerTurn() {
             
             if (data.status === 'finished') {
                 clearInterval(pollInterval);
-                showMultiplayerGameEnd(data.winner);
+                showMultiplayerGameEnd(data.winner, data.rewards);
             }
         } else {
             alert('Error: ' + data.error);
@@ -413,7 +413,7 @@ async function surrenderMultiplayerGame() {
         
         if (data.success) {
             clearInterval(pollInterval);
-            showMultiplayerGameEnd(data.winner_id);
+            showMultiplayerGameEnd(data.winner_id, data.rewards);
         }
     } catch (error) {
         console.error('Failed to surrender:', error);
@@ -423,20 +423,87 @@ async function surrenderMultiplayerGame() {
 /**
  * Show multiplayer game end screen
  */
-function showMultiplayerGameEnd(winnerId) {
+function showMultiplayerGameEnd(winnerId, rewards) {
     const isWinner = (winnerId === currentUserId);
     const isDraw = (winnerId === 'draw');
     
     let message;
+    let messageColor;
     if (isDraw) {
-        message = "It's a draw!";
+        message = "🤝 It's a draw! 🤝";
+        messageColor = '#ffc107';
     } else if (isWinner) {
-        message = 'You won!';
+        message = '🎉 You won! 🎉';
+        messageColor = '#28a745';
     } else {
-        message = 'You lost!';
+        message = '💔 You lost! 💔';
+        messageColor = '#dc3545';
     }
     
-    alert(message);
+    let rewardsHTML = '';
+    if (rewards) {
+        rewardsHTML = `
+            <div class="rewards-section">
+                <h3>Rewards</h3>
+                <p>XP gained: +${rewards.xp_gained}</p>
+                <p>Coins earned: +${rewards.coins_earned} 💰</p>
+                ${rewards.gems_earned > 0 ? `<p>Gems earned: +${rewards.gems_earned} 💎</p>` : ''}
+                ${rewards.leveled_up ? `
+                    <p style="color: #28a745; font-weight: bold;">🎊 Level Up! 🎊</p>
+                    <p>New Level: ${rewards.new_level}</p>
+                ` : ''}
+                ${rewards.unlocked_cards && rewards.unlocked_cards.length > 0 ? `
+                    <div class="unlocked-cards">
+                        <h4>🎁 New Cards Unlocked! 🎁</h4>
+                        ${rewards.unlocked_cards.map(card => `<div style="font-weight: bold; color: #667eea;">${card.name}</div>`).join('')}
+                    </div>
+                ` : ''}
+            </div>
+        `;
+    }
+    
+    const modalHTML = `
+        <div class="game-over-modal" style="
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        ">
+            <div class="modal-content" style="
+                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                padding: 40px;
+                border-radius: 15px;
+                text-align: center;
+                max-width: 500px;
+                color: white;
+            ">
+                <h2 style="color: ${messageColor}; font-size: 2em; margin-bottom: 20px;">${message}</h2>
+                ${rewardsHTML}
+                <button onclick="closeMultiplayerGameOver()" class="btn-primary" style="margin-top: 20px;">Return to Lobby</button>
+            </div>
+        </div>
+    `;
+    
+    const modalDiv = document.createElement('div');
+    modalDiv.id = 'mp-game-over-modal';
+    modalDiv.innerHTML = modalHTML;
+    document.body.appendChild(modalDiv);
+}
+
+/**
+ * Close multiplayer game over modal
+ */
+function closeMultiplayerGameOver() {
+    const modal = document.getElementById('mp-game-over-modal');
+    if (modal) {
+        modal.remove();
+    }
     
     currentMultiplayerGame = null;
     multiplayerGameState = null;
@@ -472,22 +539,70 @@ function createCardElement(card) {
     const cardEl = document.createElement('div');
     cardEl.className = 'card ' + card.type;
     
-    let content = `<div class="card-name">${card.name}</div>`;
+    // Add mana cost badge
+    const manaCost = card.mana_cost || 1;
+    const manaBadge = `<div class="card-mana-cost">${manaCost}</div>`;
+    
+    // Add rarity badge
+    const rarity = card.rarity || 'common';
+    const rarityBadge = `<div class="card-rarity ${rarity}">${rarity}</div>`;
+    
+    let statsHTML = '';
+    let descriptionHTML = card.description ? `<div class="card-description">${card.description}</div>` : '';
     
     if (card.type === 'monster') {
-        content += `
+        statsHTML = `
             <div class="card-stats">
-                <span class="attack">⚔️ ${card.attack}</span>
-                <span class="defense">🛡️ ${card.defense || card.health}</span>
+                <span class="stat-atk">⚔️ ${card.attack}</span>
+                <span class="stat-hp">🛡️ ${card.defense || card.health}</span>
             </div>
         `;
+    } else if (card.type === 'spell') {
+        if (card.effect) {
+            const parts = card.effect.split(/:(.*)/s);
+            if (parts.length >= 2) {
+                statsHTML = `<div class="card-stats">Effect: <strong>${parts[0].trim()}</strong>: ${parts[1].trim()}</div>`;
+            } else {
+                statsHTML = `<div class="card-stats">Effect: ${card.effect}</div>`;
+            }
+        }
     }
     
-    if (card.mana_cost) {
-        content += `<div class="card-mana">${card.mana_cost} 💎</div>`;
+    // Display keywords and status effects
+    let effectsHTML = '';
+    const allEffects = [];
+    
+    if (card.keywords) {
+        card.keywords.split(',').map(k => k.trim()).forEach(k => allEffects.push({ type: 'keyword', value: k }));
     }
     
-    cardEl.innerHTML = content;
+    if (card.status_effects && card.status_effects.length > 0) {
+        card.status_effects.forEach(s => allEffects.push({ type: 'status', value: s }));
+    }
+    
+    if (allEffects.length > 0) {
+        effectsHTML = `<div class="card-effects">${allEffects.map(item =>
+            `<span class="${item.type} ${item.type}-${item.value.toLowerCase()}">${item.value}</span>`
+        ).join(' ')}</div>`;
+    }
+    
+    // Overload indicator
+    let overloadHTML = '';
+    if (card.overload && card.overload > 0) {
+        overloadHTML = `<div class="card-overload">Overload: ${card.overload}</div>`;
+    }
+    
+    cardEl.innerHTML = `
+        ${manaBadge}
+        ${rarityBadge}
+        <div class="card-name">${card.name}</div>
+        <div class="card-type">${card.type.toUpperCase()}</div>
+        ${statsHTML}
+        ${overloadHTML}
+        ${effectsHTML}
+        ${descriptionHTML}
+    `;
+    
     return cardEl;
 }
 
@@ -498,13 +613,27 @@ function createFieldCardElement(card) {
     const cardEl = document.createElement('div');
     cardEl.className = 'field-card ' + card.type;
     
-    let content = `<div class="card-name">${card.name}</div>`;
+    // Add mana cost badge
+    const manaCost = card.mana_cost || 1;
+    const manaBadge = `<div class="card-mana-cost">${manaCost}</div>`;
+    
+    // Add rarity badge (smaller for field cards)
+    const rarity = card.rarity || 'common';
+    const rarityBadge = `<div class="card-rarity ${rarity}">${rarity}</div>`;
+    
+    let content = `
+        ${manaBadge}
+        ${rarityBadge}
+        <div class="card-name">${card.name}</div>
+    `;
     
     if (card.type === 'monster') {
+        const currentHP = card.current_health !== undefined ? card.current_health : card.max_health;
+        const maxHP = card.max_health || card.health || card.defense;
         content += `
             <div class="card-stats">
                 <span class="attack">⚔️ ${card.attack}</span>
-                <span class="health">❤️ ${card.current_health}/${card.max_health}</span>
+                <span class="health">❤️ ${currentHP}/${maxHP}</span>
             </div>
         `;
     }

@@ -178,13 +178,23 @@ class Multiplayer {
             
             $gameState = json_decode($game['game_state'], true);
             
+            // Check if game just finished and get rewards
+            $rewards = null;
+            if ($game['status'] === 'finished') {
+                $rewards = $_SESSION['mp_rewards_' . $userId] ?? null;
+                if ($rewards) {
+                    unset($_SESSION['mp_rewards_' . $userId]);
+                }
+            }
+            
             return [
                 'success' => true,
                 'status' => $game['status'],
                 'game_state' => $this->getClientGameState($gameState, $userId),
                 'current_turn' => $game['current_turn'],
                 'is_your_turn' => ($game['current_turn'] == $userId),
-                'winner_id' => $game['winner_id']
+                'winner_id' => $game['winner_id'],
+                'rewards' => $rewards
             ];
         } catch (\Exception $e) {
             return ['success' => false, 'error' => 'Failed to get game state: ' . $e->getMessage()];
@@ -302,6 +312,12 @@ class Multiplayer {
             if ($winner) {
                 $this->endGame($gameId, $winner, $gameState);
                 $status = 'finished';
+                
+                // Get rewards for current user
+                $rewards = $_SESSION['mp_rewards_' . $userId] ?? null;
+                if ($rewards) {
+                    unset($_SESSION['mp_rewards_' . $userId]);
+                }
             } else {
                 $stmt = $this->db->prepare("
                     UPDATE multiplayer_games 
@@ -310,6 +326,7 @@ class Multiplayer {
                 ");
                 $stmt->execute([json_encode($gameState), $opponentId, $gameId]);
                 $status = 'active';
+                $rewards = null;
             }
             
             // Log the move
@@ -323,7 +340,8 @@ class Multiplayer {
                 'battle_events' => $result['battle_events'],
                 'game_state' => $this->getClientGameState($gameState, $userId),
                 'status' => $status,
-                'winner' => $winner
+                'winner' => $winner,
+                'rewards' => $rewards
             ];
         } catch (\Exception $e) {
             return ['success' => false, 'error' => 'Failed to end turn: ' . $e->getMessage()];
@@ -352,10 +370,17 @@ class Multiplayer {
             $this->endGame($gameId, $winnerId, $gameState);
             $this->logMove($gameId, $userId, 'surrender', []);
             
+            // Get rewards for current user
+            $rewards = $_SESSION['mp_rewards_' . $userId] ?? null;
+            if ($rewards) {
+                unset($_SESSION['mp_rewards_' . $userId]);
+            }
+            
             return [
                 'success' => true,
                 'message' => 'You have surrendered',
-                'winner_id' => $winnerId
+                'winner_id' => $winnerId,
+                'rewards' => $rewards
             ];
         } catch (\Exception $e) {
             return ['success' => false, 'error' => 'Failed to surrender: ' . $e->getMessage()];
@@ -383,6 +408,8 @@ class Multiplayer {
             'player2_max_mana' => STARTING_MANA,
             'player1_overload' => 0,
             'player2_overload' => 0,
+            'player1_turn_count' => 0,
+            'player2_turn_count' => 0,
             'player1_hand' => [],
             'player2_hand' => [],
             'player1_field' => [],
@@ -498,9 +525,9 @@ class Multiplayer {
         $stmt->execute([$gameId]);
         $game = $stmt->fetch(\PDO::FETCH_ASSOC);
         
-        // Update stats
-        $this->updateStats($game['player1_id'], $winnerId);
-        $this->updateStats($game['player2_id'], $winnerId);
+        // Update stats and give rewards
+        $this->updateStatsAndRewards($game['player1_id'], $winnerId);
+        $this->updateStatsAndRewards($game['player2_id'], $winnerId);
         
         // Trigger event
         GameEventSystem::trigger('multiplayer_game_end', [
@@ -512,15 +539,25 @@ class Multiplayer {
     }
     
     /**
-     * Update multiplayer statistics
+     * Update multiplayer statistics and give rewards
      */
-    private function updateStats($userId, $winnerId) {
+    private function updateStatsAndRewards($userId, $winnerId) {
+        global $LEVEL_REQUIREMENTS;
+        
         $this->initializeStats($userId);
         
         $isWinner = ($winnerId == $userId);
         $isDraw = ($winnerId === 'draw');
         
+        // Calculate XP based on result
+        $xpGained = 0;
+        $coinsEarned = 0;
+        $gemsEarned = 0;
+        
         if ($isDraw) {
+            $xpGained = 25;
+            $coinsEarned = 30;
+            
             $stmt = $this->db->prepare("
                 UPDATE multiplayer_stats 
                 SET games_played = games_played + 1,
@@ -530,6 +567,13 @@ class Multiplayer {
             ");
             $stmt->execute([$userId]);
         } elseif ($isWinner) {
+            $xpGained = 75;
+            $coinsEarned = 100;
+            // 30% chance to get 1-3 gems on win
+            if (mt_rand(1, 100) <= 30) {
+                $gemsEarned = mt_rand(1, 3);
+            }
+            
             $stmt = $this->db->prepare("
                 UPDATE multiplayer_stats 
                 SET games_played = games_played + 1,
@@ -541,6 +585,9 @@ class Multiplayer {
             ");
             $stmt->execute([$userId]);
         } else {
+            $xpGained = 15;
+            $coinsEarned = 20;
+            
             $stmt = $this->db->prepare("
                 UPDATE multiplayer_stats 
                 SET games_played = games_played + 1,
@@ -559,6 +606,60 @@ class Multiplayer {
             WHERE user_id = ?
         ");
         $stmt->execute([$userId]);
+        
+        // Give XP and currency rewards
+        $stmt = $this->db->prepare("SELECT level, xp FROM users WHERE id = ?");
+        $stmt->execute([$userId]);
+        $user = $stmt->fetch(\PDO::FETCH_ASSOC);
+        
+        $newXp = $user['xp'] + $xpGained;
+        $newLevel = $user['level'];
+        
+        // Check for level up
+        foreach ($LEVEL_REQUIREMENTS as $level => $requiredXp) {
+            if ($newXp >= $requiredXp && $level > $newLevel) {
+                $newLevel = $level;
+            }
+        }
+        
+        $leveledUp = $newLevel > $user['level'];
+        
+        // Update user with currency
+        $stmt = $this->db->prepare("
+            UPDATE users 
+            SET xp = ?, level = ?, coins = coins + ?, gems = gems + ? 
+            WHERE id = ?
+        ");
+        $stmt->execute([$newXp, $newLevel, $coinsEarned, $gemsEarned, $userId]);
+        
+        // If leveled up, unlock new cards
+        $unlockedCards = [];
+        if ($leveledUp) {
+            $stmt = $this->db->prepare("SELECT * FROM cards WHERE required_level = ?");
+            $stmt->execute([$newLevel]);
+            $newCards = $stmt->fetchAll(\PDO::FETCH_ASSOC);
+            
+            $stmt = $this->db->prepare("
+                INSERT INTO user_cards (user_id, card_id, quantity) 
+                VALUES (?, ?, 2) 
+                ON DUPLICATE KEY UPDATE quantity = quantity + 2
+            ");
+            foreach ($newCards as $card) {
+                $stmt->execute([$userId, $card['id']]);
+                $unlockedCards[] = $card;
+            }
+        }
+        
+        // Store rewards in session for this user
+        $_SESSION['mp_rewards_' . $userId] = [
+            'xp_gained' => $xpGained,
+            'coins_earned' => $coinsEarned,
+            'gems_earned' => $gemsEarned,
+            'leveled_up' => $leveledUp,
+            'new_level' => $newLevel,
+            'unlocked_cards' => $unlockedCards
+        ];
+    }
     }
     
     /**
