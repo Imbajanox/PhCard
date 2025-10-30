@@ -3,7 +3,12 @@ require_once '../config.php';
 
 header('Content-Type: application/json');
 
-$action = $_POST['action'] ?? $_GET['action'] ?? '';
+$action = $_POST['action'] ?? '';
+
+// Allow GET requests only for the 'check' action
+if (empty($action) && isset($_GET['action']) && $_GET['action'] === 'check') {
+    $action = 'check';
+}
 
 switch ($action) {
     case 'register':
