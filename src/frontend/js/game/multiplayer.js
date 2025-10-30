@@ -193,6 +193,12 @@ function startMultiplayerGame(gameId) {
         clearInterval(pollInterval);
     }
     
+    // Clear battle log when starting a new game
+    const logEl = document.getElementById('log-content');
+    if (logEl) {
+        logEl.innerHTML = '';
+    }
+    
     showScreen('multiplayer-game-screen');
     loadMultiplayerGameState(gameId);
     
