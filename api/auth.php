@@ -3,7 +3,7 @@ require_once '../config.php';
 
 header('Content-Type: application/json');
 
-$action = $_POST['action'] ?? '';
+$action = $_POST['action'] ?? $_GET['action'] ?? '';
 
 switch ($action) {
     case 'register':
