@@ -92,50 +92,119 @@ class BattleSystem {
     }
     
     /**
-     * Play a card from player's hand
+     * Play a card from player's hand (supports both single-player and multiplayer)
      */
-    public function playCard(&$gameState, $cardIndex, $target = 'opponent', $choice = 0) {
-        if ($gameState['turn'] !== 'player') {
-            return ['success' => false, 'error' => 'Not your turn'];
+    public function playCard(&$gameState, $cardIndex, $target = 'opponent', $choice = 0, $playerKey = 'player') {
+        // For backward compatibility, default to single player if playerKey is 'player'
+        if ($playerKey === 'player' && isset($gameState['ai_hp'])) {
+            // Single player mode - use original logic
+            if ($gameState['turn'] !== 'player') {
+                return ['success' => false, 'error' => 'Not your turn'];
+            }
+            
+            if ($cardIndex < 0 || $cardIndex >= count($gameState['player_hand'])) {
+                return ['success' => false, 'error' => 'Invalid card'];
+            }
+            
+            $card = $gameState['player_hand'][$cardIndex];
+            $manaCost = intval($card['mana_cost'] ?? 1);
+            
+            if ($gameState['player_mana'] < $manaCost) {
+                return ['success' => false, 'error' => 'Not enough mana'];
+            }
+            
+            $gameState['player_mana'] -= $manaCost;
+            
+            if (isset($card['overload']) && $card['overload'] > 0) {
+                $gameState['player_overload'] += intval($card['overload']);
+            }
+            
+            array_splice($gameState['player_hand'], $cardIndex, 1);
+            
+            $message = '';
+            
+            if ($card['type'] === 'monster') {
+                if (!empty($card['choice_effects'])) {
+                    $choices = json_decode($card['choice_effects'], true);
+                    if (isset($choices['choices'][$choice])) {
+                        $selectedChoice = $choices['choices'][$choice];
+                        $card['attack'] = $selectedChoice['attack'] ?? $card['attack'];
+                        $card['defense'] = $selectedChoice['defense'] ?? $card['defense'];
+                        $message = "Played {$card['name']} ({$selectedChoice['name']}) - ";
+                    }
+                }
+                
+                $card['status_effects'] = [];
+                if (!empty($card['keywords'])) {
+                    $keywords = explode(',', $card['keywords']);
+                    foreach ($keywords as $keyword) {
+                        $keyword = trim($keyword);
+                        if (in_array($keyword, ['taunt', 'divine_shield', 'stealth', 'windfury', 'lifesteal', 'poison', 'charge', 'rush'])) {
+                            $card['status_effects'][] = $keyword;
+                        }
+                    }
+                }
+                
+                $card['current_health'] = $card['health'] ?? $card['defense'];
+                $card['max_health'] = $card['health'] ?? $card['defense'];
+                
+                $gameState['player_field'][] = $card;
+                if (empty($message)) {
+                    $message = "Played {$card['name']} (ATK: {$card['attack']}, HP: {$card['current_health']})";
+                } else {
+                    $message .= "(ATK: {$card['attack']}, HP: {$card['current_health']})";
+                }
+            } else if ($card['type'] === 'spell') {
+                $result = $this->applySpellEffect($gameState, $card, 'player', $target);
+                $gameState = $result['gameState'];
+                $message = $result['message'];
+            }
+            
+            $gameState['cards_played_this_turn']++;
+            
+            return [
+                'success' => true,
+                'message' => $message,
+                'game_state' => [
+                    'player_hp' => $gameState['player_hp'],
+                    'ai_hp' => $gameState['ai_hp'],
+                    'player_mana' => $gameState['player_mana'],
+                    'player_hand' => $gameState['player_hand'],
+                    'player_field' => $gameState['player_field'],
+                    'ai_field' => $gameState['ai_field']
+                ]
+            ];
         }
         
-        if ($cardIndex < 0 || $cardIndex >= count($gameState['player_hand'])) {
+        // Multiplayer mode
+        $opponentKey = ($playerKey === 'player1') ? 'player2' : 'player1';
+        $handKey = $playerKey . '_hand';
+        $fieldKey = $playerKey . '_field';
+        $manaKey = $playerKey . '_mana';
+        $overloadKey = $playerKey . '_overload';
+        
+        if ($cardIndex < 0 || $cardIndex >= count($gameState[$handKey])) {
             return ['success' => false, 'error' => 'Invalid card'];
         }
         
-        $card = $gameState['player_hand'][$cardIndex];
+        $card = $gameState[$handKey][$cardIndex];
         $manaCost = intval($card['mana_cost'] ?? 1);
         
-        // Check mana
-        if ($gameState['player_mana'] < $manaCost) {
+        if ($gameState[$manaKey] < $manaCost) {
             return ['success' => false, 'error' => 'Not enough mana'];
         }
         
-        // Deduct mana
-        $gameState['player_mana'] -= $manaCost;
+        $gameState[$manaKey] -= $manaCost;
         
-        // Apply overload for next turn
         if (isset($card['overload']) && $card['overload'] > 0) {
-            $gameState['player_overload'] += intval($card['overload']);
+            $gameState[$overloadKey] += intval($card['overload']);
         }
         
-        array_splice($gameState['player_hand'], $cardIndex, 1);
+        array_splice($gameState[$handKey], $cardIndex, 1);
         
         $message = '';
         
         if ($card['type'] === 'monster') {
-            // Handle Choose One effects
-            if (!empty($card['choice_effects'])) {
-                $choices = json_decode($card['choice_effects'], true);
-                if (isset($choices['choices'][$choice])) {
-                    $selectedChoice = $choices['choices'][$choice];
-                    $card['attack'] = $selectedChoice['attack'] ?? $card['attack'];
-                    $card['defense'] = $selectedChoice['defense'] ?? $card['defense'];
-                    $message = "Played {$card['name']} ({$selectedChoice['name']}) - ";
-                }
-            }
-            
-            // Apply keywords
             $card['status_effects'] = [];
             if (!empty($card['keywords'])) {
                 $keywords = explode(',', $card['keywords']);
@@ -147,35 +216,20 @@ class BattleSystem {
                 }
             }
             
-            // Initialize current_health
             $card['current_health'] = $card['health'] ?? $card['defense'];
             $card['max_health'] = $card['health'] ?? $card['defense'];
             
-            $gameState['player_field'][] = $card;
-            if (empty($message)) {
-                $message = "Played {$card['name']} (ATK: {$card['attack']}, HP: {$card['current_health']})";
-            } else {
-                $message .= "(ATK: {$card['attack']}, HP: {$card['current_health']})";
-            }
+            $gameState[$fieldKey][] = $card;
+            $message = "Played {$card['name']} (ATK: {$card['attack']}, HP: {$card['current_health']})";
         } else if ($card['type'] === 'spell') {
-            $result = $this->applySpellEffect($gameState, $card, 'player', $target);
+            $result = $this->applyMultiplayerSpellEffect($gameState, $card, $playerKey, $target);
             $gameState = $result['gameState'];
             $message = $result['message'];
         }
         
-        $gameState['cards_played_this_turn']++;
-        
         return [
             'success' => true,
-            'message' => $message,
-            'game_state' => [
-                'player_hp' => $gameState['player_hp'],
-                'ai_hp' => $gameState['ai_hp'],
-                'player_mana' => $gameState['player_mana'],
-                'player_hand' => $gameState['player_hand'],
-                'player_field' => $gameState['player_field'],
-                'ai_field' => $gameState['ai_field']
-            ]
+            'message' => $message
         ];
     }
     
@@ -536,5 +590,149 @@ class BattleSystem {
                 }
             }
         }
+    }
+    
+    /**
+     * Apply spell effect in multiplayer game
+     */
+    private function applyMultiplayerSpellEffect(&$gameState, $card, $caster, $target) {
+        $effect = $card['effect'];
+        $message = "Cast {$card['name']}: ";
+        
+        if (!$effect) {
+            return ['message' => $message . "No effect", 'gameState' => $gameState];
+        }
+        
+        list($type, $value) = explode(':', $effect);
+        $value = intval($value);
+        
+        $opponent = ($caster === 'player1') ? 'player2' : 'player1';
+        
+        switch ($type) {
+            case 'damage':
+                if ($target === 'opponent') {
+                    $gameState[$opponent . '_hp'] -= $value;
+                    $message .= "Dealt {$value} damage to opponent";
+                }
+                break;
+            case 'heal':
+                $gameState[$caster . '_hp'] = min($gameState[$caster . '_hp'] + $value, STARTING_HP);
+                $message .= "Healed {$value} HP";
+                break;
+            case 'boost':
+                $fieldKey = $caster . '_field';
+                foreach ($gameState[$fieldKey] as &$monster) {
+                    $monster['attack'] = ($monster['attack'] ?? 0) + $value;
+                }
+                $message .= "Boosted attack by {$value}";
+                break;
+            case 'shield':
+                $message .= "Gained {$value} shield";
+                break;
+        }
+        
+        return ['message' => $message, 'gameState' => $gameState];
+    }
+    
+    /**
+     * Execute turn battle for multiplayer game
+     */
+    public function executeMultiplayerTurnBattle(&$gameState, $playerKey) {
+        $battleLog = [];
+        $battleEvents = [];
+        
+        $opponentKey = ($playerKey === 'player1') ? 'player2' : 'player1';
+        $playerFieldKey = $playerKey . '_field';
+        $opponentFieldKey = $opponentKey . '_field';
+        $playerHpKey = $playerKey . '_hp';
+        $opponentHpKey = $opponentKey . '_hp';
+        
+        // Player monsters attack
+        foreach ($gameState[$playerFieldKey] as $i => $playerMonster) {
+            $canAttack = true;
+            if (isset($playerMonster['status_effects']) && in_array('stunned', $playerMonster['status_effects'])) {
+                $canAttack = false;
+                $battleLog[] = "{$playerMonster['name']} is stunned and cannot attack";
+            }
+            
+            if (!$canAttack) continue;
+            
+            if (count($gameState[$opponentFieldKey]) > 0) {
+                $result = $this->executeMultiplayerMonsterAttack($gameState, $i, 0, $playerKey, $opponentKey);
+                $battleLog = array_merge($battleLog, $result['log']);
+                $battleEvents = array_merge($battleEvents, $result['events']);
+            } else {
+                $gameState[$opponentHpKey] -= $playerMonster['attack'];
+                $battleLog[] = "{$playerMonster['name']} attacks directly for {$playerMonster['attack']} damage";
+                
+                if (isset($playerMonster['status_effects']) && in_array('lifesteal', $playerMonster['status_effects'])) {
+                    $gameState[$playerHpKey] = min($gameState[$playerHpKey] + $playerMonster['attack'], STARTING_HP);
+                    $battleLog[] = "{$playerMonster['name']} heals for {$playerMonster['attack']} HP (Lifesteal)";
+                }
+            }
+        }
+        
+        // Clean up destroyed monsters
+        for ($i = count($gameState[$playerFieldKey]) - 1; $i >= 0; $i--) {
+            if ($gameState[$playerFieldKey][$i]['current_health'] <= 0) {
+                $destroyedMonster = $gameState[$playerFieldKey][$i];
+                array_splice($gameState[$playerFieldKey], $i, 1);
+                $battleLog[] = "{$destroyedMonster['name']} was destroyed!";
+            }
+        }
+        
+        for ($i = count($gameState[$opponentFieldKey]) - 1; $i >= 0; $i--) {
+            if ($gameState[$opponentFieldKey][$i]['current_health'] <= 0) {
+                $destroyedMonster = $gameState[$opponentFieldKey][$i];
+                array_splice($gameState[$opponentFieldKey], $i, 1);
+                $battleLog[] = "{$destroyedMonster['name']} was destroyed!";
+            }
+        }
+        
+        return [
+            'battle_log' => $battleLog,
+            'battle_events' => $battleEvents
+        ];
+    }
+    
+    /**
+     * Execute monster attack in multiplayer
+     */
+    private function executeMultiplayerMonsterAttack(&$gameState, $attackerIndex, $defenderIndex, $attackerKey, $defenderKey) {
+        $attackerFieldKey = $attackerKey . '_field';
+        $defenderFieldKey = $defenderKey . '_field';
+        
+        $log = [];
+        $events = [];
+        
+        $attacker = &$gameState[$attackerFieldKey][$attackerIndex];
+        $defender = &$gameState[$defenderFieldKey][$defenderIndex];
+        
+        $damage = $attacker['attack'];
+        $counterDamage = $defender['attack'];
+        
+        // Divine Shield
+        if (isset($defender['status_effects']) && in_array('divine_shield', $defender['status_effects'])) {
+            $defender['status_effects'] = array_diff($defender['status_effects'], ['divine_shield']);
+            $log[] = "{$defender['name']}'s Divine Shield absorbs the attack!";
+            $damage = 0;
+        }
+        
+        $defender['current_health'] -= $damage;
+        $log[] = "{$attacker['name']} attacks {$defender['name']} for {$damage} damage";
+        
+        // Counter damage
+        if ($damage > 0) {
+            $attacker['current_health'] -= $counterDamage;
+            $log[] = "{$defender['name']} deals {$counterDamage} counter-damage";
+        }
+        
+        // Lifesteal
+        if (isset($attacker['status_effects']) && in_array('lifesteal', $attacker['status_effects']) && $damage > 0) {
+            $gameState[$attackerKey . '_hp'] = min($gameState[$attackerKey . '_hp'] + $damage, STARTING_HP);
+            $log[] = "{$attacker['name']} heals for {$damage} HP (Lifesteal)";
+        }
+        
+        return ['log' => $log, 'events' => $events];
     }
 }
