@@ -275,6 +275,23 @@ GameEventSystem::on('game_end', function($data) {
 - ✅ **Card Sets** - Organisiere Erweiterungen
 - ✅ **JSON Import** - Massenimport von Karten
 
+## Development Roadmap
+
+PhCard hat eine strukturierte Roadmap für zukünftige Entwicklung:
+
+- **[ROADMAP.md](ROADMAP.md)** - Vollständige Entwicklungs-Roadmap mit detaillierten Phasen
+- **[ROADMAP_SUMMARY.md](ROADMAP_SUMMARY.md)** - Schnellübersicht und Prioritäten
+- **[ROADMAP_VISUAL.md](ROADMAP_VISUAL.md)** - Visuelle Darstellung der Entwicklungsphasen
+
+### Nächste Schritte
+- Mobile Optimierung und PWA-Support
+- Tutorial-System für neue Spieler
+- Erweiterte Gameplay-Features (Card Keywords, Draft Mode)
+- Tournament-System
+- Mobile Native Apps
+
+Siehe die Roadmap-Dokumente für Details zu Zeitplänen, Ressourcen und Prioritäten.
+
 ## Lizenz
 
 MIT License
