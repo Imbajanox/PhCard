@@ -417,8 +417,8 @@ class Multiplayer {
             'player2_max_mana' => STARTING_MANA,
             'player1_overload' => 0,
             'player2_overload' => 0,
-            'player1_turn_count' => 1,
-            'player2_turn_count' => 1,
+            'player1_turn_count' => 0,
+            'player2_turn_count' => 0,
             'player1_hand' => [],
             'player2_hand' => [],
             'player1_field' => [],
@@ -440,6 +440,9 @@ class Multiplayer {
                 $gameState['player2_hand'][] = array_shift($gameState['player2_deck']);
             }
         }
+        
+        // Set up first turn for player1 (both players start with 1 mana on first turn)
+        $gameState['player1_turn_count'] = 1;
         
         return $gameState;
     }

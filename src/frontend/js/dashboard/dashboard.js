@@ -14,16 +14,24 @@ document.addEventListener('DOMContentLoaded', function() {
 // Check authentication
 async function checkAuth() {
     try {
-        const response = await fetch('/PhCard/api/auth.php?action=check');
+        const response = await fetch('api/auth.php?action=check');
         const data = await response.json();
         console.log('Auth check response:', data);
         console.log('Auth check response (stringified):', JSON.stringify(data));
         if (!data.success || !data.authenticated) {
-            //window.location.href = 'index.html';
+            window.location.href = 'index.html';
+        }
+        
+        // Check if user is admin
+        const profileResponse = await fetch('api/user.php?action=profile');
+        const profileData = await profileResponse.json();
+        if (!profileData.success || !profileData.user || !profileData.user.is_admin) {
+            alert('Admin access required');
+            window.location.href = 'index.html';
         }
     } catch (error) {
         console.error('Auth check failed:', error);
-        //window.location.href = 'index.html';
+        window.location.href = 'index.html';
     }
 }
 
@@ -70,16 +78,18 @@ async function loadOverviewData() {
     showLoading(true);
     
     try {
-        const response = await fetch('/PhCard/api/analytics.php?action=winrate_analysis');
+        const response = await fetch('api/analytics.php?action=winrate_analysis');
         const data = await response.json();
         
         if (data.success) {
             updateOverviewStats(data);
         } else {
             console.error('Failed to load overview data:', data.error);
+            alert('Fehler beim Laden der Übersichtsdaten: ' + (data.error || 'Unbekannter Fehler'));
         }
     } catch (error) {
         console.error('Error loading overview data:', error);
+        alert('Fehler beim Laden der Übersichtsdaten: ' + error.message);
     } finally {
         showLoading(false);
     }
@@ -155,7 +165,7 @@ async function loadCardStats() {
     showLoading(true);
     
     try {
-        const response = await fetch('/PhCard/api/analytics.php?action=card_stats');
+        const response = await fetch('api/analytics.php?action=card_stats');
         const data = await response.json();
         
         if (data.success) {
@@ -163,9 +173,11 @@ async function loadCardStats() {
             displayCardStats(cardsData);
         } else {
             console.error('Failed to load card stats:', data.error);
+            alert('Fehler beim Laden der Kartenstatistiken: ' + (data.error || 'Unbekannter Fehler'));
         }
     } catch (error) {
         console.error('Error loading card stats:', error);
+        alert('Fehler beim Laden der Kartenstatistiken: ' + error.message);
     } finally {
         showLoading(false);
     }
@@ -249,16 +261,18 @@ async function loadDeckPerformance() {
     showLoading(true);
     
     try {
-        const response = await fetch('/PhCard/api/analytics.php?action=deck_performance');
+        const response = await fetch('api/analytics.php?action=deck_performance');
         const data = await response.json();
         
         if (data.success) {
             displayDeckPerformance(data.decks || []);
         } else {
             console.error('Failed to load deck performance:', data.error);
+            alert('Fehler beim Laden der Deck-Performance: ' + (data.error || 'Unbekannter Fehler'));
         }
     } catch (error) {
         console.error('Error loading deck performance:', error);
+        alert('Fehler beim Laden der Deck-Performance: ' + error.message);
     } finally {
         showLoading(false);
     }
@@ -316,7 +330,7 @@ async function runSimulation() {
         formData.append('deck_b', JSON.stringify(deckB));
         formData.append('iterations', iterations);
         
-        const response = await fetch('/PhCard/api/simulation.php?action=run_simulation', {
+        const response = await fetch('api/simulation.php?action=run_simulation', {
             method: 'POST',
             body: formData
         });
