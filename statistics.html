@@ -15,6 +15,7 @@
                 <button class="back-btn" onclick="window.location.href='index.html'">Zurück zum Menü</button>
             </div>
             
+            <h2>Einzelspieler (vs KI)</h2>
             <div class="stats-grid">
                 <div class="stat-card">
                     <h3>Gesamtspiele</h3>
@@ -39,6 +40,46 @@
                 <div class="stat-card">
                     <h3>Ø XP pro Spiel</h3>
                     <p class="stat-value" id="avg-xp">-</p>
+                </div>
+            </div>
+            
+            <h2>Mehrspieler (PvP)</h2>
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <h3>Gesamtspiele</h3>
+                    <p class="stat-value" id="mp-total-games">-</p>
+                </div>
+                <div class="stat-card">
+                    <h3>Siege</h3>
+                    <p class="stat-value" id="mp-total-wins">-</p>
+                </div>
+                <div class="stat-card">
+                    <h3>Niederlagen</h3>
+                    <p class="stat-value" id="mp-total-losses">-</p>
+                </div>
+                <div class="stat-card">
+                    <h3>Unentschieden</h3>
+                    <p class="stat-value" id="mp-total-draws">-</p>
+                </div>
+                <div class="stat-card">
+                    <h3>Siegrate</h3>
+                    <p class="stat-value" id="mp-winrate">-</p>
+                </div>
+                <div class="stat-card">
+                    <h3>Aktuelles Rating</h3>
+                    <p class="stat-value" id="mp-rating">-</p>
+                </div>
+                <div class="stat-card">
+                    <h3>Höchstes Rating</h3>
+                    <p class="stat-value" id="mp-highest-rating">-</p>
+                </div>
+                <div class="stat-card">
+                    <h3>Aktuelle Serie</h3>
+                    <p class="stat-value" id="mp-win-streak">-</p>
+                </div>
+                <div class="stat-card">
+                    <h3>Längste Serie</h3>
+                    <p class="stat-value" id="mp-longest-streak">-</p>
                 </div>
             </div>
             
@@ -82,6 +123,18 @@
                 document.getElementById('winrate').textContent = (overall.winrate || 0) + '%';
                 document.getElementById('avg-turns').textContent = overall.avg_turns || '-';
                 document.getElementById('avg-xp').textContent = overall.avg_xp || '-';
+                
+                // Update multiplayer stats
+                const mp = data.multiplayer;
+                document.getElementById('mp-total-games').textContent = mp.games_played || 0;
+                document.getElementById('mp-total-wins').textContent = mp.games_won || 0;
+                document.getElementById('mp-total-losses').textContent = mp.games_lost || 0;
+                document.getElementById('mp-total-draws').textContent = mp.games_drawn || 0;
+                document.getElementById('mp-winrate').textContent = (mp.winrate || 0) + '%';
+                document.getElementById('mp-rating').textContent = mp.rating || 1000;
+                document.getElementById('mp-highest-rating').textContent = mp.highest_rating || 1000;
+                document.getElementById('mp-win-streak').textContent = mp.win_streak || 0;
+                document.getElementById('mp-longest-streak').textContent = mp.longest_win_streak || 0;
                 
                 // Update AI level stats
                 const aiLevelContainer = document.getElementById('ai-level-stats-container');
