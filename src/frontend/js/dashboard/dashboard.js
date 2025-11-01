@@ -20,7 +20,6 @@ async function checkAuth() {
         console.log('Auth check response (stringified):', JSON.stringify(data));
         if (!data.success || !data.authenticated) {
             window.location.href = 'index.html';
-            return;
         }
         
         // Check if user is admin
