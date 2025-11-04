@@ -1679,3 +1679,152 @@ h1, h2, h3, h4 {
         max-width: 300px;
     }
 }
+
+/* Modal Button Styles */
+.modal-btn {
+    padding: 12px 24px;
+    margin: 5px;
+    background: #00ff00;
+    color: #0a0e27;
+    border: 3px solid #00ff00;
+    border-radius: 0;
+    font-size: 14px;
+    cursor: pointer;
+    font-family: 'Courier New', monospace;
+    font-weight: bold;
+    text-transform: uppercase;
+    box-shadow: 0 0 10px #00ff00;
+    transition: all 0.3s;
+}
+
+.modal-btn:hover {
+    background: #0a0e27;
+    color: #00ff00;
+    box-shadow: 0 0 20px #00ff00;
+}
+
+.modal-btn-primary {
+    background: #00ff00;
+    border-color: #00ff00;
+    box-shadow: 0 0 10px #00ff00;
+}
+
+.modal-btn-primary:hover {
+    background: #0a0e27;
+    color: #00ff00;
+}
+
+.modal-btn-secondary {
+    background: #ff00ff;
+    border-color: #ff00ff;
+    color: #0a0e27;
+    box-shadow: 0 0 10px #ff00ff;
+}
+
+.modal-btn-secondary:hover {
+    background: #0a0e27;
+    color: #ff00ff;
+}
+
+#modal-buttons {
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    margin-top: 20px;
+}
+
+/* Tutorial Highlight */
+.tutorial-highlight {
+    position: relative;
+    box-shadow: 0 0 20px #ffff00, 0 0 40px #ffff00 !important;
+    animation: pulse-highlight 1.5s infinite;
+}
+
+@keyframes pulse-highlight {
+    0%, 100% {
+        box-shadow: 0 0 20px #ffff00, 0 0 40px #ffff00;
+    }
+    50% {
+        box-shadow: 0 0 30px #ffff00, 0 0 60px #ffff00;
+    }
+}
+
+/* Tooltip Styles */
+.game-tooltip {
+    position: absolute;
+    background: #1a1a2e;
+    border: 3px solid #00ffff;
+    border-radius: 0;
+    padding: 10px 15px;
+    max-width: 250px;
+    z-index: 10000;
+    pointer-events: none;
+    box-shadow: 0 0 20px rgba(0, 255, 255, 0.5);
+}
+
+.tooltip-title {
+    color: #00ffff;
+    font-weight: bold;
+    margin-bottom: 5px;
+    text-transform: uppercase;
+    font-size: 12px;
+}
+
+.tooltip-text {
+    color: #00ff00;
+    font-size: 11px;
+    line-height: 1.4;
+}
+
+.has-tooltip {
+    cursor: help;
+    position: relative;
+}
+
+.has-tooltip::after {
+    content: '?';
+    position: absolute;
+    top: -5px;
+    right: -5px;
+    width: 16px;
+    height: 16px;
+    background: #00ffff;
+    color: #0a0e27;
+    border-radius: 50%;
+    font-size: 10px;
+    font-weight: bold;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0.7;
+    pointer-events: none;
+}
+
+/* Help Button */
+.help-btn {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    width: 50px;
+    height: 50px;
+    background: #00ffff;
+    color: #0a0e27;
+    border: 3px solid #00ffff;
+    border-radius: 50%;
+    font-size: 24px;
+    font-weight: bold;
+    cursor: pointer;
+    box-shadow: 0 0 20px rgba(0, 255, 255, 0.5);
+    z-index: 1000;
+    transition: all 0.3s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.help-btn:hover {
+    background: #0a0e27;
+    color: #00ffff;
+    box-shadow: 0 0 30px rgba(0, 255, 255, 0.8);
+    transform: scale(1.1);
+}

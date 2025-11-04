@@ -27,6 +27,18 @@ function showScreen(screenId) {
         screen.classList.remove('active');
     });
     document.getElementById(screenId).classList.add('active');
+    
+    // Initialize tooltips when entering game screen
+    if (screenId === 'game-screen' && typeof tooltipSystem !== 'undefined') {
+        setTimeout(() => {
+            tooltipSystem.initializeGameTooltips();
+        }, 100);
+    }
+    
+    // Check if tutorial should be shown for new users entering menu
+    if (screenId === 'menu-screen' && typeof checkAndShowTutorial !== 'undefined') {
+        checkAndShowTutorial();
+    }
 }
 
 async function loadHeader() {

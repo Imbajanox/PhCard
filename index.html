@@ -90,6 +90,8 @@
                     <button class="menu-btn" id="achievements-btn" onclick="window.location.href='web/features/achievements.html'">Achievements</button>
                     <button class="menu-btn" id="statistics-btn" onclick="window.location.href='statistics.html'">Statistiken</button>
                     <button class="menu-btn" id="analytics-btn" onclick="window.location.href='dashboard.html'" style="display: none;">Analytics & Simulation</button>
+                    <button class="menu-btn" onclick="showHowToPlayModal()">📖 Spielanleitung</button>
+                    <button class="menu-btn" onclick="tutorialSystem.start()">🎓 Tutorial</button>
                     <button class="menu-btn" onclick="logout()">Abmelden</button>
                 </div>
             </div>
@@ -278,6 +280,12 @@
     <!-- Load JavaScript modules in dependency order -->
     <!-- Core must load first -->
     <script src="src/frontend/js/core/app.js"></script>
+    
+    <!-- Utility modules (modal system must load early) -->
+    <script src="src/frontend/js/utils/modal.js"></script>
+    <script src="src/frontend/js/utils/tooltip.js"></script>
+    <script src="src/frontend/js/utils/tutorial.js"></script>
+    <script src="src/frontend/js/utils/howtoplay.js"></script>
     
     <!-- User modules -->
     <script src="src/frontend/js/user/profile.js"></script>
