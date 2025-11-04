@@ -108,7 +108,7 @@ function getUserStatistics() {
     $conn = getDBConnection();
     
     try {
-        // Get overall statistics
+        // Get overall singleplayer statistics
         $stmt = $conn->prepare("
             SELECT 
                 COUNT(*) as total_games,
@@ -128,6 +128,44 @@ function getUserStatistics() {
             $overall['winrate'] = round(($overall['total_wins'] / $overall['total_games']) * 100, 1);
         } else {
             $overall['winrate'] = 0;
+        }
+        
+        // Get multiplayer statistics
+        $stmt = $conn->prepare("
+            SELECT 
+                games_played,
+                games_won,
+                games_lost,
+                games_drawn,
+                rating,
+                highest_rating,
+                win_streak,
+                longest_win_streak
+            FROM multiplayer_stats
+            WHERE user_id = ?
+        ");
+        $stmt->execute([$_SESSION['user_id']]);
+        $multiplayerStats = $stmt->fetch(PDO::FETCH_ASSOC);
+        
+        // If no multiplayer stats exist, initialize with zeros
+        if (!$multiplayerStats) {
+            $multiplayerStats = [
+                'games_played' => 0,
+                'games_won' => 0,
+                'games_lost' => 0,
+                'games_drawn' => 0,
+                'rating' => 1000,
+                'highest_rating' => 1000,
+                'win_streak' => 0,
+                'longest_win_streak' => 0
+            ];
+        }
+        
+        // Calculate multiplayer winrate
+        if ($multiplayerStats['games_played'] > 0) {
+            $multiplayerStats['winrate'] = round(($multiplayerStats['games_won'] / $multiplayerStats['games_played']) * 100, 1);
+        } else {
+            $multiplayerStats['winrate'] = 0;
         }
         
         // Get winrate by AI level
@@ -164,6 +202,7 @@ function getUserStatistics() {
         echo json_encode([
             'success' => true,
             'overall' => $overall,
+            'multiplayer' => $multiplayerStats,
             'by_ai_level' => $byAiLevel,
             'recent_games' => $recentGames
         ]);
