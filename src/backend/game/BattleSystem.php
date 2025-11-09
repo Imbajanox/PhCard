@@ -348,20 +348,20 @@ class BattleSystem {
             }
         }
         
-        // Clean up destroyed player monsters
-        for ($i = count($gameState['player_field']) - 1; $i >= 0; $i--) {
-            if ($gameState['player_field'][$i]['current_health'] <= 0) {
-                $destroyedMonster = $gameState['player_field'][$i];
+        // Clean up destroyed player monsters (optimized single pass)
+        $gameState['player_field'] = array_values(array_filter($gameState['player_field'], function($monster, $i) use (&$battleLog, &$battleEvents) {
+            if ($monster['current_health'] <= 0) {
                 $battleEvents[] = [
                     'type' => 'destroyed',
-                    'target' => $destroyedMonster['name'],
+                    'target' => $monster['name'],
                     'targetPlayer' => 'player',
                     'targetIndex' => $i
                 ];
-                array_splice($gameState['player_field'], $i, 1);
-                $battleLog[] = "{$destroyedMonster['name']} was destroyed in combat!";
+                $battleLog[] = "{$monster['name']} was destroyed in combat!";
+                return false;
             }
-        }
+            return true;
+        }, ARRAY_FILTER_USE_BOTH));
         
         // Check if AI is defeated
         $aiActions = [];
@@ -412,20 +412,20 @@ class BattleSystem {
             }
         }
         
-        // Clean up destroyed AI monsters
-        for ($i = count($gameState['ai_field']) - 1; $i >= 0; $i--) {
-            if ($gameState['ai_field'][$i]['current_health'] <= 0) {
-                $destroyedMonster = $gameState['ai_field'][$i];
+        // Clean up destroyed AI monsters (optimized single pass)
+        $gameState['ai_field'] = array_values(array_filter($gameState['ai_field'], function($monster, $i) use (&$battleLog, &$battleEvents) {
+            if ($monster['current_health'] <= 0) {
                 $battleEvents[] = [
                     'type' => 'destroyed',
-                    'target' => $destroyedMonster['name'],
+                    'target' => $monster['name'],
                     'targetPlayer' => 'ai',
                     'targetIndex' => $i
                 ];
-                array_splice($gameState['ai_field'], $i, 1);
-                $battleLog[] = "AI {$destroyedMonster['name']} was destroyed in combat!";
+                $battleLog[] = "AI {$monster['name']} was destroyed in combat!";
+                return false;
             }
-        }
+            return true;
+        }, ARRAY_FILTER_USE_BOTH));
         
         // Switch back to player
         $gameState['turn'] = 'player';

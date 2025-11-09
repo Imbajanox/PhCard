@@ -1,5 +1,8 @@
 <?php
 require_once '../config.php';
+require_once '../autoload.php';
+
+use Utils\CacheManager;
 
 header('Content-Type: application/json');
 requireLogin();
@@ -88,15 +91,19 @@ function getUserCards() {
     $conn = getDBConnection();
     
     try {
-        $stmt = $conn->prepare("
-            SELECT c.*, uc.quantity 
-            FROM user_cards uc 
-            JOIN cards c ON uc.card_id = c.id 
-            WHERE uc.user_id = ?
-            ORDER BY c.required_level, c.rarity, c.name
-        ");
-        $stmt->execute([$_SESSION['user_id']]);
-        $cards = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        // Cache user cards for 5 minutes
+        $cacheKey = "user_{$_SESSION['user_id']}_cards_collection";
+        $cards = CacheManager::remember($cacheKey, function() use ($conn) {
+            $stmt = $conn->prepare("
+                SELECT c.*, uc.quantity 
+                FROM user_cards uc 
+                JOIN cards c ON uc.card_id = c.id 
+                WHERE uc.user_id = ?
+                ORDER BY c.required_level, c.rarity, c.name
+            ");
+            $stmt->execute([$_SESSION['user_id']]);
+            return $stmt->fetchAll(PDO::FETCH_ASSOC);
+        }, 300);
         
         echo json_encode(['success' => true, 'cards' => $cards]);
     } catch(PDOException $e) {
