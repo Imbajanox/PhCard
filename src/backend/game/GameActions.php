@@ -6,6 +6,7 @@ use Core\Database;
 use Models\User;
 use Models\Deck;
 use Utils\GameEventSystem;
+use Utils\CacheManager;
 
 /**
  * GameActions handles game flow operations (start, mulligan, end)
@@ -45,15 +46,18 @@ class GameActions {
                     return ['success' => false, 'error' => 'Deck not found'];
                 }
                 
-                // Get cards from deck
-                $stmt = $this->db->prepare("
-                    SELECT c.*, dc.quantity 
-                    FROM deck_cards dc 
-                    JOIN cards c ON dc.card_id = c.id 
-                    WHERE dc.deck_id = ?
-                ");
-                $stmt->execute([$deckId]);
-                $deckCards = $stmt->fetchAll(\PDO::FETCH_ASSOC);
+                // Cache deck cards for 5 minutes
+                $cacheKey = "deck_{$deckId}_cards";
+                $deckCards = CacheManager::remember($cacheKey, function() use ($deckId) {
+                    $stmt = $this->db->prepare("
+                        SELECT c.*, dc.quantity 
+                        FROM deck_cards dc 
+                        JOIN cards c ON dc.card_id = c.id 
+                        WHERE dc.deck_id = ?
+                    ");
+                    $stmt->execute([$deckId]);
+                    return $stmt->fetchAll(\PDO::FETCH_ASSOC);
+                }, 300);
                 
                 // Expand deck cards based on quantity
                 foreach ($deckCards as $card) {
@@ -63,14 +67,17 @@ class GameActions {
                 }
                 shuffle($availableCards);
             } else {
-                // Get user's cards from collection
-                $stmt = $this->db->prepare("
-                    SELECT c.* FROM user_cards uc 
-                    JOIN cards c ON uc.card_id = c.id 
-                    WHERE uc.user_id = ? AND uc.quantity > 0
-                ");
-                $stmt->execute([$userId]);
-                $availableCards = $stmt->fetchAll(\PDO::FETCH_ASSOC);
+                // Cache user's card collection for 5 minutes
+                $cacheKey = "user_{$userId}_cards";
+                $availableCards = CacheManager::remember($cacheKey, function() use ($userId) {
+                    $stmt = $this->db->prepare("
+                        SELECT c.* FROM user_cards uc 
+                        JOIN cards c ON uc.card_id = c.id 
+                        WHERE uc.user_id = ? AND uc.quantity > 0
+                    ");
+                    $stmt->execute([$userId]);
+                    return $stmt->fetchAll(\PDO::FETCH_ASSOC);
+                }, 300);
             }
             
             // Initialize game state

@@ -178,11 +178,16 @@ function displayHand() {
     const handEl = document.getElementById('player-hand');
     handEl.innerHTML = '';
     
+    // Use DocumentFragment for batched DOM updates (performance optimization)
+    const fragment = document.createDocumentFragment();
+    
     gameState.player_hand.forEach((card, index) => {
         const cardEl = createCardElement(card);
         cardEl.onclick = () => playCard(index);
-        handEl.appendChild(cardEl);
+        fragment.appendChild(cardEl);
     });
+    
+    handEl.appendChild(fragment);
 }
 
 function displayField(player) {
@@ -191,11 +196,16 @@ function displayField(player) {
     
     const field = player === 'player' ? gameState.player_field : gameState.ai_field;
     
+    // Use DocumentFragment for batched DOM updates (performance optimization)
+    const fragment = document.createDocumentFragment();
+    
     field.forEach(card => {
         const cardEl = createCardElement(card);
         cardEl.style.cursor = 'default';
-        fieldEl.appendChild(cardEl);
+        fragment.appendChild(cardEl);
     });
+    
+    fieldEl.appendChild(fragment);
 }
 
 async function playCard(cardIndex) {
@@ -412,6 +422,19 @@ function addLog(message, type = 'normal') {
     } else if (message.includes('Boost') || message.includes('shield') || message.includes('Stun') || message.includes('Poison')) {
         entry.classList.add('effect');
     }
+    
+    if (type === 'ai') {
+        entry.style.color = '#ff5555';
+    }
+    
+    entry.textContent = message;
+    
+    // Use requestAnimationFrame for smoother DOM updates
+    requestAnimationFrame(() => {
+        logEl.appendChild(entry);
+        logEl.scrollTop = logEl.scrollHeight;
+    });
+}
     
     if (type === 'ai') {
         entry.style.color = '#dc3545';
