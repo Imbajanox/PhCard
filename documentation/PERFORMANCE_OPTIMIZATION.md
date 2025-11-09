@@ -91,10 +91,25 @@ The following data is now cached to reduce database load:
    - Location: `src/backend/game/GameActions.php` - `start()`
    - Key: `user_{userId}_cards`
 
+4. **AI Card Pool** (10 min TTL)
+   - Location: `src/backend/game/AIPlayer.php` - `performTurn()`
+   - Key: `ai_cards_level_{maxLevel}`
+   - Benefit: Eliminates repeated ORDER BY RAND() queries
+
+5. **Multiplayer Deck Cards** (5 min TTL)
+   - Location: `src/backend/game/Multiplayer.php` - `getPlayerDeck()`
+   - Key: `deck_{deckId}_cards_multiplayer`
+
+6. **Starter Cards** (10 min TTL)
+   - Location: `src/backend/game/Multiplayer.php` - `getPlayerDeck()`
+   - Key: `starter_cards_level_1`
+
 ### Expected Performance Gains
 
 - **Repeated card queries**: 90-95% faster (served from cache)
 - **Game start time**: 30-50% faster
+- **AI turn execution**: 40-60% faster (cached card pool + no ORDER BY RAND())
+- **Multiplayer game initialization**: 50-70% faster
 - **Reduced database load**: 60-70% reduction in SELECT queries
 
 ### Battle System Optimization

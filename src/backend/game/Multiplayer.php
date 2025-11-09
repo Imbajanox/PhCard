@@ -4,6 +4,7 @@ namespace Game;
 
 use Core\Database;
 use Utils\GameEventSystem;
+use Utils\CacheManager;
 
 /**
  * Multiplayer game management
@@ -463,14 +464,18 @@ class Multiplayer {
         $cards = [];
         
         if ($deckId > 0) {
-            $stmt = $this->db->prepare("
-                SELECT c.*, dc.quantity 
-                FROM deck_cards dc 
-                JOIN cards c ON dc.card_id = c.id 
-                WHERE dc.deck_id = ?
-            ");
-            $stmt->execute([$deckId]);
-            $deckCards = $stmt->fetchAll(\PDO::FETCH_ASSOC);
+            // Cache deck cards for multiplayer games (5 min TTL)
+            $cacheKey = "deck_{$deckId}_cards_multiplayer";
+            $deckCards = CacheManager::remember($cacheKey, function() use ($deckId) {
+                $stmt = $this->db->prepare("
+                    SELECT c.*, dc.quantity 
+                    FROM deck_cards dc 
+                    JOIN cards c ON dc.card_id = c.id 
+                    WHERE dc.deck_id = ?
+                ");
+                $stmt->execute([$deckId]);
+                return $stmt->fetchAll(\PDO::FETCH_ASSOC);
+            }, 300);
             
             foreach ($deckCards as $card) {
                 for ($i = 0; $i < $card['quantity']; $i++) {
@@ -481,25 +486,32 @@ class Multiplayer {
         
         // If no cards from deck, fallback to user's collection
         if (empty($cards)) {
-            $stmt = $this->db->prepare("
-                SELECT c.* FROM user_cards uc 
-                JOIN cards c ON uc.card_id = c.id 
-                WHERE uc.user_id = ? AND uc.quantity > 0
-            ");
-            $stmt->execute([$userId]);
-            $cards = $stmt->fetchAll(\PDO::FETCH_ASSOC);
+            // Cache user collection (5 min TTL)
+            $cacheKey = "user_{$userId}_cards";
+            $cards = CacheManager::remember($cacheKey, function() use ($userId) {
+                $stmt = $this->db->prepare("
+                    SELECT c.* FROM user_cards uc 
+                    JOIN cards c ON uc.card_id = c.id 
+                    WHERE uc.user_id = ? AND uc.quantity > 0
+                ");
+                $stmt->execute([$userId]);
+                return $stmt->fetchAll(\PDO::FETCH_ASSOC);
+            }, 300);
         }
         
         // If still no cards, provide default starter cards
         if (empty($cards)) {
-            $stmt = $this->db->prepare("
-                SELECT * FROM cards 
-                WHERE required_level <= 1 
-                ORDER BY id 
-                LIMIT 30
-            ");
-            $stmt->execute();
-            $cards = $stmt->fetchAll(\PDO::FETCH_ASSOC);
+            $cacheKey = "starter_cards_level_1";
+            $cards = CacheManager::remember($cacheKey, function() {
+                $stmt = $this->db->prepare("
+                    SELECT * FROM cards 
+                    WHERE required_level <= 1 
+                    ORDER BY id 
+                    LIMIT 30
+                ");
+                $stmt->execute();
+                return $stmt->fetchAll(\PDO::FETCH_ASSOC);
+            }, 600); // Cache starter cards for 10 minutes
         }
         
         shuffle($cards);

@@ -3,6 +3,7 @@
 namespace Game;
 
 use Core\Database;
+use Utils\CacheManager;
 
 /**
  * AIPlayer handles AI decision-making and turn execution
@@ -21,7 +22,7 @@ class AIPlayer {
         $actions = [];
         $aiLevel = $gameState['ai_level'];
         
-        // Get AI cards based on level
+        // Get AI cards based on level (cached for 10 minutes)
         $cardLimit = match($aiLevel) {
             1 => 5,   // Level 1: Very limited choices
             2 => 6,   // Level 2: Limited choices
@@ -29,9 +30,18 @@ class AIPlayer {
             default => 8  // Level 4+: Full choices
         };
         
-        $stmt = $this->db->prepare("SELECT * FROM cards WHERE required_level <= ? ORDER BY RAND() LIMIT " . intval($cardLimit));
-        $stmt->execute([min($aiLevel * 2, 10)]);
-        $aiCards = $stmt->fetchAll(\PDO::FETCH_ASSOC);
+        $maxLevel = min($aiLevel * 2, 10);
+        $cacheKey = "ai_cards_level_{$maxLevel}";
+        
+        $allAiCards = CacheManager::remember($cacheKey, function() use ($maxLevel) {
+            $stmt = $this->db->prepare("SELECT * FROM cards WHERE required_level <= ? ORDER BY id");
+            $stmt->execute([$maxLevel]);
+            return $stmt->fetchAll(\PDO::FETCH_ASSOC);
+        }, 600); // Cache for 10 minutes
+        
+        // Randomly select cards from cached pool
+        shuffle($allAiCards);
+        $aiCards = array_slice($allAiCards, 0, $cardLimit);
         
         // AI plays cards based on available mana and strategy
         $aiMana = $gameState['ai_mana'];
